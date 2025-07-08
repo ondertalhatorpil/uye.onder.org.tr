@@ -37,7 +37,7 @@ class Faaliyet {
     return rows[0];
   }
 
-  // Tüm faaliyetleri getir (sayfalama ile)
+  // Tüm faaliyetleri getir (sayfalama ile) - DÜZELTME
   static async getAll(filters = {}) {
     let query = `
       SELECT 
@@ -64,22 +64,22 @@ class Faaliyet {
       params.push(filters.user_id);
     }
 
-    // İl filtresi
-    if (filters.il) {
+    // İl filtresi - BOŞ STRING KONTROLÜ EKLENDİ
+    if (filters.il && filters.il.trim() !== '') {
       conditions.push('u.il = ?');
-      params.push(filters.il);
+      params.push(filters.il.trim());
     }
 
-    // İlçe filtresi
-    if (filters.ilce) {
+    // İlçe filtresi - BOŞ STRING KONTROLÜ EKLENDİ
+    if (filters.ilce && filters.ilce.trim() !== '') {
       conditions.push('u.ilce = ?');
-      params.push(filters.ilce);
+      params.push(filters.ilce.trim());
     }
 
-    // Dernek filtresi
-    if (filters.dernek) {
-      conditions.push('u.gonullu_dernek = ?');
-      params.push(filters.dernek);
+    // Dernek filtresi - BOŞ STRING VE LIKE KONTROLÜ EKLENDİ
+    if (filters.dernek && filters.dernek.trim() !== '') {
+      conditions.push('u.gonullu_dernek LIKE ?');
+      params.push(`%${filters.dernek.trim()}%`);
     }
 
     if (conditions.length > 0) {
@@ -89,10 +89,13 @@ class Faaliyet {
     query += ' ORDER BY f.created_at DESC';
 
     // Sayfalama
-    const limit = filters.limit || 20;
-    const offset = filters.offset || 0;
+    const limit = parseInt(filters.limit) || 20;
+    const offset = parseInt(filters.offset) || 0;
     query += ' LIMIT ? OFFSET ?';
     params.push(limit, offset);
+
+    console.log('SQL Query:', query);
+    console.log('Parameters:', params);
 
     const [rows] = await pool.execute(query, params);
 
@@ -152,7 +155,7 @@ class Faaliyet {
     return result.affectedRows > 0;
   }
 
-  // Faaliyet sayısı (istatistik için)
+  // Faaliyet sayısı (istatistik için) - DÜZELTME
   static async getCount(filters = {}) {
     let query = `
       SELECT COUNT(*) as total
@@ -168,9 +171,20 @@ class Faaliyet {
       params.push(filters.user_id);
     }
 
-    if (filters.il) {
+    // BOŞ STRING KONTROLÜ EKLENDİ
+    if (filters.il && filters.il.trim() !== '') {
       conditions.push('u.il = ?');
-      params.push(filters.il);
+      params.push(filters.il.trim());
+    }
+
+    if (filters.ilce && filters.ilce.trim() !== '') {
+      conditions.push('u.ilce = ?');
+      params.push(filters.ilce.trim());
+    }
+
+    if (filters.dernek && filters.dernek.trim() !== '') {
+      conditions.push('u.gonullu_dernek LIKE ?');
+      params.push(`%${filters.dernek.trim()}%`);
     }
 
     if (conditions.length > 0) {
