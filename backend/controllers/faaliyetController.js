@@ -2,6 +2,78 @@ const Faaliyet = require('../models/Faaliyet');
 const fs = require('fs');
 const path = require('path');
 
+// Tüm faaliyetleri getir - DÜZELTME
+const getAllFaaliyetler = async (req, res) => {
+  try {
+    console.log('Query params received:', req.query);
+
+    const {
+      page = 1,
+      limit = 20,
+      il,
+      ilce,
+      dernek,
+      user_id
+    } = req.query;
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    // FİLTRELERİ TEMİZLE
+    const filters = {
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    };
+
+    // Sadece dolu olan filtreleri ekle
+    if (il && il.trim() !== '' && il !== 'undefined' && il !== 'null') {
+      filters.il = il.trim();
+    }
+    
+    if (ilce && ilce.trim() !== '' && ilce !== 'undefined' && ilce !== 'null') {
+      filters.ilce = ilce.trim();
+    }
+    
+    if (dernek && dernek.trim() !== '' && dernek !== 'undefined' && dernek !== 'null') {
+      filters.dernek = dernek.trim();
+    }
+    
+    if (user_id && user_id.trim() !== '' && user_id !== 'undefined' && user_id !== 'null') {
+      filters.user_id = parseInt(user_id);
+    }
+
+    console.log('Cleaned filters:', filters);
+
+    const faaliyetler = await Faaliyet.getAll(filters);
+    const total = await Faaliyet.getCount(filters);
+
+    console.log('Results:', { 
+      faaliyetlerCount: faaliyetler.length, 
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    });
+
+    res.json({
+      success: true,
+      data: faaliyetler,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get all faaliyetler error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyetler getirilemedi: ' + error.message
+    });
+  }
+};
+
 // Yeni faaliyet oluştur
 const createFaaliyet = async (req, res) => {
   try {
@@ -37,53 +109,6 @@ const createFaaliyet = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Faaliyet oluşturulurken hata oluştu: ' + error.message
-    });
-  }
-};
-
-// Tüm faaliyetleri getir
-const getAllFaaliyetler = async (req, res) => {
-  try {
-    const {
-      page = 1,
-      limit = 20,
-      il,
-      ilce,
-      dernek,
-      user_id
-    } = req.query;
-
-    const offset = (page - 1) * limit;
-
-    const filters = {
-      limit: parseInt(limit),
-      offset: parseInt(offset)
-    };
-
-    if (il) filters.il = il;
-    if (ilce) filters.ilce = ilce;
-    if (dernek) filters.dernek = dernek;
-    if (user_id) filters.user_id = user_id;
-
-    const faaliyetler = await Faaliyet.getAll(filters);
-    const total = await Faaliyet.getCount(filters);
-
-    res.json({
-      success: true,
-      data: faaliyetler,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / limit)
-      }
-    });
-
-  } catch (error) {
-    console.error('Get all faaliyetler error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Faaliyetler getirilemedi: ' + error.message
     });
   }
 };
