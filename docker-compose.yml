@@ -10,7 +10,7 @@ services:
     container_name: dernek-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "4200:80"
     environment:
       - VITE_API_URL=https://uye.onder.org.tr/api
     depends_on:
@@ -25,14 +25,14 @@ services:
     container_name: dernek-backend
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "5500:3001"
     environment:
       - NODE_ENV=production
       - PORT=3001
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_USER=root
-      - DB_PASSWORD=dernek_secure_password_2024
+      - DB_PASSWORD=
       - DB_NAME=dernek_system
       - JWT_SECRET=dernek_super_secret_key_production_2024
       - JWT_EXPIRE=7d
@@ -50,7 +50,7 @@ services:
     container_name: dernek-mysql
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=dernek_secure_password_2024
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
       - MYSQL_DATABASE=dernek_system
       - MYSQL_CHARACTER_SET_SERVER=utf8mb4
       - MYSQL_COLLATION_SERVER=utf8mb4_unicode_ci
@@ -58,7 +58,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     networks:
       - dernek-network
 
@@ -67,12 +67,10 @@ services:
     container_name: dernek-phpmyadmin
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8085:80"
     environment:
       - PMA_HOST=mysql
       - PMA_PORT=3306
-      - PMA_USER=root
-      - PMA_PASSWORD=dernek_secure_password_2024
     depends_on:
       - mysql
     networks:

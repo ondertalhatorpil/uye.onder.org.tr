@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { faaliyetService } from '../../services/api';
+import { faaliyetService, UPLOADS_BASE_URL } from '../../services/api';
 import { 
   FiHeart, FiMessageCircle, FiShare2, FiMoreHorizontal,
   FiCalendar, FiMapPin, FiPlus, FiFilter,
@@ -302,7 +302,7 @@ const FaaliyetList = () => {
                       'grid-cols-2'
                     }`}>
                       {faaliyet.gorseller.slice(0, 4).map((gorsel, index) => {
-                        const imageUrl = `http://localhost:3001/uploads/faaliyet-images/${gorsel}`;
+                        const imageUrl = `${UPLOADS_BASE_URL}/uploads/faaliyet-images/${gorsel}`;
                         return (
                           <div 
                             key={index} 

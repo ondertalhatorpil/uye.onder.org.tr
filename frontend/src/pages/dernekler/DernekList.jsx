@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { dernekService, constantsService } from '../../services/api';
+import { dernekService, constantsService, UPLOADS_BASE_URL } from '../../services/api';
 import { 
-  FiMapPin, FiUsers, FiPhone, FiCalendar, 
+  FiMapPin, FiUsers, FiPhone, 
   FiSearch, FiFilter, FiGrid, FiList,
   FiRefreshCw, FiExternalLink, FiUser
 } from 'react-icons/fi';
@@ -147,7 +147,7 @@ const DernekList = () => {
   // Dernek logosu URL'i
   const getDernekLogoUrl = (logoPath) => {
     if (!logoPath) return null;
-    return `http://localhost:3001/uploads/dernek-logos/${logoPath}`;
+    return `${UPLOADS_BASE_URL}/uploads/dernek-logos/${logoPath}`;
   };
 
   // Loading state

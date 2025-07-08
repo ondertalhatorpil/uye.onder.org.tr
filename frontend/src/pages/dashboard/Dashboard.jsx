@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { faaliyetService, adminService } from '../../services/api';
+import { faaliyetService, adminService, UPLOADS_BASE_URL } from '../../services/api';
 import {  FiActivity, FiGrid, FiPlus, FiCalendar, FiMapPin
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
@@ -247,7 +247,7 @@ const Dashboard = () => {
                                     }`}
                                   >
                                     <img
-                                      src={`http://localhost:3001/uploads/faaliyet-images/${gorsel}`}
+                                      src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${gorsel}`}
                                       alt={`Faaliyet ${index + 1}`}
                                       className="w-full h-24 object-cover rounded-lg"
                                       onError={(e) => {
@@ -280,7 +280,7 @@ const Dashboard = () => {
                 <p className="text-gray-500 mb-4">İlk faaliyeti sen paylaş!</p>
                 <Link
                   to="/faaliyetler/create"
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
                   <FiPlus className="mr-2 h-4 w-4" />
                   Faaliyet Paylaş

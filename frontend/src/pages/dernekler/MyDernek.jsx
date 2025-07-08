@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { dernekService } from '../../services/api';
+import { dernekService, UPLOADS_BASE_URL } from '../../services/api';
 import { 
   FiEdit3, FiSave, FiX, FiCamera, FiUpload,
   FiUser, FiPhone, FiMail, FiCalendar, 
@@ -187,7 +187,7 @@ const MyDernek = () => {
   // Logo URL'i
   const getLogoUrl = () => {
     if (!dernek?.dernek_logosu) return null;
-    return `http://localhost:3001/uploads/dernek-logos/${dernek.dernek_logosu}`;
+    return `${UPLOADS_BASE_URL}/uploads/dernek-logos/${dernek.dernek_logosu}`;
   };
 
   // Tarih formatla

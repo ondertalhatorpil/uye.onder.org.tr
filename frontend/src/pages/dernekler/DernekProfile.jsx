@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { dernekService, userService, faaliyetService } from '../../services/api';
+import { dernekService, userService, faaliyetService, UPLOADS_BASE_URL } from '../../services/api';
 import { 
   FiUser, FiPhone, FiMapPin, FiCalendar,
   FiUsers, FiActivity, FiArrowLeft, FiGrid,
@@ -94,7 +94,7 @@ const DernekProfile = () => {
   // Dernek logosu URL'i
   const getDernekLogoUrl = (logoPath) => {
     if (!logoPath) return null;
-    return `http://localhost:3001/uploads/dernek-logos/${logoPath}`;
+    return `${UPLOADS_BASE_URL}/uploads/dernek-logos/${logoPath}`;
   };
 
   // Sosyal medya linklerini parse et
@@ -504,7 +504,7 @@ const DernekProfile = () => {
                           {faaliyet.gorseller.slice(0, 4).map((gorsel, index) => (
                             <div key={index} className="relative">
                               <img
-                                src={`http://localhost:3001/uploads/faaliyet-images/${gorsel}`}
+                                src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${gorsel}`}
                                 alt={`Faaliyet ${index + 1}`}
                                 className="w-full h-24 object-cover rounded"
                                 onError={(e) => {

@@ -1,7 +1,11 @@
 import axios from 'axios';
 
 // Base API URL - backend port 5000'de çalışıyor
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://uye.onder.org.tr/api';
+
+export const UPLOADS_BASE_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace('/api', '') 
+  : 'https://uye.onder.org.tr';
 
 // Axios instance oluştur
 export const api = axios.create({

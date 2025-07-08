@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { userService, faaliyetService } from '../../services/api';
+import { userService, faaliyetService, UPLOADS_BASE_URL } from '../../services/api';
 import { 
   FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase,
   FiCalendar, FiActivity, FiUsers, FiHome, FiBook,
@@ -321,7 +321,7 @@ const UyeProfile = () => {
                             {faaliyet.gorseller.slice(0, 4).map((gorsel, index) => (
                               <div key={index} className="relative">
                                 <img
-                                  src={`http://localhost:3001/uploads/faaliyet-images/${gorsel}`}
+                                  src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${gorsel}`}
                                   alt={`Faaliyet ${index + 1}`}
                                   className="w-full h-32 object-cover rounded-lg"
                                   onError={(e) => {
