@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Header from './Header';
 import Sidebar from './Sidebar';
 
 const Layout = () => {
@@ -24,11 +23,6 @@ const Layout = () => {
 
       {/* Main content */}
       <div className="lg:pl-64">
-        {/* Header */}
-        <Header 
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-        />
 
         {/* Page content */}
         <main className="py-6">
