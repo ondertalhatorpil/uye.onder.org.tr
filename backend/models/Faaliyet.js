@@ -37,7 +37,7 @@ class Faaliyet {
     return rows[0];
   }
 
-  // Tüm faaliyetleri getir (sayfalama ile) - DÜZELTME
+  // Tüm faaliyetleri getir (MySQL 8.0 uyumlu)
   static async getAll(filters = {}) {
     let query = `
       SELECT 
@@ -64,19 +64,19 @@ class Faaliyet {
       params.push(filters.user_id);
     }
 
-    // İl filtresi - BOŞ STRING KONTROLÜ EKLENDİ
+    // İl filtresi
     if (filters.il && filters.il.trim() !== '') {
       conditions.push('u.il = ?');
       params.push(filters.il.trim());
     }
 
-    // İlçe filtresi - BOŞ STRING KONTROLÜ EKLENDİ
+    // İlçe filtresi
     if (filters.ilce && filters.ilce.trim() !== '') {
       conditions.push('u.ilce = ?');
       params.push(filters.ilce.trim());
     }
 
-    // Dernek filtresi - BOŞ STRING VE LIKE KONTROLÜ EKLENDİ
+    // Dernek filtresi
     if (filters.dernek && filters.dernek.trim() !== '') {
       conditions.push('u.gonullu_dernek LIKE ?');
       params.push(`%${filters.dernek.trim()}%`);
@@ -88,13 +88,18 @@ class Faaliyet {
 
     query += ' ORDER BY f.created_at DESC';
 
-    // Sayfalama
+    // MySQL 8.0 için LIMIT/OFFSET direkt string olarak ekle
     const limit = parseInt(filters.limit) || 20;
     const offset = parseInt(filters.offset) || 0;
-    query += ' LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    
+    // Güvenlik için sayısal değerleri kontrol et
+    if (isNaN(limit) || isNaN(offset) || limit < 0 || offset < 0) {
+      throw new Error('Invalid limit or offset values');
+    }
+    
+    query += ` LIMIT ${limit} OFFSET ${offset}`;
 
-    console.log('SQL Query:', query);
+    console.log('Final SQL Query:', query);
     console.log('Parameters:', params);
 
     const [rows] = await pool.execute(query, params);
@@ -155,7 +160,7 @@ class Faaliyet {
     return result.affectedRows > 0;
   }
 
-  // Faaliyet sayısı (istatistik için) - DÜZELTME
+  // Faaliyet sayısı (istatistik için)
   static async getCount(filters = {}) {
     let query = `
       SELECT COUNT(*) as total
@@ -171,7 +176,6 @@ class Faaliyet {
       params.push(filters.user_id);
     }
 
-    // BOŞ STRING KONTROLÜ EKLENDİ
     if (filters.il && filters.il.trim() !== '') {
       conditions.push('u.il = ?');
       params.push(filters.il.trim());
