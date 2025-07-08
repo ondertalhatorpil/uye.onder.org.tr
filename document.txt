@@ -1,0 +1,489 @@
+# Dernek Yönetim Sistemi - Teknik Doküman
+
+## 🎯 Proje Özeti
+Ana derneğe bağlı dernek temsilcilerinin ve üyelerinin bulunduğu platform. Üyeler yaptıkları faaliyetleri Instagram benzeri paylaşabilir, adminler tüm sistemi yönetebilir.
+
+## 👥 Kullanıcı Rolleri ve Yetkileri
+
+### 1. Super Admin
+- **Sistem Yönetimi**: Tüm sistem kontrolü
+- **Dernek Yönetimi**: Excel'den dernek ekleme, düzenleme, silme
+- **Kullanıcı Yönetimi**: Kullanıcıları dernek admini yapma/üye yapma
+- **Admin Atama**: İstediği kullanıcıyı istediği derneğin admini yapabilir
+- **Faaliyet Takibi**: Tüm faaliyetleri görme, filtreleme, istatistikler
+- **Tam Erişim**: Tüm verilere erişim
+
+### 2. Dernek Admin
+- **Kendi Derneği**: Sadece atandığı derneğin bilgilerini düzenleyebilir
+- **Düzenleyebileceği Alanlar**:
+  - Dernek logosu (upload)
+  - Dernek ismi
+  - Dernek başkanı
+  - Sosyal medya hesapları
+  - Telefon numarası
+- **Üye Takibi**: Kendi derneğinin üyelerini görme
+- **Faaliyet Görme**: Kendi derneğinin faaliyetlerini görme
+
+### 3. Üye
+- **Faaliyet Paylaşımı**: Instagram benzeri görselli paylaşım
+- **Profil Yönetimi**: Kendi bilgilerini düzenleme
+- **Geçmiş Paylaşımlar**: Kendi paylaşımlarını görme/düzenleme
+- **Dernek Gezinme**: Dernek profillerine girme
+- **Üye Keşfi**: Dernek üyelerinin profillerini görme
+- **Üye Arama/Filtreleme**: İsim, sektör, meslek, il/ilçe bazında arama
+
+## 🗄️ Database Yapısı
+
+### Tablo 1: users (Kullanıcı Kayıt Formu Verileri)
+```sql
+CREATE TABLE users (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  isim VARCHAR(100) NOT NULL,
+  soyisim VARCHAR(100) NOT NULL,
+  dogum_tarihi DATE,
+  sektor VARCHAR(100),
+  meslek VARCHAR(150),
+  telefon VARCHAR(15),
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  il VARCHAR(50),
+  ilce VARCHAR(50),
+  gonullu_dernek VARCHAR(200),
+  calisma_komisyon TEXT,
+  mezun_okul VARCHAR(200),
+  role ENUM('super_admin', 'dernek_admin', 'uye') DEFAULT 'uye',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+### Tablo 2: dernekler (Dernek Profil Formu Verileri)
+```sql
+CREATE TABLE dernekler (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  dernek_logosu VARCHAR(255),
+  dernek_adi VARCHAR(200) NOT NULL UNIQUE,
+  dernek_baskani VARCHAR(100),
+  dernek_kuruluş_tarihi DATE,
+  dernek_sosyal_medya_hesaplari JSON,
+  dernek_telefon VARCHAR(15),
+  admin_user_id INT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (admin_user_id) REFERENCES users(id)
+);
+```
+
+### Tablo 3: faaliyet_paylasimlar (Faaliyet Paylaşımları)
+```sql
+CREATE TABLE faaliyet_paylasimlar (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  baslik VARCHAR(200),
+  aciklama TEXT,
+  gorseller JSON,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
+
+## 📱 Client-Side Sabit Veriler
+
+### constants.js
+```javascript
+export const ILLER = [
+  'Adana', 'Adıyaman', 'Afyon', 'Ağrı', 'Amasya',
+  'Ankara', 'Antalya', 'Artvin', 'Aydın', 'Balıkesir',
+  'Bilecik', 'Bingöl', 'Bitlis', 'Bolu', 'Burdur',
+  'Bursa', 'Çanakkale', 'Çankırı', 'Çorum', 'Denizli',
+  'Diyarbakır', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum',
+  'Eskişehir', 'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkari',
+  'Hatay', 'Isparta', 'Mersin', 'İstanbul', 'İzmir',
+  'Kars', 'Kastamonu', 'Kayseri', 'Kırklareli', 'Kırşehir',
+  'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa',
+  'Kahramanmaraş', 'Mardin', 'Muğla', 'Muş', 'Nevşehir',
+  'Niğde', 'Ordu', 'Rize', 'Sakarya', 'Samsun',
+  'Siirt', 'Sinop', 'Sivas', 'Tekirdağ', 'Tokat',
+  'Trabzon', 'Tunceli', 'Şanlıurfa', 'Uşak', 'Van',
+  'Yozgat', 'Zonguldak', 'Aksaray', 'Bayburt', 'Karaman',
+  'Kırıkkale', 'Batman', 'Şırnak', 'Bartın', 'Ardahan',
+  'Iğdır', 'Yalova', 'Karabük', 'Kilis', 'Osmaniye', 'Düzce'
+];
+
+export const ILCELER = {
+  'İstanbul': ['Adalar', 'Arnavutköy', 'Ataşehir', 'Avcılar', 'Bağcılar', 'Bahçelievler', 'Bakırköy', 'Başakşehir', 'Bayrampaşa', 'Beşiktaş', 'Beykoz', 'Beylikdüzü', 'Beyoğlu', 'Büyükçekmece', 'Çatalca', 'Çekmeköy', 'Esenler', 'Esenyurt', 'Eyüpsultan', 'Fatih', 'Gaziosmanpaşa', 'Güngören', 'Kadıköy', 'Kağıthane', 'Kartal', 'Küçükçekmece', 'Maltepe', 'Pendik', 'Sancaktepe', 'Sarıyer', 'Silivri', 'Sultanbeyli', 'Sultangazi', 'Şile', 'Şişli', 'Tuzla', 'Ümraniye', 'Üsküdar', 'Zeytinburnu'],
+  'Ankara': ['Akyurt', 'Altındağ', 'Ayaş', 'Bala', 'Beypazarı', 'Çamlıdere', 'Çankaya', 'Çubuk', 'Elmadağ', 'Etimesgut', 'Evren', 'Gölbaşı', 'Güdül', 'Haymana', 'Kalecik', 'Kızılcahamam', 'Mamak', 'Nallıhan', 'Polatlı', 'Pursaklar', 'Sincan', 'Şereflikoçhisar', 'Yenimahalle'],
+  // Diğer iller ve ilçeleri...
+};
+
+export const SEKTORLER = [
+  'Teknoloji', 'Sağlık', 'Eğitim', 'İnşaat', 'Turizm',
+  'Gıda', 'Tekstil', 'Otomotiv', 'Enerji', 'Finans',
+  'Hukuk', 'Muhasebe', 'Mühendislik', 'Mimarlık', 'Diğer'
+];
+
+export const KOMISYONLAR = [
+  'İl Başkanı',
+  'Yönetim Kurulu',
+  'Üye Ve Mezun İlişkileri Komisyonu',
+  'Gençlik Komisyonu',
+  'Teşkilatlanma',
+  'ÖVCÜ SPOR',
+  'Okul Aile Birliği',
+  'Diğer'
+];
+```
+
+## 🛠️ Teknoloji Stack
+
+### Backend
+- **Node.js** + **Express.js**
+- **MySQL** Database
+- **JWT** Authentication
+- **Multer** File Upload
+- **Bcrypt** Password Hashing
+- **Joi** Input Validation
+
+### Gerekli NPM Paketleri
+```json
+{
+  "express": "^4.18.0",
+  "mysql2": "^3.6.0",
+  "bcryptjs": "^2.4.3",
+  "jsonwebtoken": "^9.0.0",
+  "multer": "^1.4.5",
+  "joi": "^17.9.0",
+  "cors": "^2.8.5",
+  "dotenv": "^16.3.0",
+  "helmet": "^7.0.0",
+  "express-rate-limit": "^6.8.0"
+}
+```
+🏗️ Proje Klasör Yapısı
+
+dernek-backend/
+├── package.json
+├── package-lock.json
+├── .env
+├── .gitignore
+├── server.js                    # Ana server dosyası
+├── app.js                       # Express app konfigürasyonu
+│
+├── config/
+│   ├── database.js              # MySQL bağlantı ayarları
+│   └── config.js                # Genel konfigürasyon ayarları
+│
+├── controllers/
+│   ├── authController.js        # Login, register, JWT işlemleri
+│   ├── userController.js        # Kullanıcı CRUD, profil, arama
+│   ├── dernekController.js      # Dernek CRUD, logo upload
+│   ├── faaliyetController.js    # Faaliyet paylaşımı, CRUD
+│   └── adminController.js       # Admin işlemleri, istatistikler
+│
+├── middleware/
+│   ├── auth.js                  # JWT token doğrulama
+│   ├── roleCheck.js             # Rol bazlı erişim kontrolü
+│   ├── upload.js                # Multer file upload konfigürasyonu
+│   ├── validation.js            # Joi input validation
+│   └── errorHandler.js          # Global error handling
+│
+├── models/
+│   ├── User.js                  # User model (MySQL queries)
+│   ├── Dernek.js                # Dernek model (MySQL queries)
+│   └── Faaliyet.js              # Faaliyet model (MySQL queries)
+│
+├── routes/
+│   ├── auth.js                  # /api/auth routes
+│   ├── users.js                 # /api/users routes
+│   ├── dernekler.js             # /api/dernekler routes
+│   ├── faaliyetler.js           # /api/faaliyetler routes
+│   └── admin.js                 # /api/admin routes
+│
+├── uploads/                     # Upload edilecek dosyalar
+│   ├── dernek-logos/            # Dernek logoları
+│   ├── faaliyet-images/         # Faaliyet görselleri
+│   └── temp/                    # Geçici dosyalar
+│
+├── utils/
+│   ├── helpers.js               # Yardımcı fonksiyonlar
+│   ├── constants.js             # İl/İlçe/Sektör sabit verileri
+│   └── validators.js            # Custom validation fonksiyonları
+│
+├── database/
+│   ├── schema.sql               # Database tabloları
+│   ├── seeds.sql                # Test verileri
+│   └── migrations/              # Database değişiklikleri
+│       ├── 001_create_users.sql
+│       ├── 002_create_dernekler.sql
+│       └── 003_create_faaliyetler.sql
+│
+└── docs/
+    ├── API.md                   # API dokumentasyonu
+    └── README.md                # Proje açıklaması
+
+
+## 🔌 API Endpoints
+
+### Authentication (/api/auth)
+```
+POST /register    # Kullanıcı kaydı
+POST /login       # Giriş
+GET  /profile     # Profil bilgileri
+PUT  /profile     # Profil güncelleme
+```
+
+### Üyeler (/api/users)
+```
+GET  /                    # Kullanıcı listesi (filtrelenebilir)
+GET  /search              # Üye arama (isim, sektör, meslek, il/ilçe)
+GET  /:id                 # Kullanıcı detayı (profil görüntüleme)
+PUT  /:id                 # Kullanıcı güncelleme (sadece kendi profili)
+DELETE /:id               # Kullanıcı silme (admin)
+GET  /by-dernek/:dernekAdi # Belirli derneğin üyeleri
+```
+
+### Dernekler (/api/dernekler)
+```
+GET  /                # Dernek listesi
+GET  /:id             # Dernek detayı
+GET  /profile/:dernekAdi  # Dernek profil sayfası (public)
+PUT  /my-dernek       # Kendi derneğini düzenleme (dernek admin)
+POST /upload-logo     # Logo yükleme (dernek admin)
+GET  /:dernekAdi/members  # Dernek üyeleri (public)
+GET  /by-location     # İl/ilçeye göre dernek listesi
+```
+
+### Faaliyetler (/api/faaliyetler)
+```
+GET  /               # Faaliyet listesi
+POST /               # Faaliyet paylaşımı
+PUT  /:id            # Faaliyet düzenleme
+DELETE /:id          # Faaliyet silme
+POST /upload-images  # Faaliyet görselleri
+GET  /my-posts       # Kendi paylaşımları
+```
+
+### Admin (/api/admin)
+```
+GET  /dashboard              # Dashboard istatistikleri
+POST /dernekler              # Excel'den dernek ekleme
+PUT  /assign-dernek-admin    # Dernek admini atama
+GET  /users                  # Tüm kullanıcılar
+GET  /dernekler              # Tüm dernekler
+GET  /faaliyetler            # Tüm faaliyetler (filtrelenebilir)
+```
+
+## 🔍 Üye Arama ve Filtreleme Sistemi
+
+### Arama Kriterleri
+- **İsim/Soyisim**: "ahmet" yazılır → tüm Ahmet'ler gelir
+- **Sektör**: "inşaat" seçilir → inşaat sektöründeki üyeler
+- **Meslek**: "mimar" yazılır → mimarlık mesleğindeki üyeler  
+- **İl/İlçe**: "İstanbul/Üsküdar" → o bölgedeki üyeler
+- **Dernek**: "Esnaf Derneği" → o derneğin üyeleri
+- **Komisyon**: "Gençlik Komisyonu" → o komisyonda çalışanlar
+
+### API Query Örnekleri
+```javascript
+// İsim arama
+GET /api/users/search?name=ahmet
+
+// Sektör filtreleme  
+GET /api/users/search?sektor=inşaat
+
+// Kombine arama
+GET /api/users/search?il=İstanbul&sektor=teknoloji&meslek=yazılım
+
+// Dernek üyeleri
+GET /api/dernekler/Esnaf%20Derneği/members
+```
+
+### SQL Query Yapısı
+```sql
+SELECT 
+  id, isim, soyisim, sektor, meslek, il, ilce, 
+  gonullu_dernek, calisma_komisyon
+FROM users 
+WHERE role IN ('uye', 'dernek_admin')
+  AND (isim LIKE '%ahmet%' OR soyisim LIKE '%ahmet%')
+  AND sektor LIKE '%inşaat%'
+  AND il = 'İstanbul'
+ORDER BY isim ASC
+LIMIT 20;
+```
+
+## 🔄 Ana İş Akışları
+
+### 6. Üye - Dernek ve Üye Keşfi
+1. "Dernek Keşfi" sayfasına girer
+2. Dernek listesini görür
+3. Bir derneğe tıklar → Dernek profil sayfası açılır
+4. Dernek bilgilerini görür (logo, başkan, üye sayısı vb.)
+5. "Üyelerini Gör" butonuna tıklar
+6. O derneğin tüm üye listesini görür
+7. Bir üyeye tıklar → Üye profil sayfası açılır
+8. Üyenin bilgilerini ve faaliyetlerini görür
+
+### 7. Üye - Gelişmiş Arama
+1. "Üye Arama" sayfasına girer  
+2. Arama seçeneklerini görür:
+   - İsim/soyisim search box
+   - Sektör dropdown
+   - Meslek search box
+   - İl/İlçe dropdown
+   - Dernek dropdown
+   - Komisyon dropdown
+3. Filtreleri uygular (tekli veya kombine)
+4. Sonuçlar listelenir
+5. İstediği üyenin profiline girer
+1. Form doldurulur (isim, soyisim, doğum tarihi, sektör, meslek, telefon, email, şifre)
+2. İl seçilir → İlçe seçilir
+3. Gönüllü olunan dernek seçilir (dropdown)
+4. Çalışma komisyonu seçilir (çoklu seçim)
+5. Mezun olunan okul yazılır
+6. Kayıt tamamlanır
+
+### 1. Kullanıcı Kaydı
+1. Excel'den dernekleri toplu ekler
+2. Kullanıcı listesinden birini seçer
+3. Role'ü "dernek_admin" yapar
+4. Hangi derneği yöneteceğini atar
+5. Dernek admin artık sadece o derneği düzenleyebilir
+
+### 3. Dernek Admin - Dernek Düzenleme
+1. "Derneğim" sayfasına girer
+2. Düzenleyebileceği alanları görür:
+   - Logo (upload)
+   - İsim
+   - Başkan
+   - Sosyal medya
+   - Telefon
+3. Değişiklikleri kaydeder
+4. Üye sayısı otomatik hesaplanır
+
+### 4. Üye - Faaliyet Paylaşımı
+1. "Faaliyet Paylaş" sayfasına girer
+2. Başlık yazar
+3. Açıklama yazar
+4. Görselleri yükler (çoklu)
+5. Paylaşır
+6. Ana sayfada görünür
+
+### 5. Admin - Faaliyet Takibi
+1. Admin paneline girer
+2. Tüm faaliyetleri görür
+3. Filtreleme yapar:
+   - İl/İlçe bazında
+   - Dernek bazında
+   - Tarih aralığı
+4. İstatistikleri görür:
+   - Bölgesel faaliyet sayıları
+   - Aktif kullanıcılar
+   - En çok faaliyet yapan dernekler
+
+## 🔐 Güvenlik ve Yetkilendirme
+
+### JWT Token Yapısı
+```javascript
+{
+  id: user.id,
+  email: user.email,
+  role: user.role,
+  gonullu_dernek: user.gonullu_dernek,
+  iat: timestamp,
+  exp: timestamp
+}
+```
+
+### Rol Bazlı Erişim Kontrolü
+```javascript
+// Middleware örnekleri
+roleCheck(['super_admin'])                    // Sadece super admin
+roleCheck(['super_admin', 'dernek_admin'])    // Admin'ler
+roleCheck(['dernek_admin'])                   // Sadece dernek admin
+// Tüm kullanıcılar için özel kontrol gerekmiyor
+```
+
+## 📊 Önemli SQL Sorguları
+
+### Dernek Üye Sayısı Hesaplama
+```sql
+SELECT 
+  d.*,
+  COUNT(u.id) as uye_sayisi
+FROM dernekler d
+LEFT JOIN users u ON u.gonullu_dernek = d.dernek_adi
+WHERE u.role = 'uye' OR u.role = 'dernek_admin'
+GROUP BY d.id;
+```
+
+### İl/İlçe Bazında Faaliyet İstatistikleri
+```sql
+SELECT 
+  u.il,
+  u.ilce,
+  COUNT(f.id) as faaliyet_sayisi,
+  COUNT(DISTINCT u.id) as aktif_kullanici
+FROM faaliyet_paylasimlar f
+JOIN users u ON f.user_id = u.id
+GROUP BY u.il, u.ilce
+ORDER BY faaliyet_sayisi DESC;
+```
+
+### Dernek Admin'in Kendi Derneği
+```sql
+SELECT d.* 
+FROM dernekler d 
+WHERE d.admin_user_id = ? 
+LIMIT 1;
+```
+
+## 🎨 Frontend Yapısı (Öneri)
+
+### Sayfa Yapısı
+```
+├── Ana Sayfa (Son Faaliyetler Feed)
+├── Giriş/Kayıt
+├── Profil
+├── Faaliyetlerim
+├── Faaliyet Paylaş
+├── Dernek Keşfi
+│   ├── Dernek Listesi
+│   ├── Dernek Profil Sayfası
+│   └── Dernek Üyeleri
+├── Üye Arama
+│   ├── Filtreleme (Sektör, Meslek, İl/İlçe)
+│   ├── İsim Arama
+│   └── Üye Profil Sayfası
+├── Dernek Sayfası (Dernek Admin için)
+└── Admin Panel (Super Admin için)
+    ├── Dashboard
+    ├── Kullanıcı Yönetimi
+    ├── Dernek Yönetimi
+    ├── Faaliyet Takibi
+    └── İstatistikler
+```
+
+## 📋 Deployment Checklist
+
+### Gerekli Environment Variables
+```bash
+NODE_ENV=production
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=dernek_system
+JWT_SECRET=your_jwt_secret
+UPLOAD_PATH=./uploads
+```
+
+### Production Hazırlıkları
+- [ ] HTTPS sertifikası
+- [ ] Database backup sistemi
+- [ ] Error logging
+- [ ] File upload güvenliği
+- [ ] Rate limiting
+- [ ] Input validation
+- [ ] XSS/CSRF koruması
