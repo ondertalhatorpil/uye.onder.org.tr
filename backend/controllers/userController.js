@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Faaliyet = require('../models/Faaliyet');
 const { pool } = require('../config/database');
 
-// Kullanıcı arama
+// Kullanıcı arama - DÜZELTME
 const searchUsers = async (req, res) => {
   try {
     const {
@@ -17,6 +17,8 @@ const searchUsers = async (req, res) => {
       limit = 20
     } = req.query;
 
+    console.log('User search params:', req.query);
+
     let query = `
       SELECT 
         id, isim, soyisim, sektor, meslek, il, ilce, 
@@ -28,47 +30,47 @@ const searchUsers = async (req, res) => {
     const conditions = [];
     const params = [];
 
-    // İsim/soyisim arama
-    if (name) {
+    // İsim/soyisim arama - BOŞ STRING KONTROLÜ
+    if (name && name.trim() !== '') {
       conditions.push('(isim LIKE ? OR soyisim LIKE ? OR CONCAT(isim, " ", soyisim) LIKE ?)');
-      const searchTerm = `%${name}%`;
+      const searchTerm = `%${name.trim()}%`;
       params.push(searchTerm, searchTerm, searchTerm);
     }
 
-    // Sektör filtresi
-    if (sektor) {
+    // Sektör filtresi - BOŞ STRING KONTROLÜ
+    if (sektor && sektor.trim() !== '') {
       conditions.push('sektor LIKE ?');
-      params.push(`%${sektor}%`);
+      params.push(`%${sektor.trim()}%`);
     }
 
-    // Meslek arama
-    if (meslek) {
+    // Meslek arama - BOŞ STRING KONTROLÜ
+    if (meslek && meslek.trim() !== '') {
       conditions.push('meslek LIKE ?');
-      params.push(`%${meslek}%`);
+      params.push(`%${meslek.trim()}%`);
     }
 
-    // İl filtresi
-    if (il) {
+    // İl filtresi - BOŞ STRING KONTROLÜ
+    if (il && il.trim() !== '') {
       conditions.push('il = ?');
-      params.push(il);
+      params.push(il.trim());
     }
 
-    // İlçe filtresi
-    if (ilce) {
+    // İlçe filtresi - BOŞ STRING KONTROLÜ
+    if (ilce && ilce.trim() !== '') {
       conditions.push('ilce = ?');
-      params.push(ilce);
+      params.push(ilce.trim());
     }
 
-    // Dernek filtresi
-    if (dernek) {
+    // Dernek filtresi - BOŞ STRING KONTROLÜ
+    if (dernek && dernek.trim() !== '') {
       conditions.push('gonullu_dernek LIKE ?');
-      params.push(`%${dernek}%`);
+      params.push(`%${dernek.trim()}%`);
     }
 
-    // Komisyon filtresi
-    if (komisyon) {
+    // Komisyon filtresi - BOŞ STRING KONTROLÜ
+    if (komisyon && komisyon.trim() !== '') {
       conditions.push('calisma_komisyon LIKE ?');
-      params.push(`%${komisyon}%`);
+      params.push(`%${komisyon.trim()}%`);
     }
 
     if (conditions.length > 0) {
@@ -77,10 +79,20 @@ const searchUsers = async (req, res) => {
 
     query += ' ORDER BY isim ASC';
 
-    // Sayfalama
-    const offset = (page - 1) * limit;
-    query += ' LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    // MySQL 8.0 için LIMIT/OFFSET direkt string olarak ekle
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+    const offset = (pageNum - 1) * limitNum;
+    
+    // Güvenlik kontrolü
+    if (isNaN(pageNum) || isNaN(limitNum) || pageNum < 1 || limitNum < 1) {
+      throw new Error('Invalid page or limit values');
+    }
+    
+    query += ` LIMIT ${limitNum} OFFSET ${offset}`;
+
+    console.log('User search SQL:', query);
+    console.log('User search params:', params);
 
     const [users] = await pool.execute(query, params);
 
@@ -95,7 +107,7 @@ const searchUsers = async (req, res) => {
       countQuery += ' AND ' + conditions.join(' AND ');
     }
 
-    const [countResult] = await pool.execute(countQuery, params.slice(0, -2)); // LIMIT ve OFFSET'i çıkar
+    const [countResult] = await pool.execute(countQuery, params);
     const total = countResult[0].total;
 
     res.json({
@@ -103,14 +115,15 @@ const searchUsers = async (req, res) => {
       data: users,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
       }
     });
 
   } catch (error) {
     console.error('Search users error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Kullanıcı arama hatası: ' + error.message
@@ -171,14 +184,17 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Dernek üyelerini listele
+// Dernek üyelerini listele - DÜZELTME
 const getDernekMembers = async (req, res) => {
   try {
     const { dernekAdi } = req.params;
     const { page = 1, limit = 20 } = req.query;
 
-    const offset = (page - 1) * limit;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+    const offset = (pageNum - 1) * limitNum;
 
+    // MySQL 8.0 uyumlu query
     const [users] = await pool.execute(`
       SELECT 
         id, isim, soyisim, sektor, meslek, il, ilce,
@@ -189,8 +205,8 @@ const getDernekMembers = async (req, res) => {
       ORDER BY 
         CASE WHEN role = 'dernek_admin' THEN 0 ELSE 1 END,
         isim ASC
-      LIMIT ? OFFSET ?
-    `, [dernekAdi, parseInt(limit), parseInt(offset)]);
+      LIMIT ${limitNum} OFFSET ${offset}
+    `, [dernekAdi]);
 
     // Toplam üye sayısı
     const [countResult] = await pool.execute(`
@@ -208,9 +224,9 @@ const getDernekMembers = async (req, res) => {
       dernek: dernekAdi,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
       }
     });
 
@@ -223,7 +239,7 @@ const getDernekMembers = async (req, res) => {
   }
 };
 
-// Tüm kullanıcıları listele (admin)
+// Tüm kullanıcıları listele (admin) - DÜZELTME
 const getAllUsers = async (req, res) => {
   try {
     // Sadece admin erişebilir
@@ -235,7 +251,9 @@ const getAllUsers = async (req, res) => {
     }
 
     const { page = 1, limit = 50 } = req.query;
-    const offset = (page - 1) * limit;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 50;
+    const offset = (pageNum - 1) * limitNum;
 
     const [users] = await pool.execute(`
       SELECT 
@@ -243,8 +261,8 @@ const getAllUsers = async (req, res) => {
         il, ilce, gonullu_dernek, created_at
       FROM users 
       ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
-    `, [parseInt(limit), parseInt(offset)]);
+      LIMIT ${limitNum} OFFSET ${offset}
+    `);
 
     const [countResult] = await pool.execute('SELECT COUNT(*) as total FROM users');
     const total = countResult[0].total;
@@ -254,9 +272,9 @@ const getAllUsers = async (req, res) => {
       data: users,
       pagination: {
         total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        totalPages: Math.ceil(total / limit)
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
       }
     });
 
