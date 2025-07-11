@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   FiHome, FiUsers, FiActivity,
   FiSettings, FiShield, FiUser, FiX,
-  FiSearch, FiPlus, FiBarChart, FiGrid, FiLogOut
+  FiSearch, FiPlus, FiGrid, FiLogOut
 } from 'react-icons/fi';
 
 
@@ -18,7 +18,6 @@ const Sidebar = ({ open, setOpen, mobile }) => {
     logout();
   };
 
-  // Menü öğeleri - rol bazlı
   const getMenuItems = () => {
     const baseMenuItems = [
       {
@@ -85,12 +84,6 @@ const Sidebar = ({ open, setOpen, mobile }) => {
         name: 'Dernek Yönetimi',
         href: '/admin/dernekler',
         icon: FiGrid,
-        roles: ['super_admin']
-      },
-      {
-        name: 'İstatistikler',
-        href: '/admin/analytics',
-        icon: FiBarChart,
         roles: ['super_admin']
       }
     ];

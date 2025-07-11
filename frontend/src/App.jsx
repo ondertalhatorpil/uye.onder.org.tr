@@ -17,7 +17,12 @@ import MyDernek from './pages/dernekler/MyDernek';
 import UyeSearch from './pages/uyeler/UyeSearch';
 import UyeProfile from './pages/uyeler/UyeProfile';
 import Profile from './pages/profile/Profile';
-// import Layout from './components/layout/Layout';
+
+
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import DernekManagement from './pages/admin/DernekManagement';
+
 
 
 function App() {
@@ -91,22 +96,17 @@ function App() {
               {/* Super Admin routes */}
               <Route path="admin" element={
                 <ProtectedRoute roles={['super_admin']}>
-                  <div className="p-8 text-center"><h1 className="text-2xl font-bold">Admin Panel</h1></div>
+                  <AdminDashboard />
                 </ProtectedRoute>
               } />
               <Route path="admin/users" element={
                 <ProtectedRoute roles={['super_admin']}>
-                  <div className="p-8 text-center"><h1 className="text-2xl font-bold">Kullanıcı Yönetimi</h1></div>
+                  <UserManagement />
                 </ProtectedRoute>
               } />
               <Route path="admin/dernekler" element={
                 <ProtectedRoute roles={['super_admin']}>
-                  <div className="p-8 text-center"><h1 className="text-2xl font-bold">Dernek Yönetimi</h1></div>
-                </ProtectedRoute>
-              } />
-              <Route path="admin/analytics" element={
-                <ProtectedRoute roles={['super_admin']}>
-                  <div className="p-8 text-center"><h1 className="text-2xl font-bold">İstatistikler</h1></div>
+                  <DernekManagement />
                 </ProtectedRoute>
               } />
             </Route>

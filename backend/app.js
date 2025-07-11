@@ -4,18 +4,16 @@ const path = require('path');
 
 const app = express();
 
-// Basic middleware
 app.use(cors({
-  origin: true,  // Tüm origin'lere izin ver (development için)
+  origin: true,  
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Test route
 app.get('/', (req, res) => {
   res.json({
     message: 'Dernek Yönetim Sistemi API',
@@ -29,26 +27,10 @@ app.get('/', (req, res) => {
       faaliyetler: '/api/faaliyetler',
       users: '/api/users',
       admin: '/api/admin',
-      analytics: '/api/analytics'
     }
   });
 });
 
-// File access test
-app.get('/test-files', (req, res) => {
-  res.json({
-    success: true,
-    message: 'File access endpoints',
-    endpoints: {
-      dernekLogos: '/uploads/dernek-logos/',
-      faaliyetImages: '/uploads/faaliyet-images/'
-    },
-    examples: [
-      'http://localhost:5000/uploads/dernek-logos/logo-123456789.jpg',
-      'http://localhost:5000/uploads/faaliyet-images/faaliyet-123456789.jpg'
-    ]
-  });
-});
 
 // Routes
 try {
@@ -58,7 +40,6 @@ try {
   const faaliyetRoutes = require('./routes/faaliyetler');
   const userRoutes = require('./routes/users');
   const adminRoutes = require('./routes/admin');
-  const analyticsRoutes = require('./routes/analytics');
 
   app.use('/api/auth', authRoutes);
   app.use('/api/dernekler', dernekRoutes);
@@ -66,7 +47,6 @@ try {
   app.use('/api/faaliyetler', faaliyetRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/admin', adminRoutes);
-  app.use('/api/analytics', analyticsRoutes);
 
   console.log('✅ Tüm route\'lar başarıyla yüklendi!');
 
@@ -74,7 +54,6 @@ try {
   console.error('❌ Route loading error:', error.message);
 }
 
-// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -87,7 +66,6 @@ app.use('*', (req, res) => {
       '/api/faaliyetler',
       '/api/users',
       '/api/admin',
-      '/api/analytics'
     ]
   });
 });

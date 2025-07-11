@@ -2,11 +2,10 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { faaliyetService } from '../../services/api';
-import { 
-  FiCamera, FiX, FiImage, FiPlus, 
-  FiUpload, FiCheck, FiArrowLeft 
-} from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+
+import CreateForm from './components/CreateForm';
 
 const FaaliyetCreate = () => {
   const navigate = useNavigate();
@@ -172,204 +171,39 @@ const FaaliyetCreate = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors mr-3"
+              className="p-3 rounded-2xl bg-white shadow-md hover:shadow-lg border border-gray-100 transition-all duration-200 hover:scale-105"
             >
               <FiArrowLeft className="h-5 w-5 text-gray-600" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Faaliyet Paylaş</h1>
-              <p className="text-gray-600">Yaptığınız faaliyeti topluluğa paylaşın</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Form */}
-      <div className="bg-white rounded-lg shadow-lg">
-        {/* User Info */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center">
-            <div className="h-12 w-12 rounded-full bg-red-600 flex items-center justify-center">
-              <span className="text-lg font-medium text-white">
-                {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div className="ml-3">
-              <p className="font-medium text-gray-900">
-                {user?.isim} {user?.soyisim}
-              </p>
-              <p className="text-sm text-gray-500">
-                {user?.gonullu_dernek || 'Dernek Üyesi'}
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900">Faaliyet Paylaş</h1>
+              <p className="text-gray-600 text-lg">Yaptığınız faaliyeti topluluğa paylaşın</p>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          {/* Content */}
-          <div className="p-6 space-y-6">
-            {/* Başlık */}
-            <div>
-              <label htmlFor="baslik" className="block text-sm font-medium text-gray-700 mb-2">
-                Başlık (Opsiyonel)
-              </label>
-              <input
-                type="text"
-                id="baslik"
-                name="baslik"
-                value={formData.baslik}
-                onChange={handleChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Faaliyetinize bir başlık verin..."
-                maxLength={100}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.baslik.length}/100 karakter
-              </p>
-            </div>
-
-            {/* Açıklama */}
-            <div>
-              <label htmlFor="aciklama" className="block text-sm font-medium text-gray-700 mb-2">
-                Açıklama
-              </label>
-              <textarea
-                id="aciklama"
-                name="aciklama"
-                value={formData.aciklama}
-                onChange={handleChange}
-                rows={4}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Faaliyetinizi detaylı bir şekilde anlatın..."
-                maxLength={1000}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {formData.aciklama.length}/1000 karakter
-              </p>
-            </div>
-
-            {/* Resim Yükleme */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fotoğraflar (En fazla 4 adet)
-              </label>
-              
-              {/* Image Preview Grid */}
-              {imagePreview.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {imagePreview.map((preview, index) => (
-                    <div key={preview.id} className="relative group">
-                      <img
-                        src={preview.url}
-                        alt={`Preview ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
-                      {/* Remove button */}
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <FiX className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Upload Button */}
-              {selectedImages.length < 4 && (
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
-                  >
-                    <div className="flex flex-col items-center">
-                      <FiCamera className="h-8 w-8 text-gray-400 mb-2" />
-                      <p className="text-sm font-medium text-gray-900">
-                        Fotoğraf Ekle
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG, GIF (Max: 5MB)
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              )}
-
-              {selectedImages.length > 0 && (
-                <p className="text-xs text-gray-500 mt-2">
-                  {selectedImages.length}/4 fotoğraf seçildi
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="inline-flex items-center px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                  disabled={selectedImages.length >= 4}
-                >
-                  <FiImage className="mr-1.5 h-4 w-4" />
-                  Fotoğraf
-                </button>
-                
-                <span className="text-xs text-gray-500">
-                  • En az başlık, açıklama veya fotoğraf ekleyin
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <button
-                  type="button"
-                  onClick={() => navigate(-1)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  İptal
-                </button>
-                
-                <button
-                  type="submit"
-                  disabled={isSubmitting || uploadingImages}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {uploadingImages ? 'Fotoğraflar yükleniyor...' : 'Paylaşılıyor...'}
-                    </>
-                  ) : (
-                    <>
-                      <FiCheck className="mr-2 h-4 w-4" />
-                      Paylaş
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </form>
+        {/* Form Component */}
+        <CreateForm
+          user={user}
+          formData={formData}
+          handleChange={handleChange}
+          selectedImages={selectedImages}
+          imagePreview={imagePreview}
+          fileInputRef={fileInputRef}
+          handleImageSelect={handleImageSelect}
+          removeImage={removeImage}
+          handleSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          uploadingImages={uploadingImages}
+          navigate={navigate}
+        />
       </div>
     </div>
   );

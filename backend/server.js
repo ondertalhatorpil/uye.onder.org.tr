@@ -1,12 +1,11 @@
 const app = require('./app');
 const config = require('./config/config');
 const { testConnection } = require('./config/database');
-const { testQuery } = require('./utils/helpers'); // Ekle
+const { testQuery } = require('./utils/helpers'); 
 
 
 const PORT = config.PORT;
 
-// Database bağlantısını test et
 testConnection().then(() => {
   testQuery(); 
 });

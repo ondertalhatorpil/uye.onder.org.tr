@@ -15,7 +15,7 @@ const KOMISYONLAR = [
   'Üye Ve Mezun İlişkileri Komisyonu',
   'Gençlik Komisyonu',
   'Teşkilatlanma',
-  'ÖVCÜ SPOR',
+  'ÖNCÜ SPOR',
   'Okul Aile Birliği',
   'Diğer'
 ];

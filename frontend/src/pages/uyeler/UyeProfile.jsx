@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { userService, faaliyetService, UPLOADS_BASE_URL } from '../../services/api';
-import { 
-  FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase,
-  FiCalendar, FiActivity, FiUsers, FiHome, FiBook,
-  FiArrowLeft, FiMessageCircle, FiHeart, FiShare2
-} from 'react-icons/fi';
+import { FiUser, FiActivity, FiCalendar, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+
+import ProfileHeader from './components/UyeProfile/ProfileHeader';
+import InfoSection from './components/UyeProfile/InfoSection';
+import ActivityCard from './components/UyeProfile/ActivityCard';
 
 const UyeProfile = () => {
   const { id } = useParams();
@@ -24,9 +24,7 @@ const UyeProfile = () => {
         const response = await userService.getUserById(id);
         
         if (response.success) {
-          // Backend'ten gelen format: data.user
           setUser(response.data.user);
-          // Faaliyetler de backend'ten geliyor
           setUserFaaliyetler(response.data.faaliyetler || []);
           setLoadingFaaliyetler(false);
         } else {
@@ -47,29 +45,7 @@ const UyeProfile = () => {
     }
   }, [id, navigate]);
 
-  // Kullanıcının faaliyetlerini getir - Backend'ten geliyor, gerek yok
-  /* useEffect(() => {
-    const loadUserFaaliyetler = async () => {
-      if (!user) return;
-      
-      try {
-        setLoadingFaaliyetler(true);
-        const response = await faaliyetService.getFaaliyetler({ user_id: user.id });
-        
-        if (response.success) {
-          setUserFaaliyetler(response.data || []);
-        }
-      } catch (error) {
-        console.error('User faaliyetler loading error:', error);
-      } finally {
-        setLoadingFaaliyetler(false);
-      }
-    };
-
-    loadUserFaaliyetler();
-  }, [user]); */
-
-  // Format date for display
+  // Helper functions
   const formatDateForDisplay = (dateString) => {
     if (!dateString) return 'Belirtilmemiş';
     const date = new Date(dateString);
@@ -80,7 +56,6 @@ const UyeProfile = () => {
     });
   };
 
-  // Format time ago
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -98,13 +73,23 @@ const UyeProfile = () => {
     return formatDateForDisplay(dateString);
   };
 
+  const membershipDays = user?.created_at ? 
+    Math.floor((new Date() - new Date(user.created_at)) / (1000 * 60 * 60 * 24)) : 0;
+
+  // Event handlers
+  const handleBack = () => navigate(-1);
+  const handleContact = () => user.telefon && window.open(`tel:${user.telefon}`);
+  const handleMessage = () => {
+    toast.success('Mesaj özelliği yakında eklenecek!');
+  };
+
   // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[600px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Profil yükleniyor...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-200 border-t-red-600 mx-auto"></div>
+          <p className="mt-6 text-lg text-gray-600 font-medium">Profil yükleniyor...</p>
         </div>
       </div>
     );
@@ -112,329 +97,128 @@ const UyeProfile = () => {
 
   if (!user) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Kullanıcı bulunamadı</h2>
-        <p className="text-gray-600 mb-4">Aradığınız kullanıcı mevcut değil veya erişiminiz yok.</p>
-        <button
-          onClick={() => navigate('/uyeler')}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FiArrowLeft className="mr-2 h-4 w-4" />
-          Üye Aramaya Dön
-        </button>
+      <div className="text-center py-16">
+        <div className="max-w-md mx-auto">
+          <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+            <FiUser className="h-12 w-12 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Kullanıcı bulunamadı</h2>
+          <p className="text-gray-600 mb-8">Aradığınız kullanıcı mevcut değil veya erişiminiz yok.</p>
+          <button
+            onClick={() => navigate('/uyeler')}
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md font-medium"
+          >
+            <FiArrowLeft className="mr-2 h-5 w-5" />
+            Üye Aramaya Dön
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <FiArrowLeft className="mr-2 h-4 w-4" />
-          Geri Dön
-        </button>
-      </div>
+    <div className="max-w-5xl mx-auto space-y-8 p-4">
+      {/* Profile Header */}
+      <ProfileHeader 
+        user={user}
+        onBack={handleBack}
+        onContact={handleContact}
+        onMessage={handleMessage}
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Profile */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow border border-gray-200">
-            {/* Profile Header */}
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="h-16 w-16 rounded-full bg-red-600 flex items-center justify-center">
-                    <span className="text-2xl font-medium text-white">
-                      {user.isim?.charAt(0)?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                  <div className="ml-4">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                      {user.isim} {user.soyisim}
-                    </h1>
-                    <p className="text-gray-600">{user.meslek || 'Meslek belirtilmemiş'}</p>
-                    {user.gonullu_dernek && (
-                      <p className="text-sm text-red-600">{user.gonullu_dernek}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Contact Actions */}
-                <div className="flex items-center space-x-2">
-                  {user.telefon && (
-                    <a
-                      href={`tel:${user.telefon}`}
-                      className="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <FiPhone className="mr-2 h-4 w-4" />
-                      Ara
-                    </a>
-                  )}
-                  <button className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                    <FiMessageCircle className="mr-2 h-4 w-4" />
-                    Mesaj
-                  </button>
-                </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-12 w-12 rounded-xl bg-red-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
+                <FiActivity className="h-6 w-6 text-red-600" />
               </div>
-            </div>
-
-            {/* Profile Details */}
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Kişisel Bilgiler</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Email */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiMail className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.email}
-                  </div>
-                </div>
-
-                {/* Telefon */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiPhone className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.telefon || 'Belirtilmemiş'}
-                  </div>
-                </div>
-
-                {/* Doğum Tarihi */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Doğum Tarihi</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiCalendar className="mr-2 h-4 w-4 text-gray-400" />
-                    {formatDateForDisplay(user.dogum_tarihi)}
-                  </div>
-                </div>
-
-                {/* Lokasyon */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lokasyon</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiMapPin className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.il}{user.ilce && `, ${user.ilce}`} || 'Belirtilmemiş'
-                  </div>
-                </div>
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-4">Mesleki Bilgiler</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Sektör */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sektör</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiBriefcase className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.sektor || 'Belirtilmemiş'}
-                  </div>
-                </div>
-
-                {/* Meslek */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Meslek</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiBriefcase className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.meslek || 'Belirtilmemiş'}
-                  </div>
-                </div>
-
-                {/* Mezun Okul */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mezun Olunan Okul</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiBook className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.mezun_okul || 'Belirtilmemiş'}
-                  </div>
-                </div>
-
-                {/* Çalışma Komisyonu */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Çalışma Komisyonu</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiUsers className="mr-2 h-4 w-4 text-gray-400" />
-                    {user.calisma_komisyon || 'Belirtilmemiş'}
-                  </div>
-                </div>
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-4">Dernek Bilgileri</h3>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Gönüllü Olunan Dernek</label>
-                <div className="flex items-center text-gray-900">
-                  <FiHome className="mr-2 h-4 w-4 text-gray-400" />
-                  {user.gonullu_dernek || 'Belirtilmemiş'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* User Activities */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 mt-6">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {user.isim}'in Faaliyetleri ({userFaaliyetler.length})
-              </h3>
-            </div>
-
-            <div className="p-6">
-              {loadingFaaliyetler ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Faaliyetler yükleniyor...</p>
-                </div>
-              ) : userFaaliyetler.length > 0 ? (
-                <div className="space-y-6">
-                  {userFaaliyetler.map((faaliyet) => (
-                    <div key={faaliyet.id} className="border border-gray-200 rounded-lg p-4">
-                      {/* Faaliyet Header */}
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="text-sm text-gray-500">
-                          {formatTimeAgo(faaliyet.created_at)}
-                        </div>
-                      </div>
-
-                      {/* Faaliyet Content */}
-                      {faaliyet.baslik && (
-                        <h4 className="font-semibold text-gray-900 mb-2">
-                          {faaliyet.baslik}
-                        </h4>
-                      )}
-                      
-                      {faaliyet.aciklama && (
-                        <p className="text-gray-700 mb-4">
-                          {faaliyet.aciklama}
-                        </p>
-                      )}
-
-                      {/* Faaliyet Images */}
-                      {faaliyet.gorseller && faaliyet.gorseller.length > 0 && (
-                        <div className="mb-4">
-                          <div className="grid grid-cols-2 gap-2 max-w-md">
-                            {faaliyet.gorseller.slice(0, 4).map((gorsel, index) => (
-                              <div key={index} className="relative">
-                                <img
-                                  src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${gorsel}`}
-                                  alt={`Faaliyet ${index + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg"
-                                  onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/200x200?text=Resim+Yok';
-                                  }}
-                                />
-                                {index === 3 && faaliyet.gorseller.length > 4 && (
-                                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex items-center justify-center">
-                                    <span className="text-white font-medium">
-                                      +{faaliyet.gorseller.length - 4}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="flex items-center space-x-6 text-sm text-gray-500">
-                        <button className="flex items-center hover:text-red-500 transition-colors">
-                          <FiHeart className="mr-1 h-4 w-4" />
-                          Beğen
-                        </button>
-                        <button className="flex items-center hover:text-blue-500 transition-colors">
-                          <FiMessageCircle className="mr-1 h-4 w-4" />
-                          Yorum
-                        </button>
-                        <button className="flex items-center hover:text-green-500 transition-colors">
-                          <FiShare2 className="mr-1 h-4 w-4" />
-                          Paylaş
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <FiActivity className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h4 className="text-lg font-medium text-gray-900 mb-2">
-                    Henüz faaliyet yok
-                  </h4>
-                  <p className="text-gray-500">
-                    {user.isim} henüz herhangi bir faaliyet paylaşmamış.
-                  </p>
-                </div>
-              )}
+              <div className="text-2xl font-bold text-gray-900 mb-1">{userFaaliyetler.length}</div>
+              <div className="text-sm font-medium text-gray-600">Toplam Faaliyet</div>
+              <div className="text-xs text-gray-400 mt-1">Paylaşılan faaliyetler</div>
             </div>
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">İstatistikler</h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <FiActivity className="mr-3 h-5 w-5 text-red-600" />
-                  <span className="text-gray-900">Faaliyetler</span>
-                </div>
-                <span className="text-lg font-semibold text-red-600">
-                  {userFaaliyetler.length}
-                </span>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
+                <FiCalendar className="h-6 w-6 text-blue-600" />
               </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <FiCalendar className="mr-3 h-5 w-5 text-red-600" />
-                  <span className="text-gray-900">Üyelik</span>
-                </div>
-                <span className="text-sm text-gray-600">
-                  {user.created_at ? 
-                    Math.floor((new Date() - new Date(user.created_at)) / (1000 * 60 * 60 * 24)) + ' gün'
-                    : 'N/A'
-                  }
-                </span>
-              </div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">{membershipDays}</div>
+              <div className="text-sm font-medium text-gray-600">Üyelik Süresi</div>
+              <div className="text-xs text-gray-400 mt-1">{membershipDays > 0 ? "gün" : "Yeni üye"}</div>
             </div>
           </div>
+        </div>
 
-          {/* Contact Info */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">İletişim</h3>
-            
-            <div className="space-y-3">
-              {user.telefon && (
-                <a
-                  href={`tel:${user.telefon}`}
-                  className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <FiPhone className="mr-3 h-5 w-5 text-red-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Telefon</p>
-                    <p className="text-sm text-gray-600">{user.telefon}</p>
-                  </div>
-                </a>
-              )}
-              
-              <a
-                href={`mailto:${user.email}`}
-                className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <FiMail className="mr-3 h-5 w-5 text-red-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Email</p>
-                  <p className="text-sm text-gray-600">{user.email}</p>
-                </div>
-              </a>
+
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 group">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-12 w-12 rounded-xl bg-purple-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200">
+                <FiCalendar className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="text-2xl font-bold text-gray-900 mb-1">
+                {formatDateForDisplay(user.created_at).split(' ')[2]}
+              </div>
+              <div className="text-sm font-medium text-gray-600">Katılım Yılı</div>
+              <div className="text-xs text-gray-400 mt-1">Üyelik başlangıcı</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="space-y-8">
+        {/* Info Sections */}
+        <InfoSection 
+          user={user}
+          formatDateForDisplay={formatDateForDisplay}
+        />
+
+        {/* User Activities */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <div className="h-8 w-8 rounded-lg bg-red-100 flex items-center justify-center mr-3">
+                <FiActivity className="h-4 w-4 text-red-600" />
+              </div>
+              {user.isim}'in Faaliyetleri ({userFaaliyetler.length})
+            </h3>
+          </div>
+          
+          <div className="p-6">
+            {loadingFaaliyetler ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600 font-medium">Faaliyetler yükleniyor...</p>
+              </div>
+            ) : userFaaliyetler.length > 0 ? (
+              <div className="space-y-6">
+                {userFaaliyetler.map((faaliyet) => (
+                  <ActivityCard 
+                    key={faaliyet.id} 
+                    faaliyet={faaliyet}
+                    formatTimeAgo={formatTimeAgo}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+                  <FiActivity className="h-10 w-10 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                  Henüz faaliyet yok
+                </h4>
+                <p className="text-gray-500">
+                  {user.isim} henüz herhangi bir faaliyet paylaşmamış.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
