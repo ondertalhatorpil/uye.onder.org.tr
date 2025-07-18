@@ -18,12 +18,15 @@ import UyeSearch from './pages/uyeler/UyeSearch';
 import UyeProfile from './pages/uyeler/UyeProfile';
 import Profile from './pages/profile/Profile';
 
-
+// Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import DernekManagement from './pages/admin/DernekManagement';
 
-
+// Faaliyet Onay Sayfaları (YENİ)
+import BekleyenFaaliyetler from './pages/admin/BekleyenFaaliyetler';
+import FaaliyetOnayGecmisi from './pages/admin/components/FaaliyetManagement/FaaliyetOnayGecmisi';
+import FaaliyetOnayStats from './pages/admin/components/FaaliyetManagement/FaaliyetOnayStats';
 
 function App() {
   return (
@@ -107,6 +110,23 @@ function App() {
               <Route path="admin/dernekler" element={
                 <ProtectedRoute roles={['super_admin']}>
                   <DernekManagement />
+                </ProtectedRoute>
+              } />
+              
+              {/* Faaliyet Onay Sistemi Routes (YENİ) */}
+              <Route path="admin/faaliyetler/bekleyenler" element={
+                <ProtectedRoute roles={['super_admin']}>
+                  <BekleyenFaaliyetler />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/faaliyetler/onay-gecmisi" element={
+                <ProtectedRoute roles={['super_admin']}>
+                  <FaaliyetOnayGecmisi />
+                </ProtectedRoute>
+              } />
+              <Route path="admin/faaliyetler/stats" element={
+                <ProtectedRoute roles={['super_admin']}>
+                  <FaaliyetOnayStats />
                 </ProtectedRoute>
               } />
             </Route>

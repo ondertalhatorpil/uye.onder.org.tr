@@ -47,17 +47,20 @@ CREATE TABLE dernekler (
   INDEX idx_admin_user (admin_user_id)
 );
 
--- Faaliyet paylaşımları tablosu
-CREATE TABLE faaliyet_paylasimlar (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  baslik VARCHAR(200),
-  aciklama TEXT,
-  gorseller JSON,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ALTER TABLE faaliyet_paylasimlar ADD COLUMN (
+  durum ENUM('beklemede', 'onaylandi', 'reddedildi') DEFAULT 'beklemede',
+  onaylayan_admin_id INT NULL,
+  onay_tarihi TIMESTAMP NULL,
+  red_nedeni TEXT NULL,
   
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_user_id (user_id),
-  INDEX idx_created_at (created_at)
+  FOREIGN KEY (onaylayan_admin_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_durum (durum),
+  INDEX idx_onaylayan_admin (onaylayan_admin_id),
+  INDEX idx_onay_tarihi (onay_tarihi)
 );
+
+-- Mevcut faaliyetleri otomatik onaylı yap (geçmiş veriler için)
+UPDATE faaliyet_paylasimlar 
+SET durum = 'onaylandi', 
+    onay_tarihi = created_at 
+WHERE durum = 'beklemede';

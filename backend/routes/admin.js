@@ -5,8 +5,16 @@ const {
   assignDernekAdmin,
   deleteDernek,
   deleteUser,
-  getSystemSettings
+  getSystemSettings,
+  // Yeni faaliyet onay fonksiyonları
+  getBekleyenFaaliyetler,
+  onaylaFaaliyet,
+  reddetFaaliyet,
+  topluFaaliyetOnayla,
+  getFaaliyetOnayGecmisi,
+  getFaaliyetOnayStats
 } = require('../controllers/adminController');
+
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
 const { handleExcelUpload } = require('../middleware/upload');
@@ -24,11 +32,26 @@ router.use(roleCheck(['super_admin']));
 router.get('/dashboard', getDashboard);
 router.get('/settings', getSystemSettings);
 
-// Kullanıcı yönetimi
+// ====== FALİYET ONAY SİSTEMİ ======
+// Bekleyen faaliyetler
+router.get('/faaliyetler/bekleyenler', getBekleyenFaaliyetler);
+
+// Faaliyet onay/red işlemleri
+router.put('/faaliyetler/:id/onayla', onaylaFaaliyet);
+router.put('/faaliyetler/:id/reddet', reddetFaaliyet);
+
+// Toplu faaliyet onaylama
+router.post('/faaliyetler/toplu-onayla', topluFaaliyetOnayla);
+
+// Faaliyet onay geçmişi ve istatistikleri
+router.get('/faaliyetler/onay-gecmisi', getFaaliyetOnayGecmisi);
+router.get('/faaliyetler/onay-stats', getFaaliyetOnayStats);
+
+// ====== KULLANICI YÖNETİMİ ======
 router.put('/users/:userId/role', updateUserRole);
 router.delete('/users/:id', deleteUser);
 
-// Dernek yönetimi
+// ====== DERNEK YÖNETİMİ ======
 router.post('/dernekler/upload-excel', handleExcelUpload, uploadExcel);
 router.post('/dernekler/assign-admin', assignDernekAdmin);
 router.delete('/dernekler/:id', deleteDernek);

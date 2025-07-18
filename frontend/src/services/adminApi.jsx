@@ -107,6 +107,58 @@ export const adminApi = {
     return await api.get('/admin/faaliyetler/stats');
   },
 
+  // ===== FALİYET ONAY SİSTEMİ (YENİ) =====
+  
+  // Bekleyen faaliyetleri getir
+  getBekleyenFaaliyetler: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Sadece dolu olan filtreleri ekle
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== '' && filters[key] !== null && filters[key] !== undefined) {
+          params.append(key, filters[key]);
+        }
+      });
+      
+      const response = await api.get(`/admin/faaliyetler/bekleyenler?${params.toString()}`);
+      return response;
+    } catch (error) {
+      console.error('getBekleyenFaaliyetler error:', error);
+      throw error;
+    }
+  },
+
+  // Faaliyet onaylama
+  onaylaFaaliyet: async (faaliyetId) => {
+    return await api.put(`/admin/faaliyetler/${faaliyetId}/onayla`);
+  },
+
+  // Faaliyet reddetme
+  reddetFaaliyet: async (faaliyetId, redNedeni) => {
+    return await api.put(`/admin/faaliyetler/${faaliyetId}/reddet`, {
+      red_nedeni: redNedeni
+    });
+  },
+
+  // Toplu faaliyet onaylama
+  topluFaaliyetOnayla: async (faaliyetIds) => {
+    return await api.post('/admin/faaliyetler/toplu-onayla', {
+      faaliyet_ids: faaliyetIds
+    });
+  },
+
+  // Faaliyet onay geçmişi
+  getFaaliyetOnayGecmisi: async (filters = {}) => {
+    const params = new URLSearchParams(filters).toString();
+    return await api.get(`/admin/faaliyetler/onay-gecmisi?${params}`);
+  },
+
+  // Faaliyet onay istatistikleri
+  getFaaliyetOnayStats: async () => {
+    return await api.get('/admin/faaliyetler/onay-stats');
+  },
+
   // ===== RAPOR VE EXPORT =====
   
   // Kullanıcı raporu export
@@ -257,6 +309,34 @@ export const adminApi = {
   // Sayı formatı helper
   formatNumber: (number) => {
     return number.toLocaleString('tr-TR');
+  },
+
+  // Faaliyet durumu helper
+  getFaaliyetDurumText: (durum) => {
+    switch (durum) {
+      case 'beklemede':
+        return 'Onay Bekliyor';
+      case 'onaylandi':
+        return 'Onaylandı';
+      case 'reddedildi':
+        return 'Reddedildi';
+      default:
+        return 'Bilinmeyen';
+    }
+  },
+
+  // Faaliyet durumu renk helper
+  getFaaliyetDurumColor: (durum) => {
+    switch (durum) {
+      case 'beklemede':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'onaylandi':
+        return 'bg-green-100 text-green-800';
+      case 'reddedildi':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   }
 };
 

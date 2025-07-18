@@ -1,8 +1,8 @@
+// controllers/faaliyetController.js - Güncellenmiş versiyon
 const Faaliyet = require('../models/Faaliyet');
 const fs = require('fs');
 const path = require('path');
 
-// Tüm faaliyetleri getir - DÜZELTME
 const getAllFaaliyetler = async (req, res) => {
   try {
     console.log('Query params received:', req.query);
@@ -13,12 +13,13 @@ const getAllFaaliyetler = async (req, res) => {
       il,
       ilce,
       dernek,
-      user_id
+      user_id,
+      baslangic_tarihi,
+      bitis_tarihi
     } = req.query;
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    // FİLTRELERİ TEMİZLE
     const filters = {
       limit: parseInt(limit),
       offset: parseInt(offset)
@@ -41,10 +42,20 @@ const getAllFaaliyetler = async (req, res) => {
       filters.user_id = parseInt(user_id);
     }
 
+    // YENİ: Tarih filtreleri ekle
+    if (baslangic_tarihi && baslangic_tarihi.trim() !== '' && baslangic_tarihi !== 'undefined' && baslangic_tarihi !== 'null') {
+      filters.baslangic_tarihi = baslangic_tarihi.trim();
+    }
+
+    if (bitis_tarihi && bitis_tarihi.trim() !== '' && bitis_tarihi !== 'undefined' && bitis_tarihi !== 'null') {
+      filters.bitis_tarihi = bitis_tarihi.trim();
+    }
+
     console.log('Cleaned filters:', filters);
 
-    const faaliyetler = await Faaliyet.getAll(filters);
-    const total = await Faaliyet.getCount(filters);
+    // Sadece onaylanmış faaliyetleri getir
+    const faaliyetler = await Faaliyet.getOnaylanmisFaaliyetler(filters);
+    const total = await Faaliyet.getCount({ ...filters, durum: 'onaylandi' });
 
     console.log('Results:', { 
       faaliyetlerCount: faaliyetler.length, 
@@ -66,7 +77,6 @@ const getAllFaaliyetler = async (req, res) => {
 
   } catch (error) {
     console.error('Get all faaliyetler error:', error);
-    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Faaliyetler getirilemedi: ' + error.message
@@ -74,10 +84,10 @@ const getAllFaaliyetler = async (req, res) => {
   }
 };
 
-// Yeni faaliyet oluştur
+// Yeni faaliyet oluştur (beklemede durumunda)
 const createFaaliyet = async (req, res) => {
   try {
-    const { baslik, aciklama, gorseller } = req.body; // gorseller frontend'ten geliyor
+    const { baslik, aciklama, gorseller } = req.body;
     const user_id = req.user.id;
 
     // Basit validasyon
@@ -88,19 +98,19 @@ const createFaaliyet = async (req, res) => {
       });
     }
 
-    // Görseller frontend'ten array olarak geliyor
+    // Faaliyet beklemede durumunda oluşturulur
     const faaliyetId = await Faaliyet.create({
       user_id,
       baslik,
       aciklama,
-      gorseller: gorseller || [] // Frontend'ten gelen dosya isimleri
+      gorseller: gorseller || []
     });
 
     const faaliyet = await Faaliyet.findById(faaliyetId);
 
     res.status(201).json({
       success: true,
-      message: 'Faaliyet başarıyla oluşturuldu',
+      message: 'Faaliyet başarıyla oluşturuldu ve onay bekliyor',
       data: faaliyet
     });
 
@@ -117,7 +127,6 @@ const createFaaliyet = async (req, res) => {
 const getFaaliyetById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const faaliyet = await Faaliyet.findById(id);
 
     if (!faaliyet) {
@@ -125,6 +134,17 @@ const getFaaliyetById = async (req, res) => {
         success: false,
         error: 'Faaliyet bulunamadı'
       });
+    }
+
+    // Eğer faaliyet onaylanmamışsa, sadece sahibi ve adminler görebilir
+    if (faaliyet.durum !== 'onaylandi') {
+      if (!req.user || 
+          (req.user.id !== faaliyet.user_id && req.user.role !== 'super_admin')) {
+        return res.status(403).json({
+          success: false,
+          error: 'Bu faaliyeti görme yetkiniz yok'
+        });
+      }
     }
 
     res.json({
@@ -141,11 +161,10 @@ const getFaaliyetById = async (req, res) => {
   }
 };
 
-// Kendi faaliyetlerini getir
+// Kendi faaliyetlerini getir (tüm durumları ile)
 const getMyFaaliyetler = async (req, res) => {
   try {
     const user_id = req.user.id;
-
     const faaliyetler = await Faaliyet.getByUserId(user_id);
 
     res.json({
@@ -163,7 +182,7 @@ const getMyFaaliyetler = async (req, res) => {
   }
 };
 
-// Faaliyet güncelle (sadece kendi)
+// Faaliyet güncelle (sadece kendi ve tekrar onaya gider)
 const updateFaaliyet = async (req, res) => {
   try {
     const { id } = req.params;
@@ -192,6 +211,7 @@ const updateFaaliyet = async (req, res) => {
     const mevcutGorseller = existingFaaliyet.gorseller || [];
     const gorseller = [...mevcutGorseller, ...yeniGorseller];
 
+    // Güncelleme yapılırsa faaliyet tekrar beklemede durumuna geçer
     const updated = await Faaliyet.updateById(id, user_id, {
       baslik,
       aciklama,
@@ -209,7 +229,7 @@ const updateFaaliyet = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Faaliyet başarıyla güncellendi',
+      message: 'Faaliyet başarıyla güncellendi ve tekrar onay bekliyor',
       data: updatedFaaliyet
     });
 
@@ -228,7 +248,6 @@ const deleteFaaliyet = async (req, res) => {
     const { id } = req.params;
     const user_id = req.user.id;
 
-    // Önce faaliyet var mı ve kullanıcının mi kontrol et
     const faaliyet = await Faaliyet.findById(id);
     
     if (!faaliyet) {
@@ -278,7 +297,179 @@ const deleteFaaliyet = async (req, res) => {
   }
 };
 
-// Admin: Faaliyet istatistikleri
+// Admin: Bekleyen faaliyetleri getir
+const getBekleyenFaaliyetler = async (req, res) => {
+  try {
+    // Sadece admin erişebilir
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Bu işlem için admin yetkisi gerekli'
+      });
+    }
+
+    const {
+      page = 1,
+      limit = 20,
+      il,
+      ilce,
+      dernek
+    } = req.query;
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const filters = {
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      durum: 'beklemede'
+    };
+
+    if (il && il.trim() !== '') filters.il = il.trim();
+    if (ilce && ilce.trim() !== '') filters.ilce = ilce.trim();
+    if (dernek && dernek.trim() !== '') filters.dernek = dernek.trim();
+
+    const faaliyetler = await Faaliyet.getAllWithStatus(filters);
+    const total = await Faaliyet.getCount(filters);
+
+    res.json({
+      success: true,
+      data: faaliyetler,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get bekleyen faaliyetler error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Bekleyen faaliyetler getirilemedi: ' + error.message
+    });
+  }
+};
+
+// Admin: Faaliyet onaylama
+const onaylaFaaliyet = async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Bu işlem için admin yetkisi gerekli'
+      });
+    }
+
+    const { id } = req.params;
+    const adminId = req.user.id;
+
+    const faaliyet = await Faaliyet.findById(id);
+    
+    if (!faaliyet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Faaliyet bulunamadı'
+      });
+    }
+
+    if (faaliyet.durum !== 'beklemede') {
+      return res.status(400).json({
+        success: false,
+        error: 'Bu faaliyet zaten işleme alınmış'
+      });
+    }
+
+    const onaylandi = await Faaliyet.onaylaFaaliyet(id, adminId);
+
+    if (!onaylandi) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faaliyet onaylanamadı'
+      });
+    }
+
+    const updatedFaaliyet = await Faaliyet.findById(id);
+
+    res.json({
+      success: true,
+      message: 'Faaliyet başarıyla onaylandı',
+      data: updatedFaaliyet
+    });
+
+  } catch (error) {
+    console.error('Onayla faaliyet error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyet onaylanırken hata oluştu: ' + error.message
+    });
+  }
+};
+
+// Admin: Faaliyet reddetme
+const reddetFaaliyet = async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Bu işlem için admin yetkisi gerekli'
+      });
+    }
+
+    const { id } = req.params;
+    const { red_nedeni } = req.body;
+    const adminId = req.user.id;
+
+    if (!red_nedeni || red_nedeni.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Red nedeni gerekli'
+      });
+    }
+
+    const faaliyet = await Faaliyet.findById(id);
+    
+    if (!faaliyet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Faaliyet bulunamadı'
+      });
+    }
+
+    if (faaliyet.durum !== 'beklemede') {
+      return res.status(400).json({
+        success: false,
+        error: 'Bu faaliyet zaten işleme alınmış'
+      });
+    }
+
+    const reddedildi = await Faaliyet.reddetFaaliyet(id, adminId, red_nedeni);
+
+    if (!reddedildi) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faaliyet reddedilemedi'
+      });
+    }
+
+    const updatedFaaliyet = await Faaliyet.findById(id);
+
+    res.json({
+      success: true,
+      message: 'Faaliyet başarıyla reddedildi',
+      data: updatedFaaliyet
+    });
+
+  } catch (error) {
+    console.error('Reddet faaliyet error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyet reddedilirken hata oluştu: ' + error.message
+    });
+  }
+};
+
+// Admin: Faaliyet istatistikleri (onay durumları ile)
 const getFaaliyetStats = async (req, res) => {
   try {
     // Sadece admin erişebilir
@@ -290,13 +481,17 @@ const getFaaliyetStats = async (req, res) => {
     }
 
     const totalFaaliyetler = await Faaliyet.getCount();
+    const onayStats = await Faaliyet.getOnayStats();
     
     // İl bazında istatistikler için custom query
     const [ilStats] = await require('../config/database').pool.execute(`
       SELECT 
         u.il,
         COUNT(f.id) as faaliyet_sayisi,
-        COUNT(DISTINCT f.user_id) as aktif_kullanici
+        COUNT(DISTINCT f.user_id) as aktif_kullanici,
+        SUM(CASE WHEN f.durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan,
+        SUM(CASE WHEN f.durum = 'beklemede' THEN 1 ELSE 0 END) as bekleyen,
+        SUM(CASE WHEN f.durum = 'reddedildi' THEN 1 ELSE 0 END) as reddedilen
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
       GROUP BY u.il
@@ -308,6 +503,7 @@ const getFaaliyetStats = async (req, res) => {
       success: true,
       data: {
         totalFaaliyetler,
+        onayStats,
         ilBazindaStats: ilStats
       }
     });
@@ -321,6 +517,62 @@ const getFaaliyetStats = async (req, res) => {
   }
 };
 
+// Admin: Tüm faaliyetleri getir (durum filtresi ile)
+const getAllFaaliyetlerAdmin = async (req, res) => {
+  try {
+    if (req.user.role !== 'super_admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Bu işlem için admin yetkisi gerekli'
+      });
+    }
+
+    const {
+      page = 1,
+      limit = 20,
+      il,
+      ilce,
+      dernek,
+      durum,
+      user_id
+    } = req.query;
+
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const filters = {
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    };
+
+    if (il && il.trim() !== '') filters.il = il.trim();
+    if (ilce && ilce.trim() !== '') filters.ilce = ilce.trim();
+    if (dernek && dernek.trim() !== '') filters.dernek = dernek.trim();
+    if (durum && durum.trim() !== '') filters.durum = durum.trim();
+    if (user_id && user_id.trim() !== '') filters.user_id = parseInt(user_id);
+
+    const faaliyetler = await Faaliyet.getAllWithStatus(filters);
+    const total = await Faaliyet.getCount(filters);
+
+    res.json({
+      success: true,
+      data: faaliyetler,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / parseInt(limit))
+      }
+    });
+
+  } catch (error) {
+    console.error('Get all faaliyetler admin error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyetler getirilemedi: ' + error.message
+    });
+  }
+};
+
 module.exports = {
   createFaaliyet,
   getAllFaaliyetler,
@@ -328,5 +580,9 @@ module.exports = {
   getMyFaaliyetler,
   updateFaaliyet,
   deleteFaaliyet,
-  getFaaliyetStats
+  getFaaliyetStats,
+  getBekleyenFaaliyetler,
+  onaylaFaaliyet,
+  reddetFaaliyet,
+  getAllFaaliyetlerAdmin
 };

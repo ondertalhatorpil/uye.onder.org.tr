@@ -131,7 +131,7 @@ const searchUsers = async (req, res) => {
   }
 };
 
-// Kullanıcı profil detayı
+// Kullanıcı profil detayı - ONAY DURUMU EKLENDİ
 const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
@@ -146,13 +146,24 @@ const getUserProfile = async (req, res) => {
       });
     }
 
-    // Kullanıcının faaliyetlerini getir
-    const faaliyetler = await Faaliyet.getByUserId(id);
+    // Kullanıcının TÜM faaliyetlerini getir (sadece kendisi görüyorsa)
+    // Başkaları sadece onaylananları görür
+    let faaliyetler;
+    if (req.user && req.user.id === parseInt(id)) {
+      // Kendi profilini görüyorsa, tüm faaliyetlerini getir
+      faaliyetler = await Faaliyet.getByUserId(id);
+    } else {
+      // Başkasının profilini görüyorsa, sadece onaylananları getir
+      faaliyetler = await Faaliyet.getOnaylanmisFaaliyetler({ user_id: id });
+    }
 
-    // Faaliyet istatistikleri
+    // Faaliyet istatistikleri - ONAY DURUMU EKLENDİ
     const [statsResult] = await pool.execute(`
       SELECT 
         COUNT(*) as toplam_faaliyet,
+        SUM(CASE WHEN durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan_faaliyet,
+        SUM(CASE WHEN durum = 'beklemede' THEN 1 ELSE 0 END) as bekleyen_faaliyet,
+        SUM(CASE WHEN durum = 'reddedildi' THEN 1 ELSE 0 END) as reddedilen_faaliyet,
         DATE(MIN(created_at)) as ilk_faaliyet_tarihi,
         DATE(MAX(created_at)) as son_faaliyet_tarihi
       FROM faaliyet_paylasimlar 
@@ -168,6 +179,9 @@ const getUserProfile = async (req, res) => {
         faaliyetler,
         stats: {
           toplam_faaliyet: stats.toplam_faaliyet,
+          onaylanan_faaliyet: stats.onaylanan_faaliyet,
+          bekleyen_faaliyet: stats.bekleyen_faaliyet,
+          reddedilen_faaliyet: stats.reddedilen_faaliyet,
           ilk_faaliyet_tarihi: stats.ilk_faaliyet_tarihi,
           son_faaliyet_tarihi: stats.son_faaliyet_tarihi,
           uye_olma_tarihi: user.created_at
@@ -287,7 +301,7 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// Kullanıcı istatistikleri (admin)
+// Kullanıcı istatistikleri (admin) - ONAY DURUMU EKLENDİ
 const getUserStats = async (req, res) => {
   try {
     // Sadece admin erişebilir
@@ -307,6 +321,21 @@ const getUserStats = async (req, res) => {
         SUM(CASE WHEN role = 'uye' THEN 1 ELSE 0 END) as uye_sayisi,
         SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as son_30_gun_kayit
       FROM users
+    `);
+
+    // En aktif kullanıcılar (onaylanan faaliyet sayısına göre)
+    const [aktifKullanicilar] = await pool.execute(`
+      SELECT 
+        u.id, u.isim, u.soyisim, u.gonullu_dernek,
+        COUNT(f.id) as toplam_faaliyet,
+        SUM(CASE WHEN f.durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan_faaliyet
+      FROM users u
+      LEFT JOIN faaliyet_paylasimlar f ON u.id = f.user_id
+      WHERE u.role IN ('uye', 'dernek_admin')
+      GROUP BY u.id
+      HAVING onaylanan_faaliyet > 0
+      ORDER BY onaylanan_faaliyet DESC
+      LIMIT 10
     `);
 
     // İl bazında dağılım
@@ -337,6 +366,7 @@ const getUserStats = async (req, res) => {
       success: true,
       data: {
         genel: generalStats[0],
+        aktifKullanicilar,
         ilBazinda: ilStats,
         sektorBazinda: sektorStats
       }

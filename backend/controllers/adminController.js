@@ -3,7 +3,7 @@ const Dernek = require('../models/Dernek');
 const Faaliyet = require('../models/Faaliyet');
 const { pool } = require('../config/database');
 
-// Dashboard ana istatistikleri
+// Dashboard ana istatistikleri - ONAY SİSTEMİ EKLENDİ
 const getDashboard = async (req, res) => {
   try {
     // Kullanıcı istatistikleri
@@ -27,10 +27,13 @@ const getDashboard = async (req, res) => {
       FROM dernekler
     `);
 
-    // Faaliyet istatistikleri
+    // Faaliyet istatistikleri - ONAY DURUMU EKLENDİ
     const [faaliyetStats] = await pool.execute(`
       SELECT 
         COUNT(*) as toplam_faaliyet,
+        SUM(CASE WHEN durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan_faaliyet,
+        SUM(CASE WHEN durum = 'beklemede' THEN 1 ELSE 0 END) as bekleyen_faaliyet,
+        SUM(CASE WHEN durum = 'reddedildi' THEN 1 ELSE 0 END) as reddedilen_faaliyet,
         SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as son_7_gun_faaliyet,
         SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as son_30_gun_faaliyet
       FROM faaliyet_paylasimlar
@@ -45,15 +48,29 @@ const getDashboard = async (req, res) => {
       LIMIT 10
     `);
 
-    // Son paylaşılan faaliyetler
+    // ONAY BEKLEYENLERİ ÖNE ÇIKART - Son paylaşılan faaliyetler
     const [recentFaaliyetler] = await pool.execute(`
       SELECT 
-        f.id, f.baslik, f.created_at,
+        f.id, f.baslik, f.created_at, f.durum,
         u.isim, u.soyisim, u.gonullu_dernek
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
-      ORDER BY f.created_at DESC 
+      ORDER BY 
+        CASE WHEN f.durum = 'beklemede' THEN 0 ELSE 1 END,
+        f.created_at DESC 
       LIMIT 10
+    `);
+
+    // Bekleyen faaliyetlerin detayları - YENİ
+    const [bekleyenFaaliyetler] = await pool.execute(`
+      SELECT 
+        f.id, f.baslik, f.aciklama, f.created_at,
+        u.isim, u.soyisim, u.gonullu_dernek, u.il, u.ilce
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      WHERE f.durum = 'beklemede'
+      ORDER BY f.created_at ASC
+      LIMIT 5
     `);
 
     // İl bazında kullanıcı dağılımı
@@ -68,17 +85,19 @@ const getDashboard = async (req, res) => {
       LIMIT 10
     `);
 
-    // Aktif dernekler (faaliyet sayısına göre)
+    // Aktif dernekler (faaliyet sayısına göre) - ONAY DURUMU EKLENDİ
     const [aktifDernekler] = await pool.execute(`
       SELECT 
         u.gonullu_dernek,
-        COUNT(f.id) as faaliyet_sayisi,
+        COUNT(f.id) as toplam_faaliyet,
+        SUM(CASE WHEN f.durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan_faaliyet,
+        SUM(CASE WHEN f.durum = 'beklemede' THEN 1 ELSE 0 END) as bekleyen_faaliyet,
         COUNT(DISTINCT f.user_id) as aktif_uye_sayisi
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
       WHERE u.gonullu_dernek IS NOT NULL
       GROUP BY u.gonullu_dernek
-      ORDER BY faaliyet_sayisi DESC
+      ORDER BY toplam_faaliyet DESC
       LIMIT 10
     `);
 
@@ -92,6 +111,7 @@ const getDashboard = async (req, res) => {
         },
         recentUsers,
         recentFaaliyetler,
+        bekleyenFaaliyetler, // YENİ
         ilDagilim,
         aktifDernekler
       }
@@ -106,13 +126,432 @@ const getDashboard = async (req, res) => {
   }
 };
 
-// Kullanıcı role güncelleme
+// Bekleyen faaliyetleri listele - YENİ
+const getBekleyenFaaliyetler = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      il,
+      ilce,
+      dernek
+    } = req.query;
+
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 20;
+    const offset = (pageNum - 1) * limitNum;
+
+    let query = `
+      SELECT 
+        f.id, f.baslik, f.aciklama, f.gorseller, f.created_at,
+        u.isim, u.soyisim, u.gonullu_dernek, u.il, u.ilce, u.sektor
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      WHERE f.durum = 'beklemede'
+    `;
+
+    const conditions = [];
+    const params = [];
+
+    if (il && il.trim() !== '') {
+      conditions.push('u.il = ?');
+      params.push(il.trim());
+    }
+
+    if (ilce && ilce.trim() !== '') {
+      conditions.push('u.ilce = ?');
+      params.push(ilce.trim());
+    }
+
+    if (dernek && dernek.trim() !== '') {
+      conditions.push('u.gonullu_dernek LIKE ?');
+      params.push(`%${dernek.trim()}%`);
+    }
+
+    if (conditions.length > 0) {
+      query += ' AND ' + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY f.created_at ASC LIMIT ${limitNum} OFFSET ${offset}`;
+
+    const [faaliyetler] = await pool.execute(query, params);
+
+    // Toplam sayı
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      WHERE f.durum = 'beklemede'
+    `;
+
+    if (conditions.length > 0) {
+      countQuery += ' AND ' + conditions.join(' AND ');
+    }
+
+    const [countResult] = await pool.execute(countQuery, params);
+    const total = countResult[0].total;
+
+    // Görselleri parse et
+    const faaliyetlerWithImages = faaliyetler.map(faaliyet => ({
+      ...faaliyet,
+      gorseller: faaliyet.gorseller ? JSON.parse(faaliyet.gorseller) : []
+    }));
+
+    res.json({
+      success: true,
+      data: faaliyetlerWithImages,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get bekleyen faaliyetler error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Bekleyen faaliyetler getirilemedi: ' + error.message
+    });
+  }
+};
+
+// Faaliyet onaylama - YENİ
+const onaylaFaaliyet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const adminId = req.user.id;
+
+    // Faaliyet var mı ve beklemede mi kontrol et
+    const faaliyet = await Faaliyet.findById(id);
+    
+    if (!faaliyet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Faaliyet bulunamadı'
+      });
+    }
+
+    if (faaliyet.durum !== 'beklemede') {
+      return res.status(400).json({
+        success: false,
+        error: 'Bu faaliyet zaten işleme alınmış'
+      });
+    }
+
+    // Onaylama işlemi
+    const onaylandi = await Faaliyet.onaylaFaaliyet(id, adminId);
+
+    if (!onaylandi) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faaliyet onaylanamadı'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `${faaliyet.isim} ${faaliyet.soyisim} kullanıcısının faaliyeti onaylandı`
+    });
+
+  } catch (error) {
+    console.error('Onayla faaliyet error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyet onaylanırken hata oluştu: ' + error.message
+    });
+  }
+};
+
+// Faaliyet reddetme - YENİ
+const reddetFaaliyet = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { red_nedeni } = req.body;
+    const adminId = req.user.id;
+
+    if (!red_nedeni || red_nedeni.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Red nedeni gerekli'
+      });
+    }
+
+    // Faaliyet var mı ve beklemede mi kontrol et
+    const faaliyet = await Faaliyet.findById(id);
+    
+    if (!faaliyet) {
+      return res.status(404).json({
+        success: false,
+        error: 'Faaliyet bulunamadı'
+      });
+    }
+
+    if (faaliyet.durum !== 'beklemede') {
+      return res.status(400).json({
+        success: false,
+        error: 'Bu faaliyet zaten işleme alınmış'
+      });
+    }
+
+    // Reddetme işlemi
+    const reddedildi = await Faaliyet.reddetFaaliyet(id, adminId, red_nedeni);
+
+    if (!reddedildi) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faaliyet reddedilemedi'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `${faaliyet.isim} ${faaliyet.soyisim} kullanıcısının faaliyeti reddedildi`
+    });
+
+  } catch (error) {
+    console.error('Reddet faaliyet error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyet reddedilirken hata oluştu: ' + error.message
+    });
+  }
+};
+
+// Toplu faaliyet onaylama - YENİ
+const topluFaaliyetOnayla = async (req, res) => {
+  try {
+    const { faaliyet_ids } = req.body;
+
+    if (!faaliyet_ids || !Array.isArray(faaliyet_ids) || faaliyet_ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faaliyet ID\'leri gerekli'
+      });
+    }
+
+    const adminId = req.user.id;
+    const sonuclar = [];
+
+    for (const faaliyetId of faaliyet_ids) {
+      try {
+        const onaylandi = await Faaliyet.onaylaFaaliyet(faaliyetId, adminId);
+        sonuclar.push({
+          faaliyet_id: faaliyetId,
+          durum: onaylandi ? 'onaylandi' : 'hata'
+        });
+      } catch (error) {
+        sonuclar.push({
+          faaliyet_id: faaliyetId,
+          durum: 'hata',
+          hata: error.message
+        });
+      }
+    }
+
+    const basarili = sonuclar.filter(s => s.durum === 'onaylandi').length;
+    const basarisiz = sonuclar.filter(s => s.durum === 'hata').length;
+
+    res.json({
+      success: true,
+      message: `${basarili} faaliyet onaylandı, ${basarisiz} faaliyet onaylanamadı`,
+      data: {
+        basarili,
+        basarisiz,
+        detaylar: sonuclar
+      }
+    });
+
+  } catch (error) {
+    console.error('Toplu faaliyet onay error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Toplu onay işlemi sırasında hata oluştu: ' + error.message
+    });
+  }
+};
+
+const getFaaliyetOnayGecmisi = async (req, res) => {
+    try {
+        const {
+            page = 1,
+            limit = 20,
+            durum,
+            admin_id,
+            baslik,
+            tarih_baslangic,
+            tarih_bitis
+        } = req.query;
+
+        const pageNum = parseInt(page) || 1;
+        const limitNum = parseInt(limit) || 20;
+        const offset = (pageNum - 1) * limitNum;
+
+        let query = `
+      SELECT 
+        f.id, f.baslik, f.aciklama, f.durum, f.onay_tarihi, f.red_nedeni, f.created_at,
+        u.isim as user_isim, u.soyisim as user_soyisim, u.gonullu_dernek,
+        admin.isim as admin_isim, admin.soyisim as admin_soyisim
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      LEFT JOIN users admin ON f.onaylayan_admin_id = admin.id
+      WHERE f.durum IN ('onaylandi', 'reddedildi')`;
+
+        const conditions = [];
+        const params = [];
+
+        if (durum && durum.trim() !== '') {
+            conditions.push('f.durum = ?');
+            params.push(durum.trim());
+        }
+
+        if (admin_id && admin_id.trim() !== '') {
+            conditions.push('f.onaylayan_admin_id = ?');
+            params.push(parseInt(admin_id));
+        }
+
+        if (baslik && baslik.trim() !== '') {
+            conditions.push('f.baslik LIKE ?');
+            params.push(`%${baslik.trim()}%`);
+        }
+
+        if (tarih_baslangic && tarih_baslangic.trim() !== '') {
+            conditions.push('DATE(f.created_at) >= ?');
+            params.push(tarih_baslangic);
+        }
+
+        if (tarih_bitis && tarih_bitis.trim() !== '') {
+            conditions.push('DATE(f.created_at) <= ?');
+            params.push(tarih_bitis);
+        }
+
+        if (conditions.length > 0) {
+            query += ' AND ' + conditions.join(' AND ');
+        }
+
+        query += ` ORDER BY f.onay_tarihi DESC LIMIT ${limitNum} OFFSET ${offset}`;
+
+        console.log('getFaaliyetOnayGecmisi query:', query);
+        console.log('getFaaliyetOnayGecmisi params:', params);
+
+        const [faaliyetler] = await pool.execute(query, params);
+
+        // Toplam sayı sorgusu
+        let countQuery = `
+      SELECT COUNT(*) as total
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      LEFT JOIN users admin ON f.onaylayan_admin_id = admin.id
+      WHERE f.durum IN ('onaylandi', 'reddedildi')`;
+
+        if (conditions.length > 0) {
+            countQuery += ' AND ' + conditions.join(' AND ');
+        }
+
+        const [countResult] = await pool.execute(countQuery, params);
+        const total = countResult[0].total;
+
+        console.log('getFaaliyetOnayGecmisi results:', { faaliyetlerCount: faaliyetler.length, total });
+
+        res.json({
+            success: true,
+            data: faaliyetler,  // Faaliyet array'i direkt olarak
+            pagination: {
+                total: total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / limit)
+            }
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Faaliyet geçmişi alınırken bir hata oluştu'
+        });
+    }
+};
+
+// getFaaliyetOnayStats fonksiyonu düzeltme
+const getFaaliyetOnayStats = async (req, res) => {
+  try {
+    console.log('getFaaliyetOnayStats called');
+
+    // Genel onay istatistikleri
+    const [onayStats] = await pool.execute(`
+      SELECT 
+        COUNT(*) as toplam_faaliyet,
+        SUM(CASE WHEN durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan,
+        SUM(CASE WHEN durum = 'beklemede' THEN 1 ELSE 0 END) as beklemede,
+        SUM(CASE WHEN durum = 'reddedildi' THEN 1 ELSE 0 END) as reddedilen
+      FROM faaliyet_paylasimlar
+    `);
+
+    console.log('Onay stats:', onayStats[0]);
+
+    // Günlük onay trendi (son 30 gün)
+    const [gunlukTrend] = await pool.execute(`
+      SELECT 
+        DATE(onay_tarihi) as tarih,
+        COUNT(*) as sayi,
+        SUM(CASE WHEN durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan,
+        SUM(CASE WHEN durum = 'reddedildi' THEN 1 ELSE 0 END) as reddedilen
+      FROM faaliyet_paylasimlar
+      WHERE onay_tarihi >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        AND durum IN ('onaylandi', 'reddedildi')
+      GROUP BY DATE(onay_tarihi)
+      ORDER BY tarih DESC
+    `);
+
+    console.log('Günlük trend:', gunlukTrend.length);
+
+    // En çok onaylayan adminler
+    const [adminStats] = await pool.execute(`
+      SELECT 
+        admin.isim, admin.soyisim, admin.id,
+        COUNT(*) as toplam_islem,
+        SUM(CASE WHEN f.durum = 'onaylandi' THEN 1 ELSE 0 END) as onaylanan,
+        SUM(CASE WHEN f.durum = 'reddedildi' THEN 1 ELSE 0 END) as reddedilen
+      FROM faaliyet_paylasimlar f
+      JOIN users admin ON f.onaylayan_admin_id = admin.id
+      WHERE f.durum IN ('onaylandi', 'reddedildi')
+      GROUP BY admin.id
+      ORDER BY toplam_islem DESC
+      LIMIT 10
+    `);
+
+    console.log('Admin stats:', adminStats.length);
+
+    const result = {
+      genel: onayStats[0],
+      gunlukTrend,
+      adminStats
+    };
+
+    console.log('Final result:', result);
+
+    res.json({
+      success: true,
+      data: result
+    });
+
+  } catch (error) {
+    console.error('Get faaliyet onay stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Faaliyet onay istatistikleri getirilemedi: ' + error.message
+    });
+  }
+};
+
+// Mevcut fonksiyonlar (değişiklik yok)
 const updateUserRole = async (req, res) => {
   try {
     const { userId } = req.params;
     const { role } = req.body;
 
-    // Geçerli roller
     const validRoles = ['super_admin', 'dernek_admin', 'uye'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
@@ -121,7 +560,6 @@ const updateUserRole = async (req, res) => {
       });
     }
 
-    // Kullanıcı var mı kontrol et
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -130,7 +568,6 @@ const updateUserRole = async (req, res) => {
       });
     }
 
-    // Role güncelle
     const [result] = await pool.execute(
       'UPDATE users SET role = ? WHERE id = ?',
       [role, userId]
@@ -157,12 +594,10 @@ const updateUserRole = async (req, res) => {
   }
 };
 
-// Dernek admin atama
 const assignDernekAdmin = async (req, res) => {
   try {
     const { userId, dernekId } = req.body;
 
-    // Kullanıcı kontrolü
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
@@ -171,7 +606,6 @@ const assignDernekAdmin = async (req, res) => {
       });
     }
 
-    // Dernek kontrolü
     const dernek = await Dernek.getById(dernekId);
     if (!dernek) {
       return res.status(404).json({
@@ -180,7 +614,6 @@ const assignDernekAdmin = async (req, res) => {
       });
     }
 
-    // Eski admin varsa role'ünü uye yap
     if (dernek.admin_user_id) {
       await pool.execute(
         'UPDATE users SET role = ? WHERE id = ?',
@@ -188,13 +621,11 @@ const assignDernekAdmin = async (req, res) => {
       );
     }
 
-    // Yeni admin ata
     const [dernekResult] = await pool.execute(
       'UPDATE dernekler SET admin_user_id = ? WHERE id = ?',
       [userId, dernekId]
     );
 
-    // Kullanıcının role'ünü dernek_admin yap
     const [userResult] = await pool.execute(
       'UPDATE users SET role = ? WHERE id = ?',
       ['dernek_admin', userId]
@@ -221,12 +652,10 @@ const assignDernekAdmin = async (req, res) => {
   }
 };
 
-// Dernek silme
 const deleteDernek = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Dernek var mı kontrol et
     const dernek = await Dernek.getById(id);
     if (!dernek) {
       return res.status(404).json({
@@ -235,7 +664,6 @@ const deleteDernek = async (req, res) => {
       });
     }
 
-    // Derneğin üyeleri var mı kontrol et
     const [memberCount] = await pool.execute(
       'SELECT COUNT(*) as count FROM users WHERE gonullu_dernek = ?',
       [dernek.dernek_adi]
@@ -248,7 +676,6 @@ const deleteDernek = async (req, res) => {
       });
     }
 
-    // Derneği sil
     const [result] = await pool.execute(
       'DELETE FROM dernekler WHERE id = ?',
       [id]
@@ -275,12 +702,10 @@ const deleteDernek = async (req, res) => {
   }
 };
 
-// Kullanıcı silme
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Kullanıcı var mı kontrol et
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
@@ -289,7 +714,6 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Super admin silinmesin
     if (user.role === 'super_admin') {
       return res.status(400).json({
         success: false,
@@ -297,7 +721,6 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Eğer dernek admini ise, derneğin admin_user_id'sini null yap
     if (user.role === 'dernek_admin') {
       await pool.execute(
         'UPDATE dernekler SET admin_user_id = NULL WHERE admin_user_id = ?',
@@ -305,7 +728,6 @@ const deleteUser = async (req, res) => {
       );
     }
 
-    // Kullanıcıyı sil (CASCADE ile faaliyetleri de silinir)
     const [result] = await pool.execute(
       'DELETE FROM users WHERE id = ?',
       [id]
@@ -332,17 +754,16 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Sistem ayarları (gelecekte eklenebilir)
 const getSystemSettings = async (req, res) => {
   try {
-    // Şimdilik basit sistem bilgileri
     const settings = {
       system_name: 'Dernek Yönetim Sistemi',
       version: '1.0.0',
       maintenance_mode: false,
       max_file_size: '5MB',
       max_files_per_post: 5,
-      supported_file_types: ['jpg', 'jpeg', 'png', 'gif']
+      supported_file_types: ['jpg', 'jpeg', 'png', 'gif'],
+      faaliyet_onay_sistemi: true // YENİ
     };
 
     res.json({
@@ -365,5 +786,11 @@ module.exports = {
   assignDernekAdmin,
   deleteDernek,
   deleteUser,
-  getSystemSettings
+  getSystemSettings,
+  getBekleyenFaaliyetler,
+  onaylaFaaliyet,
+  reddetFaaliyet,
+  topluFaaliyetOnayla,
+  getFaaliyetOnayGecmisi,
+  getFaaliyetOnayStats
 };

@@ -4,15 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import {
   FiHome, FiUsers, FiActivity,
   FiSettings, FiShield, FiUser, FiX,
-  FiSearch, FiPlus, FiGrid, FiLogOut
+  FiSearch, FiPlus, FiGrid, FiLogOut,
+  FiClock, FiCheck, FiAlertCircle // Yeni ikonlar
 } from 'react-icons/fi';
-
 
 const Sidebar = ({ open, setOpen, mobile }) => {
   const location = useLocation();
   const { user, hasRole, hasAnyRole, logout } = useAuth();
-
-
 
   const handleLogout = () => {
     logout();
@@ -85,6 +83,13 @@ const Sidebar = ({ open, setOpen, mobile }) => {
         href: '/admin/dernekler',
         icon: FiGrid,
         roles: ['super_admin']
+      },
+      {
+        name: 'Faaliyetler',
+        href: '/admin/faaliyetler/stats',
+        icon: FiClock,
+        roles: ['super_admin'],
+        badge: true 
       }
     ];
 
@@ -126,6 +131,18 @@ const Sidebar = ({ open, setOpen, mobile }) => {
     }
   };
 
+  // Badge bileşeni
+  const MenuItemBadge = ({ item }) => {
+    if (item.badge && item.href === '/admin/faaliyetler/bekleyenler') {
+      return (
+        <span className="ml-auto inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
+          !
+        </span>
+      );
+    }
+    return null;
+  };
+
   if (mobile) {
     return (
       <>
@@ -139,7 +156,9 @@ const Sidebar = ({ open, setOpen, mobile }) => {
               <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
                 <div className="flex items-center h-16 px-4 border-b border-gray-200">
                   <div className="h-4 w-4 flex items-center justify-center">
-                    <span className="text-sm font-bold text-white"><img src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg" /></span>
+                    <span className="text-sm font-bold text-white">
+                      <img src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg" alt="Logo" />
+                    </span>
                   </div>
                   <span className="ml-2 text-xl font-semibold text-gray-900">
                     ÖNDER
@@ -163,16 +182,19 @@ const Sidebar = ({ open, setOpen, mobile }) => {
                       key={item.name}
                       to={item.href}
                       onClick={handleLinkClick}
-                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive(item.href)
+                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                        isActive(item.href)
                           ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                           : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                        }`}
+                      }`}
                     >
                       <Icon
-                        className={`mr-3 h-5 w-5 ${isActive(item.href) ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-500'
-                          }`}
+                        className={`mr-3 h-5 w-5 ${
+                          isActive(item.href) ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-500'
+                        }`}
                       />
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      <MenuItemBadge item={item} />
                     </Link>
                   );
                 })}
@@ -212,7 +234,9 @@ const Sidebar = ({ open, setOpen, mobile }) => {
         {/* Logo */}
         <div className="flex items-center h-16 px-4 border-b border-gray-200">
           <div className="h-4 w-4 flex items-center justify-center">
-            <span className="text-sm font-bold text-white"><img src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg" /></span>
+            <span className="text-sm font-bold text-white">
+              <img src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg" alt="Logo" />
+            </span>
           </div>
           <span className="ml-2 text-xl font-semibold text-gray-900">
             ÖNDER
@@ -227,60 +251,59 @@ const Sidebar = ({ open, setOpen, mobile }) => {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive(item.href)
+                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  isActive(item.href)
                     ? 'bg-red-50 text-red-700 border-r-2 border-red-700'
                     : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                }`}
               >
                 <Icon
-                  className={`mr-3 h-5 w-5 ${isActive(item.href) ? 'text-red-700' : 'text-gray-400 group-hover:text-gray-500'
-                    }`}
+                  className={`mr-3 h-5 w-5 ${
+                    isActive(item.href) ? 'text-red-700' : 'text-gray-400 group-hover:text-gray-500'
+                  }`}
                 />
-                {item.name}
+                <span className="flex-1">{item.name}</span>
+                <MenuItemBadge item={item} />
               </Link>
             );
           })}
         </nav>
 
-       <div className="border-t border-gray-200 bg-gray-50 p-4">
-  <div className="flex items-center justify-between">
-    {/* Sol taraf - Logo ve kullanıcı bilgileri */}
-    <div className="flex items-center space-x-3">
-      {/* Logo/Avatar */}
-      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
-        <span className="text-lg font-bold text-white">
-          {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
-        </span>
-      </div>
-      
-      {/* Kullanıcı bilgileri */}
-      <div className="flex flex-col">
-        <p className="text-sm font-semibold text-gray-900">
-          {user?.isim} {user?.soyisim}
-        </p>
-        <div className="flex items-center space-x-2">
-          <span className={`inline-flex items-center  py-1 rounded-full text-xs font-medium ${
-            user?.role === 'super_admin' ? '' :
-            user?.role === 'dernek_admin' ? '' :
-            ''
-          }`}>
-            {user?.role === 'super_admin' && 'Admin'}
-            {user?.role === 'dernek_admin' && 'Dernek Yöneticisi'}
-            {user?.role === 'uye' && 'Dernek Üyesi'}
-          </span>
-        </div>
-      </div>
-    </div>
+        <div className="border-t border-gray-200 bg-gray-50 p-4">
+          <div className="flex items-center justify-between">
+            {/* Sol taraf - Logo ve kullanıcı bilgileri */}
+            <div className="flex items-center space-x-3">
+              {/* Logo/Avatar */}
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
+                <span className="text-lg font-bold text-white">
+                  {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
+              </div>
+              
+              {/* Kullanıcı bilgileri */}
+              <div className="flex flex-col">
+                <p className="text-sm font-semibold text-gray-900">
+                  {user?.isim} {user?.soyisim}
+                </p>
+                <div className="flex items-center space-x-2">
+                  <span className="inline-flex items-center py-1 rounded-full text-xs font-medium">
+                    {user?.role === 'super_admin' && 'Admin'}
+                    {user?.role === 'dernek_admin' && 'Dernek Yöneticisi'}
+                    {user?.role === 'uye' && 'Dernek Üyesi'}
+                  </span>
+                </div>
+              </div>
+            </div>
 
-    <button
-      onClick={handleLogout}
-      className="flex items-center justify-center h-10 w-10 rounded-full text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 group"
-      title="Çıkış Yap"
-    >
-      <FiLogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
-    </button>
-  </div>
-</div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center h-10 w-10 rounded-full text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 group"
+              title="Çıkış Yap"
+            >
+              <FiLogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

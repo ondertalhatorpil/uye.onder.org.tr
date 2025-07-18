@@ -45,7 +45,7 @@ const ImageGrid = ({ images, onImageClick }) => {
   if (imageArray.length === 0) return null;
 
   const renderSingleImage = () => (
-    <div className="relative w-full aspect-[16/10] rounded-2xl overflow-hidden group cursor-pointer shadow-lg"
+    <div className="relative w-full aspect-[16/10] rounded-sm overflow-hidden group cursor-pointer shadow-lg"
          onClick={() => onImageClick(imageArray[0])}>
       <img
         src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${imageArray[0]}`}
@@ -185,8 +185,6 @@ const ImageGrid = ({ images, onImageClick }) => {
 
 const ActivityCard = ({ faaliyet }) => {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(faaliyet.likes || Math.floor(Math.random() * 50) + 5);
 
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
@@ -205,11 +203,6 @@ const ActivityCard = ({ faaliyet }) => {
     return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
   };
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
-  };
-
   const openImageModal = (image) => {
     setSelectedImage(image);
   };
@@ -220,7 +213,7 @@ const ActivityCard = ({ faaliyet }) => {
 
   return (
     <>
-      <article className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02]">
+      <article className="bg-white rounded-sm shadow-xl border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:scale-[1.02]">
         {/* Header */}
         <header className="flex items-center justify-between p-6 pb-4">
           <div className="flex items-center space-x-4">
@@ -230,7 +223,6 @@ const ActivityCard = ({ faaliyet }) => {
                   {faaliyet.isim?.charAt(0)?.toUpperCase() || 'U'}
                 </span>
               </div>
-              <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-500 rounded-full border-2 border-white"></div>
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-gray-900 text-lg">
@@ -337,9 +329,9 @@ const LoadingState = () => (
 
 const RecentActivities = ({ faaliyetler, loading }) => {
   return (
-    <section className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+    <section className="rounded-3xl overflow-hidden">
       {/* Header */}
-      <header className="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 via-white to-gray-50">
+      <header className="px-8 py-6  ">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center shadow-lg">
@@ -353,7 +345,7 @@ const RecentActivities = ({ faaliyetler, loading }) => {
           
           <Link
             to="/faaliyetler"
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-100 to-red-200 text-red-700 rounded-2xl hover:from-red-200 hover:to-red-300 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-200 to-red-200 text-red-700 rounded-sm hover:from-red-200 hover:to-red-300 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
           >
             Tümünü Gör
             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
