@@ -41,82 +41,84 @@ class Faaliyet {
     return rows[0];
   }
 
-  // Onaylanmış faaliyetleri getir (tarih filtreleme ile)
   static async getOnaylanmisFaaliyetler(filters = {}) {
-    try {
-      let whereConditions = ['f.durum = ?'];
-      let queryParams = ['onaylandi'];
+  try {
+    console.log('getOnaylanmisFaaliyetler called with filters:', filters);
+    
+    let whereConditions = ['f.durum = ?'];
+    let queryParams = ['onaylandi'];
 
-      // Lokasyon filtreleri
-      if (filters.il) {
-        whereConditions.push('u.il = ?');
-        queryParams.push(filters.il);
-      }
-
-      if (filters.ilce) {
-        whereConditions.push('u.ilce = ?');
-        queryParams.push(filters.ilce);
-      }
-
-      if (filters.dernek) {
-        whereConditions.push('u.gonullu_dernek = ?');
-        queryParams.push(filters.dernek);
-      }
-
-      if (filters.user_id) {
-        whereConditions.push('f.user_id = ?');
-        queryParams.push(filters.user_id);
-      }
-
-      // YENİ: Tarih filtreleri
-      if (filters.baslangic_tarihi) {
-        whereConditions.push('DATE(f.created_at) >= ?');
-        queryParams.push(filters.baslangic_tarihi);
-      }
-
-      if (filters.bitis_tarihi) {
-        whereConditions.push('DATE(f.created_at) <= ?');
-        queryParams.push(filters.bitis_tarihi);
-      }
-
-      const whereClause = whereConditions.join(' AND ');
-      
-      const query = `
-        SELECT 
-          f.*,
-          u.isim,
-          u.soyisim,
-          u.gonullu_dernek,
-          u.il,
-          u.ilce,
-          u.role
-        FROM faaliyet_paylasimlar f
-        JOIN users u ON f.user_id = u.id
-        WHERE ${whereClause}
-        ORDER BY f.created_at DESC
-        LIMIT ? OFFSET ?
-      `;
-
-      queryParams.push(filters.limit || 20, filters.offset || 0);
-
-      const [rows] = await pool.execute(query, queryParams);
-      
-      // Görselleri parse et
-      return rows.map(row => ({
-        ...row,
-        gorseller: row.gorseller ? JSON.parse(row.gorseller) : []
-      }));
-
-    } catch (error) {
-      console.error('Faaliyet getOnaylanmisFaaliyetler error:', error);
-       console.error('getOnaylanmisFaaliyetler detailed error:', error);
-    console.error('Error code:', error.code);
-    console.error('Error errno:', error.errno);
-    console.error('Error sqlMessage:', error.sqlMessage);
-    console.error('Error sqlState:', error.sqlState);
-      throw error;
+    // Lokasyon filtreleri
+    if (filters.il) {
+      whereConditions.push('u.il = ?');
+      queryParams.push(filters.il);
     }
+
+    if (filters.ilce) {
+      whereConditions.push('u.ilce = ?');
+      queryParams.push(filters.ilce);
+    }
+
+    if (filters.dernek) {
+      whereConditions.push('u.gonullu_dernek = ?');
+      queryParams.push(filters.dernek);
+    }
+
+    if (filters.user_id) {
+      whereConditions.push('f.user_id = ?');
+      queryParams.push(filters.user_id);
+    }
+
+    // Tarih filtreleri
+    if (filters.baslangic_tarihi) {
+      whereConditions.push('DATE(f.created_at) >= ?');
+      queryParams.push(filters.baslangic_tarihi);
+    }
+
+    if (filters.bitis_tarihi) {
+      whereConditions.push('DATE(f.created_at) <= ?');
+      queryParams.push(filters.bitis_tarihi);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+    
+    // LIMIT ve OFFSET'i direkt string olarak ekleyin
+    const limit = parseInt(filters.limit) || 20;
+    const offset = parseInt(filters.offset) || 0;
+    
+    const query = `
+      SELECT 
+        f.*,
+        u.isim,
+        u.soyisim,
+        u.gonullu_dernek,
+        u.il,
+        u.ilce,
+        u.role
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      WHERE ${whereClause}
+      ORDER BY f.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    console.log('Final query:', query);
+    console.log('Query parameters:', queryParams);
+
+    const [rows] = await pool.execute(query, queryParams);
+    
+    console.log('Query executed successfully, rows:', rows.length);
+    
+    return rows.map(row => ({
+      ...row,
+      gorseller: row.gorseller ? JSON.parse(row.gorseller) : []
+    }));
+
+  } catch (error) {
+    console.error('getOnaylanmisFaaliyetler detailed error:', error);
+    throw error;
   }
+}
 
   // Tüm faaliyetleri getir (admin için - durum filtresi ile)
   static async getAllWithStatus(filters = {}) {
@@ -295,67 +297,67 @@ class Faaliyet {
   }
 
  static async getCount(filters = {}) {
-    try {
-      let whereConditions = [];
-      let queryParams = [];
+  try {
+    let whereConditions = [];
+    let queryParams = [];
 
-      // Durum filtresi (varsayılan olarak onaylandı)
-      if (filters.durum) {
-        whereConditions.push('f.durum = ?');
-        queryParams.push(filters.durum);
-      }
-
-      // Lokasyon filtreleri
-      if (filters.il) {
-        whereConditions.push('u.il = ?');
-        queryParams.push(filters.il);
-      }
-
-      if (filters.ilce) {
-        whereConditions.push('u.ilce = ?');
-        queryParams.push(filters.ilce);
-      }
-
-      if (filters.dernek) {
-        whereConditions.push('u.gonullu_dernek = ?');
-        queryParams.push(filters.dernek);
-      }
-
-      if (filters.user_id) {
-        whereConditions.push('f.user_id = ?');
-        queryParams.push(filters.user_id);
-      }
-
-      // YENİ: Tarih filtreleri
-      if (filters.baslangic_tarihi) {
-        whereConditions.push('DATE(f.created_at) >= ?');
-        queryParams.push(filters.baslangic_tarihi);
-      }
-
-      if (filters.bitis_tarihi) {
-        whereConditions.push('DATE(f.created_at) <= ?');
-        queryParams.push(filters.bitis_tarihi);
-      }
-
-      const whereClause = whereConditions.length > 0 
-        ? 'WHERE ' + whereConditions.join(' AND ')
-        : '';
-
-      const query = `
-        SELECT COUNT(*) as total
-        FROM faaliyet_paylasimlar f
-        JOIN users u ON f.user_id = u.id
-        ${whereClause}
-      `;
-
-      const [rows] = await pool.execute(query, queryParams);
-      return rows[0].total;
-
-    } catch (error) {
-      console.error('Faaliyet getCount error:', error);
-      throw error;
+    // Durum filtresi (varsayılan olarak onaylandı)
+    if (filters.durum) {
+      whereConditions.push('f.durum = ?');
+      queryParams.push(filters.durum);
     }
+
+    // Lokasyon filtreleri
+    if (filters.il) {
+      whereConditions.push('u.il = ?');
+      queryParams.push(filters.il);
+    }
+
+    if (filters.ilce) {
+      whereConditions.push('u.ilce = ?');
+      queryParams.push(filters.ilce);
+    }
+
+    if (filters.dernek) {
+      whereConditions.push('u.gonullu_dernek = ?');
+      queryParams.push(filters.dernek);
+    }
+
+    if (filters.user_id) {
+      whereConditions.push('f.user_id = ?');
+      queryParams.push(filters.user_id);
+    }
+
+    // Tarih filtreleri
+    if (filters.baslangic_tarihi) {
+      whereConditions.push('DATE(f.created_at) >= ?');
+      queryParams.push(filters.baslangic_tarihi);
+    }
+
+    if (filters.bitis_tarihi) {
+      whereConditions.push('DATE(f.created_at) <= ?');
+      queryParams.push(filters.bitis_tarihi);
+    }
+
+    const whereClause = whereConditions.length > 0 
+      ? 'WHERE ' + whereConditions.join(' AND ')
+      : '';
+
+    const query = `
+      SELECT COUNT(*) as total
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      ${whereClause}
+    `;
+
+    const [rows] = await pool.execute(query, queryParams);
+    return rows[0].total;
+
+  } catch (error) {
+    console.error('Faaliyet getCount error:', error);
+    throw error;
   }
+}
 
   // Onay istatistikleri
   static async getOnayStats() {
