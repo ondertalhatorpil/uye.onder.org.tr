@@ -109,6 +109,11 @@ class Faaliyet {
 
     } catch (error) {
       console.error('Faaliyet getOnaylanmisFaaliyetler error:', error);
+       console.error('getOnaylanmisFaaliyetler detailed error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error errno:', error.errno);
+    console.error('Error sqlMessage:', error.sqlMessage);
+    console.error('Error sqlState:', error.sqlState);
       throw error;
     }
   }

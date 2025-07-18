@@ -76,8 +76,12 @@ const getAllFaaliyetler = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get all faaliyetler error:', error);
-    res.status(500).json({
+console.error('Database error details:', {
+      message: error.message,
+      code: error.code,
+      errno: error.errno,
+      sqlMessage: error.sqlMessage
+    });    res.status(500).json({
       success: false,
       error: 'Faaliyetler getirilemedi: ' + error.message
     });
