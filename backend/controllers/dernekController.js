@@ -2,6 +2,8 @@ const Dernek = require('../models/Dernek');
 const xlsx = require('xlsx');
 const fs = require('fs');
 const path = require('path');
+const geocodingService = require('../services/GeocodingService');
+
 
 // Excel'den dernek yükleme (Super Admin)
 const uploadExcel = async (req, res) => {
@@ -121,7 +123,6 @@ const uploadExcel = async (req, res) => {
   }
 };
 
-// Diğer fonksiyonlar aynı kalacak...
 const getDerneklerByLocation = async (req, res) => {
   try {
     const { il, ilce } = req.query;
@@ -167,6 +168,23 @@ const getAllDernekler = async (req, res) => {
   }
 };
 
+// YENİ: Harita için konum bilgisi olan dernekleri getir
+const getDerneklerWithLocation = async (req, res) => {
+  try {
+    const dernekler = await Dernek.getAllWithLocation();
+    res.json({ 
+      success: true,
+      data: dernekler,
+      count: dernekler.length
+    });
+  } catch (error) {
+    console.error('Get dernekler with location error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Konum bilgili dernekler getirilemedi' 
+    });
+  }
+};
 
 const updateMyDernek = async (req, res) => {
   try {
@@ -176,8 +194,11 @@ const updateMyDernek = async (req, res) => {
       dernek_baskani,
       dernek_telefon,
       dernek_email,
-      dernek_kuruluş_tarihi,  // YENİ EKLENEN
-      dernek_sosyal_medya_hesaplari
+      dernek_kuruluş_tarihi,  
+      dernek_sosyal_medya_hesaplari,
+      dernek_latitude,    // YENİ
+      dernek_longitude,   // YENİ
+      dernek_adres        // YENİ
     } = req.body;
 
     // Bu kullanıcının admin olduğu derneği bul
@@ -207,20 +228,38 @@ const updateMyDernek = async (req, res) => {
       formattedDate = dernek_kuruluş_tarihi;
     }
 
+    // Koordinat validasyonu
+    if (dernek_latitude && dernek_longitude) {
+      const lat = parseFloat(dernek_latitude);
+      const lng = parseFloat(dernek_longitude);
+      
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return res.status(400).json({
+          success: false,
+          error: 'Geçersiz koordinat bilgisi'
+        });
+      }
+    }
+
     // Dernek güncelle
     const [result] = await require('../config/database').pool.execute(`
       UPDATE dernekler 
       SET dernek_adi = ?, dernek_baskani = ?, dernek_telefon = ?, 
           dernek_email = ?, dernek_kuruluş_tarihi = ?, 
-          dernek_sosyal_medya_hesaplari = ?, updated_at = NOW()
+          dernek_sosyal_medya_hesaplari = ?,
+          dernek_latitude = ?, dernek_longitude = ?, dernek_adres = ?,
+          updated_at = NOW()
       WHERE id = ? AND admin_user_id = ?
     `, [
       dernek_adi || dernek.dernek_adi,
       dernek_baskani || dernek.dernek_baskani,
       dernek_telefon || dernek.dernek_telefon,
       dernek_email || dernek.dernek_email,
-      formattedDate,  // YENİ EKLENEN
+      formattedDate,
       JSON.stringify(dernek_sosyal_medya_hesaplari || dernek.dernek_sosyal_medya_hesaplari),
+      dernek_latitude || dernek.dernek_latitude,      // YENİ
+      dernek_longitude || dernek.dernek_longitude,    // YENİ
+      dernek_adres || dernek.dernek_adres,            // YENİ
       dernek.id,
       userId
     ]);
@@ -246,6 +285,77 @@ const updateMyDernek = async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Dernek güncellenirken hata oluştu: ' + error.message
+    });
+  }
+};
+
+//updateDernekLocation fonksiyonu zaten var ve çalışıyor:
+const updateDernekLocation = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { latitude, longitude, adres } = req.body;
+
+    // Koordinat validasyonu
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        success: false,
+        error: 'Enlem ve boylam bilgisi zorunlu'
+      });
+    }
+
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçersiz koordinat bilgisi'
+      });
+    }
+
+    // Bu kullanıcının admin olduğu derneği bul
+    const [dernekRows] = await require('../config/database').pool.execute(`
+      SELECT * FROM dernekler WHERE admin_user_id = ?
+    `, [userId]);
+
+    if (dernekRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Size atanmış bir dernek bulunamadı'
+      });
+    }
+
+    const dernek = dernekRows[0];
+
+    // Konum güncelle
+    const success = await require('../models/Dernek').updateLocation(dernek.id, userId, {
+      latitude: lat,
+      longitude: lng,
+      adres: adres || null
+    });
+
+    if (!success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Konum güncellenemedi'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Dernek konumu başarıyla güncellendi',
+      data: {
+        latitude: lat,
+        longitude: lng,
+        adres: adres
+      }
+    });
+
+  } catch (error) {
+    console.error('Update dernek location error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Konum güncellenirken hata oluştu: ' + error.message
     });
   }
 };
@@ -478,12 +588,18 @@ const getDernekProfile = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   uploadExcel,
   getDerneklerByLocation,
   getAllDernekler,
+  getDerneklerWithLocation,  
   getMyDernek,
   updateMyDernek,
+  updateDernekLocation,      
   uploadDernekLogo,
-  getDernekProfile
+  getDernekProfile,
+
+
 };

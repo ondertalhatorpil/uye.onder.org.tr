@@ -88,6 +88,12 @@ export const authService = {
     return response;
   },
 
+  // KVKK metinlerini getir - DÜZELTİLDİ
+  getKvkkTexts: async () => {
+    const response = await api.get('/auth/kvkk-texts');
+    return response;
+  },
+
   // Profil bilgilerini getir
   getProfile: async () => {
     const response = await api.get('/auth/profile');
@@ -226,6 +232,16 @@ export const dernekService = {
         'Content-Type': 'multipart/form-data',
       },
     });
+  },
+
+  // YENİ: Konum güncelleme fonksiyonu
+  updateDernekLocation: async (locationData) => {
+    return await api.put('/dernekler/my-dernek/location', locationData);
+  },
+
+  // Konum bilgili dernekleri getir (harita için)
+  getDerneklerWithLocation: async () => {
+    return await api.get('/dernekler/dernekler/with-location');
   }
 };
 

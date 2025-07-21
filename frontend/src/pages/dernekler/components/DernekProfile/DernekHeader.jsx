@@ -7,6 +7,17 @@ import {
 import { UPLOADS_BASE_URL } from '../../../../services/api';
 
 const DernekHeader = ({ dernek, members, faaliyetler }) => {
+  // Default logo component
+  const DefaultLogo = () => (
+    <div className="w-full h-full bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+      <img 
+        src="https://onder.org.tr/assets/images/statics/onder-logo.svg"
+        alt="ÖNDER Logo"
+        className="w-16 h-16 object-contain opacity-60"
+      />
+    </div>
+  );
+
   // Dernek logosu URL'i
   const getDernekLogoUrl = (logoPath) => {
     if (!logoPath) return null;
@@ -22,19 +33,27 @@ const DernekHeader = ({ dernek, members, faaliyetler }) => {
           <div className="relative -mt-16 mb-6 lg:mb-0">
             <div className="h-32 w-32 rounded-3xl bg-white border-4 border-white shadow-lg overflow-hidden">
               {dernek.dernek_logosu ? (
-                <img
-                  src={getDernekLogoUrl(dernek.dernek_logosu)}
-                  alt={dernek.dernek_adi}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className={`${dernek.dernek_logosu ? 'hidden' : 'flex'} w-full h-full items-center justify-center bg-gray-100`}>
-                <FiHome className="h-12 w-12 text-gray-400" />
-              </div>
+                <>
+                  {/* Gerçek logo */}
+                  <img
+                    src={getDernekLogoUrl(dernek.dernek_logosu)}
+                    alt={dernek.dernek_adi}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Gerçek logo yüklenmezse ÖNDER logosuna geç
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                  {/* Fallback ÖNDER logosu */}
+                  <div className="w-full h-full hidden">
+                    <DefaultLogo />
+                  </div>
+                </>
+              ) : (
+                // Logo yoksa direkt ÖNDER logosu göster
+                <DefaultLogo />
+              )}
             </div>
           </div>
 

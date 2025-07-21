@@ -1,3 +1,5 @@
+// routes/dernekRoutes.js - Basitleştirilmiş hali
+
 const express = require('express');
 const {
   uploadExcel,
@@ -6,8 +8,13 @@ const {
   getMyDernek,
   updateMyDernek,
   uploadDernekLogo,
-  getDernekProfile
+  getDernekProfile,
+  getDerneklerWithLocation,
+  updateDernekLocation
+  
+  // Google Maps geocoding fonksiyonlarını KALDIR
 } = require('../controllers/dernekController');
+
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
 const { handleExcelUpload, handleDernekLogoUpload } = require('../middleware/upload');
@@ -30,6 +37,14 @@ router.post('/upload-excel',
 // Dernek admin routes
 router.get('/my-dernek', auth, roleCheck(['dernek_admin']), getMyDernek);
 router.put('/my-dernek', auth, roleCheck(['dernek_admin']), updateMyDernek);
-router.post('/upload-logo', auth, roleCheck(['dernek_admin']), handleDernekLogoUpload, uploadDernekLogo); // BURADA DEĞİŞİKLİK
+router.post('/upload-logo', auth, roleCheck(['dernek_admin']), handleDernekLogoUpload, uploadDernekLogo); 
+
+// Harita için konum bilgili dernekleri getir (Public)
+router.get('/dernekler/with-location', getDerneklerWithLocation);
+
+// Dernek konumunu güncelle (Dernek Admin) - Manuel koordinat girişi
+router.put('/my-dernek/location', auth, roleCheck(['dernek_admin']), updateDernekLocation);
+
+
 
 module.exports = router;

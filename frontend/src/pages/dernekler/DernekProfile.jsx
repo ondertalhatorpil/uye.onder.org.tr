@@ -7,6 +7,8 @@ import { toast } from 'react-hot-toast';
 import DernekHeader from './components/DernekProfile/DernekHeader';
 import DernekStats from './components/DernekProfile/DernekStats';
 import DernekTabs from './components/DernekProfile/DernekTabs';
+// YENİ: Leaflet harita komponenti
+import DernekLocationMap from './components/DernekProfile/DernekLocationMap';
 
 const DernekProfile = () => {
   const { dernekAdi } = useParams();
@@ -29,6 +31,7 @@ const DernekProfile = () => {
         
         if (response.success) {
           setDernek(response.data);
+          console.log('Dernek data:', response.data); 
         } else {
           toast.error('Dernek bulunamadı');
           navigate('/dernekler');
@@ -180,6 +183,11 @@ const DernekProfile = () => {
 
         {/* Stats Cards */}
         <DernekStats stats={statsData} formatDate={formatDate} />
+
+        {/* YENİ: Leaflet Harita Bölümü - Stats'den sonra, Tabs'den önce */}
+        <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+          <DernekLocationMap dernek={dernek} />
+        </div>
 
         {/* Tabs Content */}
         <DernekTabs

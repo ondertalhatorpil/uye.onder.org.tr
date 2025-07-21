@@ -29,6 +29,7 @@ class Dernek {
       let query = `
         SELECT 
           id, dernek_adi, dernek_baskani, dernek_telefon, il, ilce,
+          dernek_latitude, dernek_longitude, dernek_adres,
           (SELECT COUNT(*) FROM users WHERE gonullu_dernek = dernekler.dernek_adi) as uye_sayisi
         FROM dernekler 
         WHERE il = ?
@@ -88,6 +89,27 @@ class Dernek {
     }
   }
 
+  // Konum bilgisi olan dernekleri getir (harita için)
+  static async getAllWithLocation() {
+    try {
+      const [rows] = await pool.execute(`
+        SELECT 
+          d.id, d.dernek_adi, d.dernek_baskani, d.il, d.ilce,
+          d.dernek_latitude, d.dernek_longitude, d.dernek_adres,
+          d.dernek_telefon, d.dernek_email,
+          (SELECT COUNT(*) FROM users WHERE gonullu_dernek = d.dernek_adi) as uye_sayisi
+        FROM dernekler d
+        WHERE d.dernek_latitude IS NOT NULL 
+          AND d.dernek_longitude IS NOT NULL
+        ORDER BY d.dernek_adi
+      `);
+      return rows;
+    } catch (error) {
+      console.error('Dernek getAllWithLocation error:', error);
+      throw error;
+    }
+  }
+
   // Dernek üyelerini getir
   static async getMembers(dernekAdi) {
     try {
@@ -113,7 +135,6 @@ class Dernek {
   // Excel'den toplu dernek ekleme
   static async bulkInsert(dernekData) {
     try {
-      // Her dernek için ayrı ayrı insert yap (daha güvenli)
       let insertedCount = 0;
       
       for (const dernek of dernekData) {
@@ -137,7 +158,6 @@ class Dernek {
           }
         } catch (insertError) {
           console.error(`Dernek eklenirken hata (${dernek.dernek_adi}):`, insertError.message);
-          // Devam et, bir dernek hata verirse diğerlerini eklemeye devam et
         }
       }
       
@@ -148,28 +168,50 @@ class Dernek {
     }
   }
 
-  // Dernek güncelleme (admin)
+  // Dernek güncelleme (admin) - Konum bilgisi dahil
   static async updateByAdmin(dernekId, adminUserId, updateData) {
     try {
       const {
         dernek_adi, dernek_baskani, dernek_telefon, 
-        dernek_sosyal_medya_hesaplari, dernek_email
+        dernek_sosyal_medya_hesaplari, dernek_email,
+        dernek_latitude, dernek_longitude, dernek_adres
       } = updateData;
 
       const [result] = await pool.execute(`
         UPDATE dernekler 
         SET dernek_adi = ?, dernek_baskani = ?, dernek_telefon = ?, 
-            dernek_sosyal_medya_hesaplari = ?, dernek_email = ?, updated_at = NOW()
+            dernek_sosyal_medya_hesaplari = ?, dernek_email = ?,
+            dernek_latitude = ?, dernek_longitude = ?, dernek_adres = ?,
+            updated_at = NOW()
         WHERE id = ? AND admin_user_id = ?
       `, [
         dernek_adi, dernek_baskani, dernek_telefon,
         JSON.stringify(dernek_sosyal_medya_hesaplari),
-        dernek_email, dernekId, adminUserId
+        dernek_email, dernek_latitude, dernek_longitude, dernek_adres,
+        dernekId, adminUserId
       ]);
 
       return result.affectedRows > 0;
     } catch (error) {
       console.error('Dernek updateByAdmin error:', error);
+      throw error;
+    }
+  }
+
+  // Dernek konumunu güncelle
+  static async updateLocation(dernekId, adminUserId, locationData) {
+    try {
+      const { latitude, longitude, adres } = locationData;
+
+      const [result] = await pool.execute(`
+        UPDATE dernekler 
+        SET dernek_latitude = ?, dernek_longitude = ?, dernek_adres = ?, updated_at = NOW()
+        WHERE id = ? AND admin_user_id = ?
+      `, [latitude, longitude, adres, dernekId, adminUserId]);
+
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error('Dernek updateLocation error:', error);
       throw error;
     }
   }

@@ -8,6 +8,9 @@ import {
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
+import LocationPickerModal from './components/DernekProfile/LocationPickerModal';
+
+
 const MyDernek = () => {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
@@ -17,6 +20,9 @@ const MyDernek = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -33,7 +39,6 @@ const MyDernek = () => {
     }
   });
 
-  // Dernek bilgilerini getir
   useEffect(() => {
     const loadMyDernek = async () => {
       try {
@@ -72,8 +77,36 @@ const MyDernek = () => {
     loadMyDernek();
   }, []);
 
+  // YENİ: Konum kaydetme fonksiyonu
+  const handleSaveLocation = async (locationData) => {
+    try {
+      setSavingLocation(true);
+      
+      const response = await dernekService.updateDernekLocation(locationData);
+      
+      if (response.success) {
+        // Dernek bilgilerini yenile
+        const updatedResponse = await dernekService.getMyDernek();
+        if (updatedResponse.success) {
+          setDernek(updatedResponse.data);
+        }
+        
+        setIsLocationModalOpen(false);
+        toast.success('Dernek konumu başarıyla güncellendi');
+      } else {
+        toast.error(response.error || 'Konum güncellenemedi');
+      }
+    } catch (error) {
+      console.error('Location save error:', error);
+      toast.error('Konum kaydedilirken hata oluştu');
+    } finally {
+      setSavingLocation(false);
+    }
+  };
+
+
   // Form değişikliği
-  const handleChange = (e) => {
+ const handleChange = (e) => {
     const { name, value } = e.target;
     
     if (name.startsWith('social_')) {
@@ -218,7 +251,9 @@ const MyDernek = () => {
     );
   }
 
-  return (
+
+return (
+  <>
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -297,7 +332,7 @@ const MyDernek = () => {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="absolute -bottom-2 -right-2 p-2 bg-red-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50"
+                    className="absolute -bottom-2 -right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors disabled:opacity-50"
                   >
                     {uploading ? (
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -485,6 +520,67 @@ const MyDernek = () => {
                 ))}
               </div>
             </div>
+
+            {/* YENİ: Konum Bölümü */}
+            <div className="p-6 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <FiMapPin className="mr-2 h-5 w-5 text-red-600" />
+                  Dernek Konumu
+                </h3>
+                <button
+                  onClick={() => setIsLocationModalOpen(true)}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <FiMapPin className="mr-2 h-4 w-4" />
+                  {dernek.dernek_latitude ? 'Konumu Değiştir' : 'Konum Belirle'}
+                </button>
+              </div>
+
+              {dernek.dernek_latitude && dernek.dernek_longitude ? (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Enlem:</span>
+                      <p className="text-gray-900">{parseFloat(dernek.dernek_latitude).toFixed(6)}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-700">Boylam:</span>
+                      <p className="text-gray-900">{parseFloat(dernek.dernek_longitude).toFixed(6)}</p>
+                    </div>
+                  </div>
+                  {dernek.dernek_adres && (
+                    <div className="mt-3">
+                      <span className="font-medium text-gray-700">Adres:</span>
+                      <p className="text-gray-900 text-sm">{dernek.dernek_adres}</p>
+                    </div>
+                  )}
+                  
+                  {/* Haritayı göster butonu */}
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <a
+                      href={`https://www.google.com/maps?q=${dernek.dernek_latitude},${dernek.dernek_longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                    >
+                      <FiExternalLink className="mr-2 h-4 w-4" />
+                      Haritada Göster
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <FiMapPin className="h-5 w-5 text-yellow-600 mr-2" />
+                    <div>
+                      <p className="text-sm font-medium text-yellow-800">Konum Belirtilmemiş</p>
+                      <p className="text-sm text-yellow-700">Derneğinizin konumunu belirlemek için "Konum Belirle" butonuna tıklayın.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -538,10 +634,57 @@ const MyDernek = () => {
               )}
             </button>
           </div>
+
+          {/* Konum Bilgisi Kartı */}
+          <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <FiMapPin className="mr-2 h-5 w-5 text-red-600" />
+              Konum Durumu
+            </h3>
+            
+            {dernek.dernek_latitude && dernek.dernek_longitude ? (
+              <div className="text-center">
+                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                  <FiMapPin className="h-6 w-6 text-green-600" />
+                </div>
+                <p className="text-sm font-medium text-green-800 mb-1">Konum Belirlendi</p>
+                <p className="text-xs text-green-600">
+                  Derneğiniz artık haritada görünebilir
+                </p>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-3">
+                  <FiMapPin className="h-6 w-6 text-yellow-600" />
+                </div>
+                <p className="text-sm font-medium text-yellow-800 mb-1">Konum Bekleniyor</p>
+                <p className="text-xs text-yellow-600 mb-3">
+                  Derneğiniz henüz haritada görünmüyor
+                </p>
+                <button
+                  onClick={() => setIsLocationModalOpen(true)}
+                  className="w-full inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 border border-yellow-300 rounded-lg hover:bg-yellow-100 transition-colors"
+                >
+                  <FiMapPin className="mr-2 h-4 w-4" />
+                  Konum Belirle
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  );
+
+    {/* YENİ: Konum Seçici Modal */}
+    <LocationPickerModal
+      isOpen={isLocationModalOpen}
+      onClose={() => setIsLocationModalOpen(false)}
+      onSave={handleSaveLocation}
+      dernek={dernek}
+      saving={savingLocation}
+    />
+  </>
+);
 };
 
 export default MyDernek;

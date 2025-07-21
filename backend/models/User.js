@@ -4,38 +4,34 @@ const bcrypt = require('bcryptjs');
 class User {
   // Kullanıcı oluştur
   static async create(userData) {
-  const {
-    isim, soyisim, email, password, dogum_tarihi,
-    sektor, meslek, telefon, il, ilce, gonullu_dernek,
-    calisma_komisyon, mezun_okul
-  } = userData;
+    const {
+      isim, soyisim, email, password, dogum_tarihi,
+      sektor, meslek, telefon, il, ilce, gonullu_dernek,
+      calisma_komisyon, mezun_okul,
+      kvkk_onay, aydinlatma_metni_onay // YENİ ALANLAR
+    } = userData;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+    // Şifreyi hashle - bcrypt zaten üstte require edilmiş
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  const [result] = await pool.execute(
-    `INSERT INTO users 
-     (isim, soyisim, email, password, dogum_tarihi, sektor, meslek, 
-      telefon, il, ilce, gonullu_dernek, calisma_komisyon, mezun_okul) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      isim || null,
-      soyisim || null, 
-      email,
-      hashedPassword,
-      dogum_tarihi || null,
-      sektor || null,
-      meslek || null,
-      telefon || null,
-      il || null,
-      ilce || null,
-      gonullu_dernek || null,
-      calisma_komisyon || null,
-      mezun_okul || null
-    ]
-  );
+    const [result] = await pool.execute(
+      `INSERT INTO users (
+        isim, soyisim, email, password, dogum_tarihi,
+        sektor, meslek, telefon, il, ilce, gonullu_dernek,
+        calisma_komisyon, mezun_okul,
+        kvkk_onay, aydinlatma_metni_onay, 
+        kvkk_onay_tarihi, aydinlatma_onay_tarihi
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        isim, soyisim, email, hashedPassword, dogum_tarihi,
+        sektor, meslek, telefon, il, ilce, gonullu_dernek,
+        calisma_komisyon, mezun_okul,
+        kvkk_onay, aydinlatma_metni_onay
+      ]
+    );
 
-  return result.insertId;
-}
+    return result.insertId;
+  }
 
   // Email ile kullanıcı bul
   static async findByEmail(email) {
@@ -49,9 +45,11 @@ class User {
   // ID ile kullanıcı bul
   static async findById(id) {
     const [rows] = await pool.execute(
-      `SELECT id, isim, soyisim, email, dogum_tarihi, sektor, meslek, 
-              telefon, il, ilce, gonullu_dernek, calisma_komisyon, 
-              mezun_okul, role, created_at 
+      `SELECT id, isim, soyisim, email, dogum_tarihi, sektor, meslek,
+              telefon, il, ilce, gonullu_dernek, calisma_komisyon,
+              mezun_okul, role, created_at,
+              kvkk_onay, aydinlatma_metni_onay, 
+              kvkk_onay_tarihi, aydinlatma_onay_tarihi
        FROM users WHERE id = ?`,
       [id]
     );
