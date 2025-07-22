@@ -75,49 +75,50 @@ class OkulController {
   }
 
   // İl bazında okul listesi - Select option'ları için
-  static async getOkullarByIl(req, res) {
-    try {
-      const { okul_turu, il } = req.params;
-      const { ilce, limit = 100 } = req.query;
-
-      if (!['ortaokul', 'lise'].includes(okul_turu)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Geçersiz okul türü'
-        });
-      }
-
-      let query = `
-        SELECT id, il_adi, ilce_adi, kurum_adi
-        FROM okullar 
-        WHERE okul_turu = ? AND il_adi = ?
-      `;
-      let params = [okul_turu, il.toUpperCase().trim()];
-
-      if (ilce) {
-        query += ` AND ilce_adi = ?`;
-        params.push(ilce.toUpperCase().trim());
-      }
-
-      query += ` ORDER BY kurum_adi ASC LIMIT ?`;
-      params.push(parseInt(limit));
-
-      const [okullar] = await pool.execute(query, params);
-
-      res.json({
-        success: true,
-        okullar: okullar,
-        count: okullar.length
-      });
-
-    } catch (error) {
-      console.error('İl bazında okul listeleme hatası:', error);
-      res.status(500).json({
+ static async getOkullarByIl(req, res) {
+  try {
+    const { okul_turu, il } = req.params;
+    const { ilce, limit = 100 } = req.query;
+    
+    if (!['ortaokul', 'lise'].includes(okul_turu)) {
+      return res.status(400).json({
         success: false,
-        error: 'Okul listesi alınamadı: ' + error.message
+        error: 'Geçersiz okul türü'
       });
     }
+
+    let query = `
+      SELECT id, il_adi, ilce_adi, kurum_adi
+      FROM okullar 
+      WHERE okul_turu = ? AND il_adi = ?
+    `;
+    let params = [okul_turu, il.toUpperCase().trim()];
+
+    if (ilce && ilce.trim() !== '') {
+      query += ` AND ilce_adi = ?`;
+      params.push(ilce.toUpperCase().trim());
+    }
+
+    query += ` ORDER BY kurum_adi ASC LIMIT ?`;
+    params.push(parseInt(limit));
+
+    // MariaDB ile uyumlu için query() kullan
+    const [okullar] = await pool.query(query, params);
+    
+    res.json({
+      success: true,
+      okullar: okullar,
+      count: okullar.length
+    });
+    
+  } catch (error) {
+    console.error('İl bazında okul listeleme hatası:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Okul listesi alınamadı: ' + error.message
+    });
   }
+}
 
   // Okul detayı - Profil sayfasında gösterim için
   static async getOkulById(req, res) {
@@ -252,77 +253,6 @@ class OkulController {
     });
   }
 }
-
-
- // Okul arama - Register ve Profile için
-  static async searchOkullar(req, res) {
-  try {
-    const { okul_turu, il, ilce, search, limit = 20, offset = 0 } = req.query;
-    const cleanOkulTuru = okul_turu ? okul_turu.toLowerCase() : '';
-
-    if (!cleanOkulTuru || !['ortaokul', 'lise'].includes(cleanOkulTuru)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Okul türü belirtilmeli (ortaokul/lise)'
-      });
-    }
-
-    let whereConditions = ['okul_turu = ?'];
-    let params = [cleanOkulTuru];
-
-      // İl filtresi (zorunlu olabilir)
-      if (il) {
-        whereConditions.push('il_adi = ?');
-        params.push(il.toUpperCase().trim());
-      }
-
-      // İlçe filtresi
-      if (ilce) {
-        whereConditions.push('ilce_adi = ?');
-        params.push(ilce.toUpperCase().trim());
-      }
-
-      // Arama filtresi (okul adında arama)
-      if (search && search.trim()) {
-        whereConditions.push('kurum_adi LIKE ?');
-        params.push(`%${search.trim()}%`);
-      }
-
-      const countQuery = `SELECT COUNT(*) as total FROM okullar WHERE ${whereConditions.join(' AND ')}`;
-      const [countResult] = await pool.execute(countQuery, params);
-      const total = countResult[0].total;
-
-      const searchQuery = `
-        SELECT id, il_adi, ilce_adi, kurum_adi, kurum_kodu
-        FROM okullar 
-        WHERE ${whereConditions.join(' AND ')}
-        ORDER BY kurum_adi ASC
-        LIMIT ? OFFSET ?
-      `;
-
-      params.push(parseInt(limit), parseInt(offset));
-
-      const [okullar] = await pool.execute(searchQuery, params);
-
-      res.json({
-        success: true,
-        okullar: okullar,
-        pagination: {
-          total: total,
-          limit: parseInt(limit),
-          offset: parseInt(offset),
-          hasMore: (parseInt(offset) + parseInt(limit)) < total
-        }
-      });
-
-    } catch (error) {
-      console.error('Okul arama hatası:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Okul arama işlemi başarısız: ' + error.message
-      });
-    }
-  }
 
 }
 
