@@ -2,46 +2,148 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config/config');
 
-// Kayıt ol
 const register = async (req, res) => {
   try {
     const {
       isim, soyisim, email, password, dogum_tarihi,
       sektor, meslek, telefon, il, ilce, gonullu_dernek,
-      calisma_komisyon, mezun_okul,
-      kvkk_onay, aydinlatma_metni_onay // YENİ ALANLAR
+      calisma_komisyon,
+      
+      // EĞİTİM BİLGİLERİ - YENİ
+      ortaokul_durumu, ortaokul_id, ortaokul_custom, ortaokul_mezun_yili, ortaokul_sinif,
+      lise_durumu, lise_id, lise_custom, lise_mezun_yili, lise_sinif,
+      universite_durumu,
+      
+      // KVKK
+      kvkk_onay, aydinlatma_metni_onay
     } = req.body;
 
     // Basit validasyon
-    if (!isim || !soyisim || !email || !password || !dogum_tarihi || !sektor  || !meslek || !telefon || !il || !ilce || !gonullu_dernek || !calisma_komisyon || !mezun_okul ) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'İsim, soyisim, email, doğum tarihi ve şifre zorunlu' 
+    if (!isim || !soyisim || !email || !password || !dogum_tarihi || !sektor || !meslek || !telefon || !il || !ilce || !gonullu_dernek || !calisma_komisyon) {
+      return res.status(400).json({
+        success: false,
+        error: 'Zorunlu alanlar eksik'
       });
     }
 
     // KVKK onayları kontrolü
     if (!kvkk_onay || !aydinlatma_metni_onay) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'KVKK ve Aydınlatma Metni onayı zorunludur' 
+      return res.status(400).json({
+        success: false,
+        error: 'KVKK ve Aydınlatma Metni onayı zorunludur'
+      });
+    }
+
+    // EĞİTİM BİLGİLERİ VALİDASYONU
+    // Ortaokul validasyonu
+    if (ortaokul_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(ortaokul_durumu)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçersiz ortaokul durumu'
+      });
+    }
+
+    if (ortaokul_durumu === 'mezun' && !ortaokul_mezun_yili) {
+      return res.status(400).json({
+        success: false,
+        error: 'Ortaokul mezuniyet yılı gerekli'
+      });
+    }
+
+    if (ortaokul_durumu === 'devam_ediyor' && (!ortaokul_sinif || ![5,6,7,8].includes(parseInt(ortaokul_sinif)))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçerli ortaokul sınıfı seçin (5,6,7,8)'
+      });
+    }
+
+    if ((ortaokul_durumu === 'mezun' || ortaokul_durumu === 'devam_ediyor') && !ortaokul_id && !ortaokul_custom) {
+      return res.status(400).json({
+        success: false,
+        error: 'Ortaokul seçimi veya manuel giriş gerekli'
+      });
+    }
+
+    // Lise validasyonu
+    if (lise_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(lise_durumu)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçersiz lise durumu'
+      });
+    }
+
+    if (lise_durumu === 'mezun' && !lise_mezun_yili) {
+      return res.status(400).json({
+        success: false,
+        error: 'Lise mezuniyet yılı gerekli'
+      });
+    }
+
+    if (lise_durumu === 'devam_ediyor' && (!lise_sinif || ![9,10,11,12].includes(parseInt(lise_sinif)))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçerli lise sınıfı seçin (9,10,11,12)'
+      });
+    }
+
+    if ((lise_durumu === 'mezun' || lise_durumu === 'devam_ediyor') && !lise_id && !lise_custom) {
+      return res.status(400).json({
+        success: false,
+        error: 'Lise seçimi veya manuel giriş gerekli'
+      });
+    }
+
+    // Üniversite validasyonu
+    if (universite_durumu && !['devam_ediyor', 'mezun', 'okumadi'].includes(universite_durumu)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçersiz üniversite durumu'
       });
     }
 
     // Email kontrolü
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ 
-        success: false, 
+      return res.status(400).json({
+        success: false,
         error: 'Bu email zaten kayıtlı'
       });
+    }
+
+    // Seçilen okulların var olup olmadığını kontrol et
+    if (ortaokul_id) {
+      const ortaokulExists = await User.checkOkulExists(ortaokul_id, 'ortaokul');
+      if (!ortaokulExists) {
+        return res.status(400).json({
+          success: false,
+          error: 'Seçilen ortaokul bulunamadı'
+        });
+      }
+    }
+
+    if (lise_id) {
+      const liseExists = await User.checkOkulExists(lise_id, 'lise');
+      if (!liseExists) {
+        return res.status(400).json({
+          success: false,
+          error: 'Seçilen lise bulunamadı'
+        });
+      }
     }
 
     // Kullanıcı oluştur
     const userId = await User.create({
       isim, soyisim, email, password, dogum_tarihi,
       sektor, meslek, telefon, il, ilce, gonullu_dernek,
-      calisma_komisyon, mezun_okul,
+      calisma_komisyon,
+      
+      // Eğitim bilgileri
+      ortaokul_durumu: ortaokul_durumu || 'okumadi',
+      ortaokul_id, ortaokul_custom, ortaokul_mezun_yili, ortaokul_sinif,
+      lise_durumu: lise_durumu || 'okumadi', 
+      lise_id, lise_custom, lise_mezun_yili, lise_sinif,
+      universite_durumu: universite_durumu || 'okumadi',
+      
       kvkk_onay, aydinlatma_metni_onay
     });
 
@@ -61,9 +163,9 @@ const register = async (req, res) => {
 
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Kayıt sırasında hata oluştu: ' + error.message 
+    res.status(500).json({
+      success: false,
+      error: 'Kayıt sırasında hata oluştu: ' + error.message
     });
   }
 };
@@ -226,58 +328,118 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id; // auth middleware'den gelir
     const {
-      isim, soyisim, dogum_tarihi, sektor, meslek,
-      telefon, il, ilce, gonullu_dernek, calisma_komisyon, mezun_okul
+      isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
+      gonullu_dernek, calisma_komisyon,
+      
+      // Eğitim bilgileri
+      ortaokul_durumu, ortaokul_id, ortaokul_custom, ortaokul_mezun_yili, ortaokul_sinif,
+      lise_durumu, lise_id, lise_custom, lise_mezun_yili, lise_sinif,
+      universite_durumu
     } = req.body;
 
-    const existingUser = await User.findById(userId);
-    if (!existingUser) {
+    // Basit validasyon
+    if (!isim || !soyisim || !sektor || !meslek) {
+      return res.status(400).json({
+        success: false,
+        error: 'İsim, soyisim, sektör ve meslek zorunlu'
+      });
+    }
+
+    // EĞİTİM VALİDASYONLARI (register'daki gibi)
+    if (ortaokul_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(ortaokul_durumu)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçersiz ortaokul durumu'
+      });
+    }
+
+    if (ortaokul_durumu === 'mezun' && !ortaokul_mezun_yili) {
+      return res.status(400).json({
+        success: false,
+        error: 'Ortaokul mezuniyet yılı gerekli'
+      });
+    }
+
+    if (ortaokul_durumu === 'devam_ediyor' && (!ortaokul_sinif || ![5,6,7,8].includes(parseInt(ortaokul_sinif)))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçerli ortaokul sınıfı seçin (5,6,7,8)'
+      });
+    }
+
+    if (lise_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(lise_durumu)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçersiz lise durumu'
+      });
+    }
+
+    if (lise_durumu === 'mezun' && !lise_mezun_yili) {
+      return res.status(400).json({
+        success: false,
+        error: 'Lise mezuniyet yılı gerekli'
+      });
+    }
+
+    if (lise_durumu === 'devam_ediyor' && (!lise_sinif || ![9,10,11,12].includes(parseInt(lise_sinif)))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Geçerli lise sınıfı seçin (9,10,11,12)'
+      });
+    }
+
+    // Seçilen okulları kontrol et
+    if (ortaokul_id) {
+      const ortaokulExists = await User.checkOkulExists(ortaokul_id, 'ortaokul');
+      if (!ortaokulExists) {
+        return res.status(400).json({
+          success: false,
+          error: 'Seçilen ortaokul bulunamadı'
+        });
+      }
+    }
+
+    if (lise_id) {
+      const liseExists = await User.checkOkulExists(lise_id, 'lise');
+      if (!liseExists) {
+        return res.status(400).json({
+          success: false,
+          error: 'Seçilen lise bulunamadı'
+        });
+      }
+    }
+
+    // Profil güncelle
+    const updated = await User.updateProfile(userId, {
+      isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
+      gonullu_dernek, calisma_komisyon,
+      
+      // Eğitim bilgileri - null değerler için default'lar
+      ortaokul_durumu: ortaokul_durumu || 'okumadi',
+      ortaokul_id: ortaokul_id || null,
+      ortaokul_custom: ortaokul_custom || null,
+      ortaokul_mezun_yili: ortaokul_mezun_yili || null,
+      ortaokul_sinif: ortaokul_sinif || null,
+      
+      lise_durumu: lise_durumu || 'okumadi',
+      lise_id: lise_id || null,
+      lise_custom: lise_custom || null, 
+      lise_mezun_yili: lise_mezun_yili || null,
+      lise_sinif: lise_sinif || null,
+      
+      universite_durumu: universite_durumu || 'okumadi'
+    });
+
+    if (!updated) {
       return res.status(404).json({
         success: false,
         error: 'Kullanıcı bulunamadı'
       });
     }
 
-    if (req.body.email && req.body.email !== existingUser.email) {
-      const emailExists = await User.findByEmail(req.body.email);
-      if (emailExists) {
-        return res.status(400).json({
-          success: false,
-          error: 'Bu email adresi zaten kullanılıyor'
-        });
-      }
-    }
-
-    const [result] = await require('../config/database').pool.execute(`
-      UPDATE users 
-      SET isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?,
-          telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, 
-          calisma_komisyon = ?, mezun_okul = ?, updated_at = NOW()
-      WHERE id = ?
-    `, [
-      isim || existingUser.isim,
-      soyisim || existingUser.soyisim,
-      dogum_tarihi || existingUser.dogum_tarihi,
-      sektor || existingUser.sektor,
-      meslek || existingUser.meslek,
-      telefon || existingUser.telefon,
-      il || existingUser.il,
-      ilce || existingUser.ilce,
-      gonullu_dernek || existingUser.gonullu_dernek,
-      calisma_komisyon || existingUser.calisma_komisyon,
-      mezun_okul || existingUser.mezun_okul,
-      userId
-    ]);
-
-    if (result.affectedRows === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Profil güncellenemedi'
-      });
-    }
-
+    // Güncellenmiş kullanıcı bilgilerini getir
     const updatedUser = await User.findById(userId);
 
     res.json({
@@ -287,7 +449,7 @@ const updateProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Update profile error:', error);
+    console.error('Profile update error:', error);
     res.status(500).json({
       success: false,
       error: 'Profil güncellenirken hata oluştu: ' + error.message
@@ -358,5 +520,5 @@ module.exports = {
   getProfile, 
   changePassword, 
   updateProfile,
-  getKvkkTexts // YENİ ENDPOINT
+  getKvkkTexts 
 };

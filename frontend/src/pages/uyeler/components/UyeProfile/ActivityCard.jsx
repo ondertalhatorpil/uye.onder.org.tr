@@ -3,7 +3,7 @@ import {
   FiClock, FiMoreHorizontal, FiHeart, FiMessageCircle, 
   FiShare2, FiEye 
 } from 'react-icons/fi';
-import { UPLOADS_BASE_URL } from '../../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../../services';
 
 const ActivityCard = ({ faaliyet, formatTimeAgo }) => (
   <div className="bg-gray-50 rounded-2xl p-6 hover:bg-gray-100 transition-all duration-200">

@@ -1,6 +1,6 @@
 // src/pages/DernekList.jsx
 import { useState, useEffect } from 'react';
-import { dernekService, constantsService } from '../../services/api';
+import { dernekService, constantsService } from '../../services';
 import { toast } from 'react-hot-toast';
 import DernekHeader from './components/DernekList/DernekHeader';
 import DernekFilters from './components/DernekList/DernekFilters';

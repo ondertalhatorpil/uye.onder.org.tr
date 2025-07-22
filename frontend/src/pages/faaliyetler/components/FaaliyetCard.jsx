@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiCalendar, FiMapPin, FiMoreHorizontal, FiImage } from 'react-icons/fi';
-import { UPLOADS_BASE_URL } from '../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../services';
 
 const FaaliyetCard = ({ faaliyet }) => {
   // Tarih formatla

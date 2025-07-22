@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { dernekService, userService, faaliyetService } from '../../services/api';
+import { dernekService, userService, faaliyetService } from '../../services';
 import { FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 

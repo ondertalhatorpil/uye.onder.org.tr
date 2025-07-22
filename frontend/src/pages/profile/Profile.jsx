@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { faaliyetService, constantsService } from '../../services/api';
+import { faaliyetService, constantsService } from '../../services';
 import { toast } from 'react-hot-toast';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileInfo from './components/ProfileInfo';

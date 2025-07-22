@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { faaliyetService, adminService } from '../../services/api';
+import { faaliyetService, adminApi } from '../../services';
 import { toast } from 'react-hot-toast';
 
 import WelcomeHeader from './components/WelcomeHeader';
@@ -25,7 +25,7 @@ const Dashboard = () => {
         
         if (isSuperAdmin()) {
           // Super admin için detaylı istatistikler
-          const dashboardData = await adminService.getDashboard();
+          const dashboardData = await adminApi.getDashboard();
           console.log('Dashboard data:', dashboardData);
           
           if (dashboardData.success) {

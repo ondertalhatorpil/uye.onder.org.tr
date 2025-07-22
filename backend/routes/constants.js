@@ -117,6 +117,43 @@ const getDerneklerByLocation = async (req, res) => {
   }
 };
 
+router.get('/mezuniyet-yillari', (req, res) => {
+  const currentYear = new Date().getFullYear();
+  const startYear = 1980;
+  
+  const yillar = [];
+  for (let yil = currentYear; yil >= startYear; yil--) {
+    yillar.push(yil);
+  }
+  
+  res.json({
+    success: true,
+    yillar: yillar
+  });
+});
+
+// Sınıf listesi
+router.get('/siniflar/:okul_turu', (req, res) => {
+  const { okul_turu } = req.params;
+  
+  let siniflar;
+  if (okul_turu === 'ortaokul') {
+    siniflar = [5, 6, 7, 8];
+  } else if (okul_turu === 'lise') {
+    siniflar = [9, 10, 11, 12];
+  } else {
+    return res.status(400).json({
+      success: false,
+      error: 'Geçersiz okul türü'
+    });
+  }
+  
+  res.json({
+    success: true,
+    siniflar: siniflar
+  });
+});
+
 // API endpoints
 router.get('/iller', getIller);
 router.get('/ilceler/:il', getIlceler);

@@ -4,7 +4,7 @@ import {
   FiUser, FiPhone, FiMapPin, FiUsers, 
   FiActivity, FiMail, FiHome
 } from 'react-icons/fi';
-import { UPLOADS_BASE_URL } from '../../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../../services';
 
 const DernekHeader = ({ dernek, members, faaliyetler }) => {
   // Default logo component

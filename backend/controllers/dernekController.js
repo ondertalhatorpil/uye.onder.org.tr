@@ -2,7 +2,6 @@ const Dernek = require('../models/Dernek');
 const xlsx = require('xlsx');
 const fs = require('fs');
 const path = require('path');
-const geocodingService = require('../services/GeocodingService');
 
 
 // Excel'den dernek yükleme (Super Admin)

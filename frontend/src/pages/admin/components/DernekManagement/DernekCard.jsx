@@ -1,7 +1,7 @@
 // src/pages/admin/components/DernekCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { UPLOADS_BASE_URL } from '../../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../../services/';
 import {
     FiUser, FiEdit3, FiEye, FiMapPin, FiUsers, 
     FiCalendar, FiPhone

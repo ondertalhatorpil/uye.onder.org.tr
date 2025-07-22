@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { userService, faaliyetService, UPLOADS_BASE_URL } from '../../services/api';
+import { userService, faaliyetService, UPLOADS_BASE_URL } from '../../services';
 import { FiUser, FiActivity, FiCalendar, FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 

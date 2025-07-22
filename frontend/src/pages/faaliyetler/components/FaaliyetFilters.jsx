@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { constantsService } from '../../../services/api';
+import { constantsService } from '../../../services';
 
 const FaaliyetFilters = ({ filters, onFilterChange, onClearFilters }) => {
   const [iller, setIller] = useState([]);

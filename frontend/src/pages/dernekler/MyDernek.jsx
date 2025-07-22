@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { dernekService, UPLOADS_BASE_URL } from '../../services/api';
+import { dernekService, UPLOADS_BASE_URL } from '../../services';
 import { 
   FiEdit3, FiSave, FiX, FiCamera, FiUpload,
   FiUser, FiPhone, FiMail, FiCalendar, 

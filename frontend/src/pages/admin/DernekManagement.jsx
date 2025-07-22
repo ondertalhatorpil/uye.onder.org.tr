@@ -1,8 +1,7 @@
 // src/pages/admin/DernekManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { adminApi } from '../../services/adminApi';
-import { dernekService } from '../../services/api';
+import { dernekService , adminApi} from '../../services';
 import {
     FiFilter, FiDownload, FiUpload, FiGrid, FiUsers, FiRefreshCw
 } from 'react-icons/fi';

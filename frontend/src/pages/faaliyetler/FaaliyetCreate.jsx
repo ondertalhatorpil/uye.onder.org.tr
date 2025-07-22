@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { faaliyetService } from '../../services/api';
+import { faaliyetService } from '../../services';
 import { FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 

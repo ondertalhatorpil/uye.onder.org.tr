@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { userService, constantsService } from '../../services/api';
+import { userService, constantsService } from '../../services';
 import { FiFilter, FiRefreshCw, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 

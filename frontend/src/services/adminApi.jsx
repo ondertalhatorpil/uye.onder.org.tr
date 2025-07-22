@@ -2,7 +2,6 @@
 import { api } from './api';
 
 export const adminApi = {
-  // ===== DASHBOARD & ANALYTICS =====
   
   // Dashboard ana istatistikleri
   getDashboard: async () => {

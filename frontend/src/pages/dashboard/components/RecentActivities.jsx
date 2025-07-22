@@ -5,7 +5,7 @@ import {
   FiHeart, FiMessageCircle, FiShare2, FiEye,
   FiMaximize2, FiUser, FiClock
 } from 'react-icons/fi';
-import { UPLOADS_BASE_URL } from '../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../services';
 
 const ImageModal = ({ image, isOpen, onClose }) => {
   if (!isOpen) return null;

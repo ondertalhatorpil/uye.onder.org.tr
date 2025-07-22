@@ -4,7 +4,7 @@ import {
   FiUser, FiMapPin, FiCalendar, FiPhone, FiUsers, 
   FiActivity, FiBriefcase, FiExternalLink, FiHome
 } from 'react-icons/fi';
-import { UPLOADS_BASE_URL } from '../../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../../services';
 
 const TabButton = ({ active, onClick, children, count }) => (
   <button

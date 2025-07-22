@@ -1,7 +1,7 @@
 // src/pages/components/DernekGrid.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { UPLOADS_BASE_URL } from '../../../../services/api';
+import { UPLOADS_BASE_URL } from '../../../../services';
 import { 
   FiMapPin, FiUsers, FiPhone, FiUser, FiExternalLink, FiGrid
 } from 'react-icons/fi';

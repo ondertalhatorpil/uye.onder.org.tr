@@ -40,6 +40,8 @@ try {
   const faaliyetRoutes = require('./routes/faaliyetler');
   const userRoutes = require('./routes/users');
   const adminRoutes = require('./routes/admin');
+  const okullarRoutes = require('./routes/okullar');
+
 
   app.use('/api/auth', authRoutes);
   app.use('/api/dernekler', dernekRoutes);
@@ -47,6 +49,8 @@ try {
   app.use('/api/faaliyetler', faaliyetRoutes);
   app.use('/api/users', userRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/okullar', okullarRoutes);
+
 
   console.log('✅ Tüm route\'lar başarıyla yüklendi!');
 
