@@ -1,4 +1,3 @@
-// src/services/api.js
 import axios from 'axios';
 
 // Base API URL - backend port 5000'de çalışıyor
