@@ -117,15 +117,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         href: '/settings',
         icon: FiSettings,
         roles: ['super_admin', 'dernek_admin', 'uye']
-      },
-      ...(hasRole('super_admin') ? [
-        {
-          name: 'Sistem Ayarları',
-          href: '/admin/system-settings', 
-          icon: FiSettings, 
-          roles: ['super_admin']
-        }
-      ] : [])
+      }
     ].filter(item => item.roles.includes(user?.role));
 
     if (settingsItems.length > 0) {

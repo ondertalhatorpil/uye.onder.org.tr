@@ -161,9 +161,8 @@ const DernekProfile = () => {
   };
 
   return (
-    <div className="min-h-screen"> {/* Dark background for the entire page */}
+    <div className="min-h-screen"> 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 py-6 space-y-8">
-        {/* Back Button */}
         <div className="flex items-center">
           <button
             onClick={() => navigate(-1)}
@@ -174,22 +173,18 @@ const DernekProfile = () => {
           </button>
         </div>
 
-        {/* Dernek Header (Assuming DernekHeader will be updated for dark theme by you) */}
         <DernekHeader 
           dernek={dernek}
           members={members}
           faaliyetler={faaliyetler}
         />
 
-        {/* Stats Cards (Assuming DernekStats will be updated for dark theme by you) */}
         <DernekStats stats={statsData} formatDate={formatDate} />
 
-        {/* Leaflet Harita Bölümü */}
         <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-6"> {/* Dark background for map container, stronger shadow, border */}
           <DernekLocationMap dernek={dernek} />
         </div>
 
-        {/* Tabs Content (Assuming DernekTabs will be updated for dark theme by you) */}
         <DernekTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}

@@ -72,7 +72,6 @@ const MemberCard = ({ uye }) => {
   );
 };
 
-// EmptyState Bileşeni
 const EmptyState = ({ hasFilters, onClearFilters, onShowFilters }) => {
   if (hasFilters) {
     return (

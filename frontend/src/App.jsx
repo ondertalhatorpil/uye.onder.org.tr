@@ -28,6 +28,9 @@ import BekleyenFaaliyetler from './pages/admin/BekleyenFaaliyetler';
 import FaaliyetOnayGecmisi from './pages/admin/components/FaaliyetManagement/FaaliyetOnayGecmisi';
 import FaaliyetOnayStats from './pages/admin/components/FaaliyetManagement/FaaliyetOnayStats';
 
+import Settings from './pages/settings/settings';
+
+
 function App() {
   return (
     <Router>
@@ -84,7 +87,9 @@ function App() {
               <Route path="uyeler/:id" element={<UyeProfile />} />
               <Route path="uyeler/list" element={<UyeSearch />} />
               <Route path="profile" element={<Profile />} />
-              <Route path="settings" element={<div className="p-8 text-center"><h1 className="text-2xl font-bold">Ayarlar</h1></div>} />
+              <Route path="settings" element={
+                <Settings />
+              } />
 
               {/* Dernek Admin routes */}
               <Route
