@@ -1,10 +1,9 @@
-// src/pages/DernekList.jsx
 import { useState, useEffect } from 'react';
 import { dernekService, constantsService } from '../../services';
 import { toast } from 'react-hot-toast';
-import DernekHeader from './components/DernekList/DernekHeader';
-import DernekFilters from './components/DernekList/DernekFilters';
-import DernekGrid from './components/DernekList/DernekGrid';
+import DernekHeader from './components/DernekList/DernekHeader'; // Bu bileşenler de güncellenecek
+import DernekFilters from './components/DernekList/DernekFilters'; // Bu bileşenler de güncellenecek
+import DernekGrid from './components/DernekList/DernekGrid'; // Bu bileşenler de güncellenecek
 
 const DernekList = () => {
   const [dernekler, setDernekler] = useState([]);
@@ -19,7 +18,7 @@ const DernekList = () => {
     ilce: ''
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid');
   
   // Options for filters
   const [options, setOptions] = useState({
@@ -141,20 +140,20 @@ const DernekList = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600">Dernekler yükleniyor...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-red-500 mx-auto"></div> 
+          <p className="mt-4 text-lg text-gray-400">Dernekler yükleniyor...</p> 
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-16">
         
-        {/* Header Component */}
+        
         <DernekHeader
           filters={filters}
           filteredDernekler={filteredDernekler}
@@ -165,8 +164,7 @@ const DernekList = () => {
           viewMode={viewMode}
           setViewMode={setViewMode}
         />
-
-        {/* Filters Component */}
+       
         <DernekFilters
           showFilters={showFilters}
           filters={filters}
@@ -175,7 +173,6 @@ const DernekList = () => {
           onClearFilters={clearFilters}
         />
 
-        {/* Grid Component */}
         <DernekGrid
           dernekler={filteredDernekler}
           viewMode={viewMode}

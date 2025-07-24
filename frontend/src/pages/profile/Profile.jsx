@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { faaliyetService, constantsService } from '../../services';
 import { toast } from 'react-hot-toast';
-import ProfileHeader from './components/ProfileHeader';
-import ProfileInfo from './components/ProfileInfo';
-import ProfileSidebar from './components/ProfileSidebar';
+import ProfileHeader from './components/ProfileHeader'; // Yolu güncelledim
+import ProfileInfo from './components/ProfileInfo';     // Yolu güncelledim
+import ProfileSidebar from './components/ProfileSidebar'; // Yolu güncelledim
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -31,16 +31,20 @@ const Profile = () => {
   // Options for dropdowns
   const [options, setOptions] = useState({
     sektorler: [],
-    komisyonlar: []
+    komisyonlar: [],
+    iller: [], // İller ve ilçeler için de seçenekleri ekleyelim
+    ilceler: []
   });
 
   // Initialize form data from user
   useEffect(() => {
     if (user) {
+      // Doğum tarihini YYYY-MM-DD formatına dönüştürerek input'ta düzgün görünmesini sağla
+      const formattedDogumTarihi = user.dogum_tarihi ? new Date(user.dogum_tarihi).toISOString().split('T')[0] : '';
       setFormData({
         isim: user.isim || '',
         soyisim: user.soyisim || '',
-        dogum_tarihi: user.dogum_tarihi || '',
+        dogum_tarihi: formattedDogumTarihi,
         sektor: user.sektor || '',
         meslek: user.meslek || '',
         telefon: user.telefon || '',
@@ -53,26 +57,53 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Load options
+  // Load options (sektorler, komisyonlar, iller)
   useEffect(() => {
-    const loadOptions = async () => {
+    const loadAllOptions = async () => {
       try {
-        const [sektorResponse, komisyonResponse] = await Promise.all([
+        const [sektorResponse, komisyonResponse, illerResponse] = await Promise.all([
           constantsService.getSektorler(),
-          constantsService.getKomisyonlar()
+          constantsService.getKomisyonlar(),
+          constantsService.getIller() // İlleri de yükle
         ]);
 
-        setOptions({
+        setOptions(prev => ({
+          ...prev, // Mevcut ilceler boş kalabilir
           sektorler: sektorResponse.data || [],
-          komisyonlar: komisyonResponse.data || []
-        });
+          komisyonlar: komisyonResponse.data || [],
+          iller: illerResponse.data || []
+        }));
       } catch (error) {
         console.error('Options loading error:', error);
+        toast.error('Seçenekler yüklenirken hata oluştu.');
       }
     };
 
-    loadOptions();
+    loadAllOptions();
   }, []);
+
+  // Load ilçeler when 'il' changes
+  useEffect(() => {
+    const loadIlceler = async () => {
+      if (formData.il) {
+        try {
+          const response = await constantsService.getIlceler(formData.il);
+          setOptions(prev => ({
+            ...prev,
+            ilceler: response.data || []
+          }));
+        } catch (error) {
+          console.error('İlçeler loading error:', error);
+          toast.error('İlçeler yüklenirken hata oluştu.');
+        }
+      } else {
+        setOptions(prev => ({ ...prev, ilceler: [] }));
+      }
+    };
+
+    loadIlceler();
+  }, [formData.il]); // formData.il değiştiğinde ilçeleri yükle
+
 
   // Load user's activities
   useEffect(() => {
@@ -83,9 +114,12 @@ const Profile = () => {
         
         if (response.success) {
           setMyFaaliyetler(response.data || []);
+        } else {
+          toast.error(response.message || 'Faaliyetler yüklenirken bir sorun oluştu.');
         }
       } catch (error) {
         console.error('My faaliyetler loading error:', error);
+        toast.error('Faaliyetler yüklenirken hata oluştu.');
       } finally {
         setLoadingFaaliyetler(false);
       }
@@ -101,6 +135,13 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
+    // Eğer il değişiyorsa, ilçe seçimini sıfırla
+    if (name === 'il' && prev.ilce) {
+        setFormData(prev => ({
+            ...prev,
+            ilce: ''
+        }));
+    }
   };
 
   // Save profile
@@ -111,8 +152,13 @@ const Profile = () => {
       // Tarih formatını düzelt (ISO formatından YYYY-MM-DD'ye)
       const profileData = { ...formData };
       if (profileData.dogum_tarihi) {
-        const date = new Date(profileData.dogum_tarihi);
-        profileData.dogum_tarihi = date.toISOString().split('T')[0]; // YYYY-MM-DD formatı
+        // Eğer tarih zaten YYYY-MM-DD ise tekrar dönüştürme
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(profileData.dogum_tarihi)) {
+            const date = new Date(profileData.dogum_tarihi);
+            profileData.dogum_tarihi = date.toISOString().split('T')[0]; // YYYY-MM-DD formatı
+        }
+      } else {
+        profileData.dogum_tarihi = null; // Boşsa null gönder
       }
       
       const result = await updateProfile(profileData);
@@ -124,7 +170,8 @@ const Profile = () => {
         toast.error(result.error);
       }
     } catch (error) {
-      toast.error('Profil güncellenirken hata oluştu');
+      console.error('Profil güncelleme hatası:', error);
+      toast.error('Profil güncellenirken beklenmeyen bir hata oluştu');
     } finally {
       setLoading(false);
     }
@@ -132,12 +179,13 @@ const Profile = () => {
 
   // Cancel editing
   const handleCancel = () => {
-    // Reset form data
+    // Reset form data to current user data
     if (user) {
+      const formattedDogumTarihi = user.dogum_tarihi ? new Date(user.dogum_tarihi).toISOString().split('T')[0] : '';
       setFormData({
         isim: user.isim || '',
         soyisim: user.soyisim || '',
-        dogum_tarihi: user.dogum_tarihi || '',
+        dogum_tarihi: formattedDogumTarihi,
         sektor: user.sektor || '',
         meslek: user.meslek || '',
         telefon: user.telefon || '',
@@ -153,18 +201,18 @@ const Profile = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-gray-300"> {/* Koyu tema arka planı */}
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-200 border-t-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 font-medium">Profil yükleniyor...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-red-700 mx-auto"></div> {/* Renkler güncellendi */}
+          <p className="mt-4 text-gray-400 font-medium">Profil yükleniyor...</p> {/* Metin rengi güncellendi */}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen text-white"> {/* Genel arka plan ve metin rengi */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10"> {/* Responsive padding */}
         {/* Profile Header */}
         <ProfileHeader 
           user={user}
@@ -176,22 +224,26 @@ const Profile = () => {
         />
 
         {/* Main Content */}
-        <div className="mt-8 space-y-8">
-          {/* Profile Information */}
-          <ProfileInfo 
-            user={user}
-            formData={formData}
-            isEditing={isEditing}
-            options={options}
-            onChange={handleChange}
-          />
+        <div className="mt-6 sm:mt-8 lg:mt-10 flex flex-col lg:flex-row gap-6 lg:gap-8"> {/* Responsive boşluk ve düzen */}
+          {/* Profile Information (Sol taraf - geniş ekranlarda) */}
+          <div className="lg:w-2/3">
+            <ProfileInfo 
+              user={user}
+              formData={formData}
+              isEditing={isEditing}
+              options={options}
+              onChange={handleChange}
+            />
+          </div>
 
-          {/* Statistics and Activities */}
-          <ProfileSidebar 
-            user={user}
-            myFaaliyetler={myFaaliyetler}
-            loadingFaaliyetler={loadingFaaliyetler}
-          />
+          {/* Statistics and Activities (Sağ taraf - geniş ekranlarda) */}
+          <div className="lg:w-1/3">
+            <ProfileSidebar 
+              user={user}
+              myFaaliyetler={myFaaliyetler}
+              loadingFaaliyetler={loadingFaaliyetler}
+            />
+          </div>
         </div>
       </div>
     </div>

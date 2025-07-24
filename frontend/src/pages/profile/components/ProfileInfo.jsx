@@ -9,6 +9,10 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
+    // Ensure the date is valid before formatting
+    if (isNaN(date.getTime())) {
+        return ''; // Return empty string for invalid dates
+    }
     return date.toISOString().split('T')[0];
   };
 
@@ -16,6 +20,9 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
   const formatDateForDisplay = (dateString) => {
     if (!dateString) return 'Belirtilmemiş';
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return 'Geçersiz Tarih'; // Handle invalid dates for display
+    }
     return date.toLocaleDateString('tr-TR', {
       day: 'numeric',
       month: 'long',
@@ -34,21 +41,26 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
   };
 
   // Okul adını getir (seçili okul ya da custom)
-  const getSchoolName = (schoolId, customName, schoolType) => {
-    if (customName) return customName;
-    if (schoolId && user[`${schoolType}_adi`]) return user[`${schoolType}_adi`];
+  // Bu fonksiyona user.mezun_okul gibi merkezi bir alan yerine
+  // ilgili okul türünün (ortaokul_adi, lise_adi) geçirilmesi daha doğru olur.
+  // Ancak current user object'deki yapıyı koruyarak bir tahmin yapıyorum.
+  const getSchoolName = (userSchoolId, userCustomSchoolName, userSchoolNameField) => {
+    // Eğer custom okul adı varsa onu kullan
+    if (userCustomSchoolName) return userCustomSchoolName;
+    // Eğer ID'ye bağlı bir okul adı field'ı varsa onu kullan
+    if (userSchoolId && user[userSchoolNameField]) return user[userSchoolNameField];
     return 'Belirtilmemiş';
   };
 
-  const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder, readOnly = false, options = null }) => (
+  const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder, readOnly = false, options = null, disabled = false }) => (
     <div className="group">
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <label className="block text-sm font-semibold text-gray-300 mb-2"> {/* Metin rengi */}
         {label}
-        {readOnly && <span className="ml-2 text-xs text-gray-400">(Değiştirilemez)</span>}
+        {readOnly && <span className="ml-2 text-xs text-gray-500">(Değiştirilemez)</span>} {/* Metin rengi */}
       </label>
       <div className="relative">
         <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-          <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-red-500 transition-colors" />
+          <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-red-500 transition-colors" /> {/* İkon rengi */}
         </div>
         {isEditing && !readOnly ? (
           options ? (
@@ -56,7 +68,8 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               name={name}
               value={value}
               onChange={onChange}
-              className="w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white text-gray-900 font-medium"
+              disabled={disabled} // Disabled prop'unu select'e ekle
+              className={`w-full pl-11 pr-4 py-3.5 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-700 text-white font-medium ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`} 
             >
               <option value="">{placeholder}</option>
               {options.map(option => (
@@ -70,13 +83,13 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={type === 'date' ? formatDateForInput(value) : value}
               onChange={onChange}
               placeholder={placeholder}
-              className="w-full pl-11 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-white text-gray-900 font-medium placeholder-gray-400"
+              className="w-full pl-11 pr-4 py-3.5 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-700 text-white font-medium placeholder-gray-500" 
             />
           )
         ) : (
-          <div className="w-full pl-11 pr-4 py-3.5 border border-gray-100 rounded-xl bg-gray-50/50 text-gray-900 font-medium flex items-center">
+          <div className="w-full pl-11 pr-4 py-3.5 border border-gray-700 rounded-xl bg-gray-700 text-gray-300 font-medium flex items-center"> {/* Koyu tema stilleri */}
             {type === 'date' ? formatDateForDisplay(value) : (value || 'Belirtilmemiş')}
-            {readOnly && <FiLock className="ml-auto h-4 w-4 text-gray-400" />}
+            {readOnly && <FiLock className="ml-auto h-4 w-4 text-gray-500" />} {/* İkon rengi */}
           </div>
         )}
       </div>
@@ -84,45 +97,45 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
   );
 
   const EducationSection = ({ title, icon: Icon, iconColor, status, schoolName, graduationYear, currentClass, location }) => (
-    <div className="p-4 border border-gray-200 rounded-xl bg-gradient-to-r from-gray-50/50 to-white">
+    <div className="p-4 border border-gray-700 rounded-xl bg-gray-800 shadow-md"> {/* Koyu tema arka planı ve kenarlık */}
       <div className="flex items-center mb-3">
         <div className={`h-8 w-8 rounded-lg ${iconColor} flex items-center justify-center mr-3`}>
-          <Icon className="h-4 w-4" />
+          <Icon className="h-4 w-4 text-white" /> {/* İkon rengi (içindeki ikonlar beyaz olsun) */}
         </div>
-        <h4 className="font-semibold text-gray-800">{title}</h4>
+        <h4 className="font-semibold text-gray-200">{title}</h4> {/* Metin rengi */}
       </div>
       
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600">Durum:</span>
-          <span className="font-medium text-gray-900">{getEducationStatusText(status)}</span>
+          <span className="text-gray-400">Durum:</span> {/* Metin rengi */}
+          <span className="font-medium text-gray-300">{getEducationStatusText(status)}</span> {/* Metin rengi */}
         </div>
         
         {(status === 'mezun' || status === 'devam_ediyor') && (
           <>
             <div className="flex justify-between">
-              <span className="text-gray-600">Okul:</span>
-              <span className="font-medium text-gray-900 text-right flex-1 ml-2">{schoolName}</span>
+              <span className="text-gray-400">Okul:</span> {/* Metin rengi */}
+              <span className="font-medium text-gray-300 text-right flex-1 ml-2 break-words">{schoolName}</span> {/* Metin rengi ve kelime kırma */}
             </div>
             
             {location && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Konum:</span>
-                <span className="font-medium text-gray-900">{location}</span>
+                <span className="text-gray-400">Konum:</span> {/* Metin rengi */}
+                <span className="font-medium text-gray-300">{location}</span> {/* Metin rengi */}
               </div>
             )}
             
             {status === 'mezun' && graduationYear && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Mezuniyet Yılı:</span>
-                <span className="font-medium text-gray-900">{graduationYear}</span>
+                <span className="text-gray-400">Mezuniyet Yılı:</span> {/* Metin rengi */}
+                <span className="font-medium text-gray-300">{graduationYear}</span> {/* Metin rengi */}
               </div>
             )}
             
             {status === 'devam_ediyor' && currentClass && (
               <div className="flex justify-between">
-                <span className="text-gray-600">Sınıf:</span>
-                <span className="font-medium text-gray-900">{currentClass}. Sınıf</span>
+                <span className="text-gray-400">Sınıf:</span> {/* Metin rengi */}
+                <span className="font-medium text-gray-300">{currentClass}. Sınıf</span> {/* Metin rengi */}
               </div>
             )}
           </>
@@ -134,24 +147,25 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
   return (
     <div className="space-y-6">
       {/* Kişisel Bilgiler */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center">
-            <div className="h-8 w-8 rounded-lg bg-red-100 flex items-center justify-center mr-3">
-              <FiUser className="h-4 w-4 text-red-600" />
+      <div className="bg-gray-800 rounded-xl sm:rounded-3xl shadow-lg border border-gray-700 overflow-hidden"> {/* Koyu tema arka planı */}
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-700"> {/* Responsive padding, kenarlık rengi */}
+          <h3 className="text-lg sm:text-xl font-bold text-white flex items-center"> {/* Metin rengi ve boyutu */}
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-red-700 flex items-center justify-center mr-3"> {/* Koyu kırmızı arka plan */}
+              <FiUser className="h-4 w-4 text-white" /> {/* İkon rengi */}
             </div>
             Kişisel Bilgiler
           </h3>
         </div>
         
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-4 sm:p-6"> {/* Responsive padding */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> {/* Responsive grid ve boşluk */}
             <InputField
               label="İsim"
               name="isim"
               icon={FiUser}
               value={formData.isim}
               placeholder="İsminizi giriniz"
+              onChange={onChange} // onChange prop'unu ekle
             />
 
             <InputField
@@ -160,6 +174,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               icon={FiUser}
               value={formData.soyisim}
               placeholder="Soyisminizi giriniz"
+              onChange={onChange} // onChange prop'unu ekle
             />
 
             <InputField
@@ -178,6 +193,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               icon={FiPhone}
               value={formData.telefon}
               placeholder="05xxxxxxxxx"
+              onChange={onChange} // onChange prop'unu ekle
             />
 
             <InputField
@@ -186,43 +202,53 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               type="date"
               icon={FiCalendar}
               value={formData.dogum_tarihi}
+              onChange={onChange} // onChange prop'unu ekle
             />
 
-            <div className="group">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Lokasyon</label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <FiMapPin className="h-5 w-5 text-gray-400" />
-                </div>
-                <div className="w-full pl-11 pr-4 py-3.5 border border-gray-100 rounded-xl bg-gray-50/50 text-gray-900 font-medium">
-                  {user.il}{user.ilce && `, ${user.ilce}`} || 'Belirtilmemiş'
-                </div>
-              </div>
-            </div>
+            <InputField
+              label="İl"
+              name="il"
+              icon={FiMapPin}
+              value={formData.il}
+              placeholder="İl seçiniz"
+              options={options.iller}
+              onChange={onChange}
+            />
+
+            <InputField
+              label="İlçe"
+              name="ilce"
+              icon={FiMapPin}
+              value={formData.ilce}
+              placeholder="İlçe seçiniz"
+              options={options.ilceler}
+              onChange={onChange}
+              disabled={!formData.il || options.ilceler.length === 0} // İl seçilmeden ilçe pasif
+            />
           </div>
         </div>
       </div>
 
       {/* Eğitim Bilgileri */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center">
-            <div className="h-8 w-8 rounded-lg bg-purple-100 flex items-center justify-center mr-3">
-              <FiBook className="h-4 w-4 text-purple-600" />
+      <div className="bg-gray-800 rounded-xl sm:rounded-3xl shadow-lg border border-gray-700 overflow-hidden"> {/* Koyu tema arka planı */}
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-700"> {/* Responsive padding, kenarlık rengi */}
+          <h3 className="text-lg sm:text-xl font-bold text-white flex items-center"> {/* Metin rengi ve boyutu */}
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-purple-700 flex items-center justify-center mr-3"> {/* Koyu mor arka plan */}
+              <FiBook className="h-4 w-4 text-white" /> {/* İkon rengi */}
             </div>
             Eğitim Bilgileri
           </h3>
         </div>
         
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="p-4 sm:p-6"> {/* Responsive padding */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"> {/* Responsive grid ve boşluk */}
             {/* Ortaokul */}
             <EducationSection
               title="Ortaokul"
               icon={FiBook}
-              iconColor="bg-orange-100 text-orange-600"
+              iconColor="bg-orange-700" // Koyu turuncu
               status={user.ortaokul_durumu}
-              schoolName={getSchoolName(user.ortaokul_id, user.ortaokul_custom, 'ortaokul')}
+              schoolName={getSchoolName(user.ortaokul_id, user.ortaokul_custom, 'ortaokul_adi')}
               graduationYear={user.ortaokul_mezun_yili}
               currentClass={user.ortaokul_sinif}
               location={user.ortaokul_il && user.ortaokul_ilce ? `${user.ortaokul_il} / ${user.ortaokul_ilce}` : user.ortaokul_il}
@@ -232,9 +258,9 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
             <EducationSection
               title="Lise"
               icon={FiBook}
-              iconColor="bg-blue-100 text-blue-600"
+              iconColor="bg-blue-700" // Koyu mavi
               status={user.lise_durumu}
-              schoolName={getSchoolName(user.lise_id, user.lise_custom, 'lise')}
+              schoolName={getSchoolName(user.lise_id, user.lise_custom, 'lise_adi')}
               graduationYear={user.lise_mezun_yili}
               currentClass={user.lise_sinif}
               location={user.lise_il && user.lise_ilce ? `${user.lise_il} / ${user.lise_ilce}` : user.lise_il}
@@ -244,28 +270,30 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
             <EducationSection
               title="Üniversite"
               icon={FiBook}
-              iconColor="bg-green-100 text-green-600"
+              iconColor="bg-green-700" // Koyu yeşil
               status={user.universite_durumu}
-              schoolName="Üniversite bilgisi eklenmedi"
-              location=""
+              schoolName={getSchoolName(user.universite_id, user.universite_custom, 'universite_adi')} // Üniversite bilgisi eklendi
+              graduationYear={user.universite_mezun_yili}
+              currentClass={user.universite_sinif}
+              location={user.universite_il && user.universite_ilce ? `${user.universite_il} / ${user.universite_ilce}` : user.universite_il}
             />
           </div>
         </div>
       </div>
 
       {/* Mesleki Bilgiler */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center">
-            <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3">
-              <FiBriefcase className="h-4 w-4 text-blue-600" />
+      <div className="bg-gray-800 rounded-xl sm:rounded-3xl shadow-lg border border-gray-700 overflow-hidden"> {/* Koyu tema arka planı */}
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-700"> {/* Responsive padding, kenarlık rengi */}
+          <h3 className="text-lg sm:text-xl font-bold text-white flex items-center"> {/* Metin rengi ve boyutu */}
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-blue-700 flex items-center justify-center mr-3"> {/* Koyu mavi arka plan */}
+              <FiBriefcase className="h-4 w-4 text-white" /> {/* İkon rengi */}
             </div>
             Mesleki Bilgiler
           </h3>
         </div>
         
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-4 sm:p-6"> {/* Responsive padding */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> {/* Responsive grid ve boşluk */}
             <InputField
               label="Sektör"
               name="sektor"
@@ -273,6 +301,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={formData.sektor}
               placeholder="Sektör seçiniz"
               options={options.sektorler}
+              onChange={onChange}
             />
 
             <InputField
@@ -281,14 +310,16 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               icon={FiBriefcase}
               value={formData.meslek}
               placeholder="Mesleğinizi giriniz"
+              onChange={onChange}
             />
 
             <InputField
-              label="Mezun Olunan Okul (Eski)"
+              label="Mezun Olunan Okul (Eski)" // Bu alan user.mezun_okul'dan geliyor, ancak yukarıdaki detaylı eğitim bilgileriyle çakışıyor gibi duruyor. API'de bu alanın rolünü netleştirmek gerekebilir. Şimdilik bıraktım.
               name="mezun_okul"
               icon={FiBook}
               value={formData.mezun_okul}
               placeholder="Mezun olduğunuz okulu giriniz"
+              onChange={onChange}
             />
 
             <InputField
@@ -298,23 +329,24 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={formData.calisma_komisyon}
               placeholder="Komisyon seçiniz"
               options={options.komisyonlar}
+              onChange={onChange}
             />
           </div>
         </div>
       </div>
 
       {/* Dernek Bilgileri */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center">
-            <div className="h-8 w-8 rounded-lg bg-green-100 flex items-center justify-center mr-3">
-              <FiHome className="h-4 w-4 text-green-600" />
+      <div className="bg-gray-800 rounded-xl sm:rounded-3xl shadow-lg border border-gray-700 overflow-hidden"> {/* Koyu tema arka planı */}
+        <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-700"> {/* Responsive padding, kenarlık rengi */}
+          <h3 className="text-lg sm:text-xl font-bold text-white flex items-center"> {/* Metin rengi ve boyutu */}
+            <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-green-700 flex items-center justify-center mr-3"> {/* Koyu yeşil arka plan */}
+              <FiHome className="h-4 w-4 text-white" /> {/* İkon rengi */}
             </div>
             Dernek Bilgileri
           </h3>
         </div>
         
-        <div className="p-6">
+        <div className="p-4 sm:p-6"> {/* Responsive padding */}
           <InputField
             label="Gönüllü Olunan Dernek"
             name="gonullu_dernek"

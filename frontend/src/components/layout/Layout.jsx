@@ -1,36 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
+import Sidebar from './Sidebar'; // Masaüstü Sidebar
+import MobileBottomNav from '../MobileBottomNav'; // Mobil alt navigasyon
 
 const Layout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Sidebar for mobile */}
-      <Sidebar 
-        open={sidebarOpen} 
-        setOpen={setSidebarOpen}
-        mobile={true}
-      />
+      {/* Masaüstü Sidebar (Her zaman açık, sadece lg ve üzeri ekranlarda görünür) */}
+      <Sidebar />
 
-      {/* Sidebar for desktop */}
-      <Sidebar 
-        open={true} 
-        setOpen={() => {}}
-        mobile={false}
-      />
-
-      {/* Main content */}
-      <div className="lg:pl-64">
-
-        {/* Page content */}
-        <main className="py-6">
+      {/* Ana İçerik Alanı */}
+      {/* pb-16: Mobil alt menü için alt boşluk ekler. lg:pb-0: Masaüstünde bu boşluğu sıfırlar. */}
+      <div className="lg:pl-80 pb-16 lg:pb-0">
+        {/* Sayfa içeriği */}
+        <main className="py-6 bg-[#000000]">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <Outlet />
           </div>
         </main>
       </div>
+
+      {/* Mobil Alt Navigasyon (Sadece lg'den küçük ekranlarda görünür) */}
+      <MobileBottomNav />
     </div>
   );
 };

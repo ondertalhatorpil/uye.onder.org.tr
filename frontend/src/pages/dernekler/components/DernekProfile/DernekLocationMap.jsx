@@ -104,7 +104,7 @@ const DernekLocationMap = ({ dernek, showPopup = true, height = '400px' }) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <FiMapPin className="mr-2 h-5 w-5 text-red-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Konum</h3>
+          <h3 className="text-lg font-semibold text-gray-100">Konum</h3>
         </div>
         
         <div className="flex space-x-2">

@@ -8,8 +8,7 @@ import {
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
-import LocationPickerModal from './components/DernekProfile/LocationPickerModal';
-
+import LocationPickerModal from './components/DernekProfile/LocationPickerModal'; // Make sure this modal also supports dark theme
 
 const MyDernek = () => {
   const { user } = useAuth();
@@ -232,10 +231,10 @@ const MyDernek = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center"> {/* Daha koyu arka plan */}
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Dernek bilgileri yükleniyor...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-500 border-t-red-700 mx-auto"></div>
+          <p className="mt-6 text-lg text-gray-400 font-medium tracking-wide">Dernek bilgileri yükleniyor...</p> {/* Biraz tracking eklendi */}
         </div>
       </div>
     );
@@ -243,23 +242,26 @@ const MyDernek = () => {
 
   if (!dernek) {
     return (
-      <div className="text-center py-12">
-        <FiHome className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Dernek Bulunamadı</h2>
-        <p className="text-gray-600">Size atanmış bir dernek bulunmamaktadır.</p>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center py-12">
+        <div className="text-center">
+          <FiHome className="mx-auto h-16 w-16 text-gray-600 mb-6" /> {/* İkon büyütüldü ve koyulaştırıldı */}
+          <h2 className="text-3xl font-extrabold text-white mb-3">Dernek Bulunamadı</h2> {/* Font büyütüldü */}
+          <p className="text-lg text-gray-400 max-w-sm mx-auto">Size atanmış bir dernek bulunmamaktadır. Lütfen sistem yöneticinizle iletişime geçin.</p> {/* Metin büyütüldü, açıklama eklendi */}
+        </div>
       </div>
     );
   }
 
 
 return (
-  <>
-    <div className="max-w-4xl mx-auto space-y-6">
+  // Ana kapsayıcıya daha koyu arka plan verildi
+  <div className="min-h-screen bg-gray-950 text-white py-12"> {/* Genel metin rengi beyaz, padding artırıldı */}
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"> {/* padding ve boşluk artırıldı */}
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"> {/* Responsive düzenleme */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Derneğim</h1>
-          <p className="text-gray-600">Dernek bilgilerinizi görüntüleyin ve düzenleyin</p>
+          <h1 className="text-3xl font-extrabold text-white">Derneğim</h1> {/* Font büyütüldü */}
+          <p className="text-gray-400 text-lg mt-1">Dernek bilgilerinizi görüntüleyin ve güncelleyin</p> {/* Metin büyütüldü */}
         </div>
         
         <div className="flex items-center space-x-3">
@@ -267,24 +269,24 @@ return (
             <>
               <button
                 onClick={handleCancel}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center px-5 py-2.5 border border-gray-600 rounded-xl text-base font-semibold text-gray-200 bg-gray-700 hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 shadow-md" // Boyutlar ve efektler değişti
               >
-                <FiX className="mr-2 h-4 w-4" />
+                <FiX className="mr-2 h-5 w-5" /> {/* İkon boyutu */}
                 İptal
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="inline-flex items-center px-5 py-2.5 bg-red-600 text-white rounded-xl text-base font-semibold hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-md disabled:opacity-50 disabled:scale-100" // Boyutlar ve efektler değişti
               >
                 {saving ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div> {/* Boyut */}
                     Kaydediliyor...
                   </>
                 ) : (
                   <>
-                    <FiSave className="mr-2 h-4 w-4" />
+                    <FiSave className="mr-2 h-5 w-5" /> {/* Boyut */}
                     Kaydet
                   </>
                 )}
@@ -293,25 +295,29 @@ return (
           ) : (
             <button
               onClick={() => setIsEditing(true)}
-              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+              className="inline-flex items-center px-5 py-2.5 bg-red-600 text-white rounded-xl text-base font-semibold hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-md" // Boyutlar ve efektler değişti
             >
-              <FiEdit3 className="mr-2 h-4 w-4" />
+              <FiEdit3 className="mr-2 h-5 w-5" /> {/* Boyut */}
               Düzenle
             </button>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8"> {/* Boşluk artırıldı */}
         {/* Ana Bilgiler */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow border border-gray-200">
+          {/* Card arka planı, kenarlık ve daha belirgin shadow */}
+          <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 relative overflow-hidden">
+            {/* Dekoratif gradyan */}
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-red-600 to-red-600"></div>
+
             {/* Dernek Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-8 border-b border-gray-700"> {/* Padding artırıldı */}
               <div className="flex items-center">
                 {/* Logo */}
                 <div className="relative">
-                  <div className="h-20 w-20 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <div className="h-24 w-24 rounded-full border-4 border-gray-700 overflow-hidden bg-gray-700 flex items-center justify-center shadow-lg"> {/* Logo çerçevesi, border ve shadow */}
                     {getLogoUrl() ? (
                       <img
                         src={getLogoUrl()}
@@ -324,7 +330,7 @@ return (
                       />
                     ) : null}
                     <div className={`${getLogoUrl() ? 'hidden' : 'flex'} w-full h-full items-center justify-center`}>
-                      <FiHome className="h-8 w-8 text-gray-400" />
+                      <FiHome className="h-10 w-10 text-gray-500" /> {/* İkon boyutu */}
                     </div>
                   </div>
                   
@@ -332,12 +338,12 @@ return (
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
-                    className="absolute -bottom-2 -right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors disabled:opacity-50"
+                    className="absolute -bottom-1 -right-1 p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-all duration-300 transform hover:scale-110 disabled:opacity-50 disabled:scale-100 shadow-md" // Boyut ve efektler
                   >
                     {uploading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     ) : (
-                      <FiCamera className="h-4 w-4" />
+                      <FiCamera className="h-5 w-5" />
                     )}
                   </button>
                   
@@ -350,38 +356,39 @@ return (
                   />
                 </div>
 
-                <div className="ml-4">
-                  <h2 className="text-xl font-semibold text-gray-900">
+                <div className="ml-6"> {/* Boşluk artırıldı */}
+                  <h2 className="text-2xl font-bold text-white mb-1"> {/* Başlık font boyutu */}
                     {dernek.dernek_adi}
                   </h2>
-                  <p className="text-gray-600">{dernek.dernek_baskani}</p>
-                  <div className="flex items-center text-sm text-gray-500 mt-1">
-                    <FiUsers className="mr-1 h-4 w-4" />
-                    {dernek.uye_sayisi || 0} üye
+                  <p className="text-gray-400 text-lg">{dernek.dernek_baskani}</p> {/* Metin boyutu */}
+                  <div className="flex items-center text-base text-gray-500 mt-2"> {/* Metin boyutu */}
+                    <FiUsers className="mr-2 h-5 w-5" /> {/* İkon boyutu */}
+                    <span className="font-semibold text-white">{dernek.uye_sayisi || 0}</span> üye
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Dernek Bilgileri */}
-            <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dernek Bilgileri</h3>
+            <div className="p-8"> {/* Padding artırıldı */}
+              <h3 className="text-xl font-semibold text-white mb-6 border-b border-gray-700 pb-3">Dernek Bilgileri</h3> {/* Başlık stili, alt çizgi */}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> {/* Boşluklar artırıldı */}
+                {/* Her bir form alanı için dark theme stilleri */}
                 {/* Dernek Adı */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Dernek Adı</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Dernek Adı</label> {/* Label boşluğu */}
                   {isEditing ? (
                     <input
                       type="text"
                       name="dernek_adi"
                       value={formData.dernek_adi}
                       onChange={handleChange}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-base shadow-sm" // Boyutlar ve shadow
                     />
                   ) : (
-                    <div className="flex items-center text-gray-900">
-                      <FiHome className="mr-2 h-4 w-4 text-gray-400" />
+                    <div className="flex items-center text-lg text-gray-200"> {/* Metin boyutu */}
+                      <FiHome className="mr-3 h-5 w-5 text-gray-500" /> {/* İkon boyutu ve boşluk */}
                       {dernek.dernek_adi}
                     </div>
                   )}
@@ -389,18 +396,18 @@ return (
 
                 {/* Başkan */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Başkan</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Başkan</label>
                   {isEditing ? (
                     <input
                       type="text"
                       name="dernek_baskani"
                       value={formData.dernek_baskani}
                       onChange={handleChange}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-base shadow-sm"
                     />
                   ) : (
-                    <div className="flex items-center text-gray-900">
-                      <FiUser className="mr-2 h-4 w-4 text-gray-400" />
+                    <div className="flex items-center text-lg text-gray-200">
+                      <FiUser className="mr-3 h-5 w-5 text-gray-500" />
                       {dernek.dernek_baskani || 'Belirtilmemiş'}
                     </div>
                   )}
@@ -408,19 +415,19 @@ return (
 
                 {/* Telefon */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Telefon</label>
                   {isEditing ? (
                     <input
                       type="tel"
                       name="dernek_telefon"
                       value={formData.dernek_telefon}
                       onChange={handleChange}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-base shadow-sm"
                       placeholder="05xxxxxxxxx"
                     />
                   ) : (
-                    <div className="flex items-center text-gray-900">
-                      <FiPhone className="mr-2 h-4 w-4 text-gray-400" />
+                    <div className="flex items-center text-lg text-gray-200">
+                      <FiPhone className="mr-3 h-5 w-5 text-gray-500" />
                       {dernek.dernek_telefon || 'Belirtilmemiş'}
                     </div>
                   )}
@@ -428,19 +435,19 @@ return (
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
                   {isEditing ? (
                     <input
                       type="email"
                       name="dernek_email"
                       value={formData.dernek_email}
                       onChange={handleChange}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-base shadow-sm"
                       placeholder="dernek@email.com"
                     />
                   ) : (
-                    <div className="flex items-center text-gray-900">
-                      <FiMail className="mr-2 h-4 w-4 text-gray-400" />
+                    <div className="flex items-center text-lg text-gray-200">
+                      <FiMail className="mr-3 h-5 w-5 text-gray-500" />
                       {dernek.dernek_email || 'Belirtilmemiş'}
                     </div>
                   )}
@@ -448,18 +455,18 @@ return (
 
                 {/* Kuruluş Tarihi */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kuruluş Tarihi</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Kuruluş Tarihi</label>
                   {isEditing ? (
                     <input
                       type="date"
                       name="dernek_kuruluş_tarihi"
                       value={formatDate(formData.dernek_kuruluş_tarihi)}
                       onChange={handleChange}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-base shadow-sm"
                     />
                   ) : (
-                    <div className="flex items-center text-gray-900">
-                      <FiCalendar className="mr-2 h-4 w-4 text-gray-400" />
+                    <div className="flex items-center text-lg text-gray-200">
+                      <FiCalendar className="mr-3 h-5 w-5 text-gray-500" />
                       {dernek.dernek_kuruluş_tarihi ? 
                         new Date(dernek.dernek_kuruluş_tarihi).toLocaleDateString('tr-TR') : 
                         'Belirtilmemiş'
@@ -470,11 +477,11 @@ return (
 
                 {/* Lokasyon */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Lokasyon</label>
-                  <div className="flex items-center text-gray-900">
-                    <FiMapPin className="mr-2 h-4 w-4 text-gray-400" />
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Lokasyon</label>
+                  <div className="flex items-center text-lg text-gray-200">
+                    <FiMapPin className="mr-3 h-5 w-5 text-gray-500" />
                     {dernek.il}{dernek.ilce && `, ${dernek.ilce}`}
-                    <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                    <span className="ml-3 text-xs bg-gray-700 text-gray-400 px-2.5 py-1 rounded-full font-medium tracking-wide"> {/* Etiket stili */}
                       Değiştirilemez
                     </span>
                   </div>
@@ -482,12 +489,12 @@ return (
               </div>
 
               {/* Sosyal Medya */}
-              <h3 className="text-lg font-semibold text-gray-900 mt-8 mb-4">Sosyal Medya</h3>
+              <h3 className="text-xl font-semibold text-white mt-10 mb-6 border-b border-gray-700 pb-3">Sosyal Medya</h3> {/* Başlık stili */}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> {/* Boşluklar artırıldı */}
                 {['website', 'instagram', 'twitter', 'facebook'].map(platform => (
                   <div key={platform}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                    <label className="block text-sm font-medium text-gray-300 mb-2 capitalize">
                       {platform}
                     </label>
                     {isEditing ? (
@@ -496,18 +503,18 @@ return (
                         name={`social_${platform}`}
                         value={formData.dernek_sosyal_medya_hesaplari[platform]}
                         onChange={handleChange}
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full px-4 py-2.5 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white placeholder-gray-400 text-base shadow-sm"
                         placeholder={`https://${platform}.com/...`}
                       />
                     ) : (
-                      <div className="flex items-center text-gray-900">
-                        <FiExternalLink className="mr-2 h-4 w-4 text-gray-400" />
+                      <div className="flex items-center text-lg text-gray-200">
+                        <FiExternalLink className="mr-3 h-5 w-5 text-gray-500" />
                         {formData.dernek_sosyal_medya_hesaplari[platform] ? (
                           <a 
                             href={formData.dernek_sosyal_medya_hesaplari[platform]}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-500 truncate"
+                            className="text-blue-400 hover:text-blue-300 underline underline-offset-2 truncate" // Alt çizgi eklendi
                           >
                             {formData.dernek_sosyal_medya_hesaplari[platform]}
                           </a>
@@ -521,61 +528,61 @@ return (
               </div>
             </div>
 
-            {/* YENİ: Konum Bölümü */}
-            <div className="p-6 border-t border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                  <FiMapPin className="mr-2 h-5 w-5 text-red-600" />
+            {/* Konum Bölümü */}
+            <div className="p-8 border-t border-gray-700"> {/* Padding ve border */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4"> {/* Responsive düzenleme */}
+                <h3 className="text-xl font-semibold text-white flex items-center">
+                  <FiMapPin className="mr-3 h-6 w-6 text-red-500" /> {/* İkon boyutu ve boşluk */}
                   Dernek Konumu
                 </h3>
                 <button
                   onClick={() => setIsLocationModalOpen(true)}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                  className="inline-flex items-center px-4 py-2.5 text-base font-semibold text-red-400 bg-red-900/30 rounded-xl hover:bg-red-900/50 transition-all duration-300 transform hover:scale-105 shadow-md" // Boyutlar ve efektler
                 >
-                  <FiMapPin className="mr-2 h-4 w-4" />
+                  <FiMapPin className="mr-2 h-5 w-5" />
                   {dernek.dernek_latitude ? 'Konumu Değiştir' : 'Konum Belirle'}
                 </button>
               </div>
 
               {dernek.dernek_latitude && dernek.dernek_longitude ? (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="bg-gray-700 rounded-xl p-6 border border-gray-600 shadow-inner"> {/* Konum bilgisi kutusu stili */}
+                  <div className="grid grid-cols-2 gap-6 text-base"> {/* Metin boyutu */}
                     <div>
-                      <span className="font-medium text-gray-700">Enlem:</span>
-                      <p className="text-gray-900">{parseFloat(dernek.dernek_latitude).toFixed(6)}</p>
+                      <span className="font-medium text-gray-300">Enlem:</span>
+                      <p className="text-gray-100 font-mono">{parseFloat(dernek.dernek_latitude).toFixed(6)}</p> {/* Font mono */}
                     </div>
                     <div>
-                      <span className="font-medium text-gray-700">Boylam:</span>
-                      <p className="text-gray-900">{parseFloat(dernek.dernek_longitude).toFixed(6)}</p>
+                      <span className="font-medium text-gray-300">Boylam:</span>
+                      <p className="text-gray-100 font-mono">{parseFloat(dernek.dernek_longitude).toFixed(6)}</p>
                     </div>
                   </div>
                   {dernek.dernek_adres && (
-                    <div className="mt-3">
-                      <span className="font-medium text-gray-700">Adres:</span>
-                      <p className="text-gray-900 text-sm">{dernek.dernek_adres}</p>
+                    <div className="mt-4">
+                      <span className="font-medium text-gray-300">Adres:</span>
+                      <p className="text-gray-100 text-sm mt-1">{dernek.dernek_adres}</p>
                     </div>
                   )}
                   
                   {/* Haritayı göster butonu */}
-                  <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="mt-6 pt-4 border-t border-gray-600">
                     <a
-                      href={`https://www.google.com/maps?q=${dernek.dernek_latitude},${dernek.dernek_longitude}`}
+                      href={`http://maps.google.com/?q=${dernek.dernek_latitude},${dernek.dernek_longitude}`} // Corrected Google Maps URL
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                      className="inline-flex items-center px-4 py-2.5 text-base font-semibold text-blue-400 bg-blue-900/30 rounded-xl hover:bg-blue-900/50 transition-all duration-300 transform hover:scale-105 shadow-md" // Buton stili
                     >
-                      <FiExternalLink className="mr-2 h-4 w-4" />
+                      <FiExternalLink className="mr-2 h-5 w-5" />
                       Haritada Göster
                     </a>
                   </div>
                 </div>
               ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <FiMapPin className="h-5 w-5 text-yellow-600 mr-2" />
+                <div className="bg-yellow-900/30 border border-yellow-800/50 rounded-xl p-6 shadow-inner"> {/* Uyarı kutusu stili */}
+                  <div className="flex items-start">
+                    <FiMapPin className="h-6 w-6 text-yellow-400 mr-4 mt-1" /> {/* İkon boyutu ve boşluk */}
                     <div>
-                      <p className="text-sm font-medium text-yellow-800">Konum Belirtilmemiş</p>
-                      <p className="text-sm text-yellow-700">Derneğinizin konumunu belirlemek için "Konum Belirle" butonuna tıklayın.</p>
+                      <p className="text-lg font-semibold text-yellow-200 mb-1">Konum Belirtilmemiş</p> {/* Metin boyutu */}
+                      <p className="text-sm text-yellow-300">Derneğinizin harita üzerinde görünmesi için konum bilgisini belirlemeniz gerekmektedir. Lütfen "Konum Belirle" butonuna tıklayın.</p> {/* Metin boyutu, açıklama */}
                     </div>
                   </div>
                 </div>
@@ -585,91 +592,101 @@ return (
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-8"> {/* Boşluk artırıldı */}
           {/* Logo Yükleme Talimatları */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Logo Yükleme</h3>
-            
-            <div className="space-y-3 text-sm text-gray-600">
-              <div className="flex items-start">
-                <FiUpload className="mt-0.5 mr-2 h-4 w-4 text-red-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Dosya Formatı</p>
-                  <p>JPG, PNG, GIF desteklenir</p>
+          <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 relative overflow-hidden">
+            {/* Dekoratif gradyan */}
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-red-600 to-red-600"></div>
+
+            <div className="p-8"> {/* Padding artırıldı */}
+              <h3 className="text-xl font-semibold text-white mb-6 border-b border-gray-700 pb-3">Logo Yükleme</h3> {/* Başlık stili */}
+              
+              <div className="space-y-4 text-base text-gray-400"> {/* Metin boyutu, boşluk */}
+                <div className="flex items-start">
+                  <FiUpload className="mt-0.5 mr-3 h-5 w-5 text-red-500" /> {/* İkon boyutu */}
+                  <div>
+                    <p className="font-medium text-gray-200">Dosya Formatı</p>
+                    <p>JPG, PNG, GIF desteklenir</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <FiCamera className="mt-0.5 mr-3 h-5 w-5 text-red-500" />
+                  <div>
+                    <p className="font-medium text-gray-200">Boyut Limiti</p>
+                    <p>Maksimum 2MB</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="mt-0.5 mr-3 h-5 w-5 bg-red-600 rounded-md flex-shrink-0"></div> {/* Boyut, flex-shrink */}
+                  <div>
+                    <p className="font-medium text-gray-200">Önerilen Boyut</p>
+                    <p>400x400 piksel kare format</p>
+                  </div>
                 </div>
               </div>
               
-              <div className="flex items-start">
-                <FiCamera className="mt-0.5 mr-2 h-4 w-4 text-red-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Boyut Limiti</p>
-                  <p>Maksimum 2MB</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <div className="mt-0.5 mr-2 h-4 w-4 bg-red-600 rounded-sm"></div>
-                <div>
-                  <p className="font-medium text-gray-900">Önerilen Boyut</p>
-                  <p>400x400 piksel kare format</p>
-                </div>
-              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-full mt-8 inline-flex items-center justify-center px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:scale-100 shadow-md text-base font-semibold" // Buton stili
+              >
+                {uploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Yükleniyor...
+                  </>
+                ) : (
+                  <>
+                    <FiCamera className="mr-2 h-5 w-5" />
+                    Logo Değiştir
+                  </>
+                )}
+              </button>
             </div>
-            
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full mt-4 inline-flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-            >
-              {uploading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Yükleniyor...
-                </>
-              ) : (
-                <>
-                  <FiCamera className="mr-2 h-4 w-4" />
-                  Logo Değiştir
-                </>
-              )}
-            </button>
           </div>
 
           {/* Konum Bilgisi Kartı */}
-          <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <FiMapPin className="mr-2 h-5 w-5 text-red-600" />
-              Konum Durumu
-            </h3>
-            
-            {dernek.dernek_latitude && dernek.dernek_longitude ? (
-              <div className="text-center">
-                <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-                  <FiMapPin className="h-6 w-6 text-green-600" />
+          <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 relative overflow-hidden">
+            {/* Dekoratif gradyan */}
+            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-red-600 to-blue-600"></div>
+
+            <div className="p-8"> {/* Padding artırıldı */}
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center border-b border-gray-700 pb-3">
+                <FiMapPin className="mr-3 h-6 w-6 text-red-500" />
+                Konum Durumu
+              </h3>
+              
+              {dernek.dernek_latitude && dernek.dernek_longitude ? (
+                <div className="text-center py-4"> {/* Padding */}
+                  <div className="h-16 w-16 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-4 border border-green-800/50 shadow-md"> {/* İkon kapsayıcı stili */}
+                    <FiMapPin className="h-8 w-8 text-green-400" /> {/* İkon boyutu */}
+                  </div>
+                  <p className="text-lg font-semibold text-green-200 mb-1">Konum Belirlendi</p>
+                  <p className="text-sm text-green-300">
+                    Derneğiniz haritada başarıyla işaretlendi.
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-green-800 mb-1">Konum Belirlendi</p>
-                <p className="text-xs text-green-600">
-                  Derneğiniz artık haritada görünebilir
-                </p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-3">
-                  <FiMapPin className="h-6 w-6 text-yellow-600" />
+              ) : (
+                <div className="text-center py-4">
+                  <div className="h-16 w-16 rounded-full bg-yellow-900/30 flex items-center justify-center mx-auto mb-4 border border-yellow-800/50 shadow-md"> {/* İkon kapsayıcı stili */}
+                    <FiMapPin className="h-8 w-8 text-yellow-400" />
+                  </div>
+                  <p className="text-lg font-semibold text-yellow-200 mb-2">Konum Bekleniyor</p>
+                  <p className="text-sm text-yellow-300 mb-5">
+                    Derneğiniz henüz harita üzerinde bir konuma sahip değil.
+                  </p>
+                  <button
+                    onClick={() => setIsLocationModalOpen(true)}
+                    className="w-full inline-flex items-center justify-center px-5 py-2.5 text-base font-semibold text-yellow-400 bg-yellow-900/30 border border-yellow-800/50 rounded-xl hover:bg-yellow-900/50 transition-all duration-300 transform hover:scale-105 shadow-md"
+                  >
+                    <FiMapPin className="mr-2 h-5 w-5" />
+                    Konum Belirle
+                  </button>
                 </div>
-                <p className="text-sm font-medium text-yellow-800 mb-1">Konum Bekleniyor</p>
-                <p className="text-xs text-yellow-600 mb-3">
-                  Derneğiniz henüz haritada görünmüyor
-                </p>
-                <button
-                  onClick={() => setIsLocationModalOpen(true)}
-                  className="w-full inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-yellow-700 bg-yellow-50 border border-yellow-300 rounded-lg hover:bg-yellow-100 transition-colors"
-                >
-                  <FiMapPin className="mr-2 h-4 w-4" />
-                  Konum Belirle
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -683,7 +700,7 @@ return (
       dernek={dernek}
       saving={savingLocation}
     />
-  </>
+  </div>
 );
 };
 

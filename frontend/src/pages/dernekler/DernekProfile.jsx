@@ -4,10 +4,10 @@ import { dernekService, userService, faaliyetService } from '../../services';
 import { FiArrowLeft } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
+// Make sure these components also support dark theme or are updated by you separately
 import DernekHeader from './components/DernekProfile/DernekHeader';
 import DernekStats from './components/DernekProfile/DernekStats';
 import DernekTabs from './components/DernekProfile/DernekTabs';
-// YENİ: Leaflet harita komponenti
 import DernekLocationMap from './components/DernekProfile/DernekLocationMap';
 
 const DernekProfile = () => {
@@ -120,10 +120,10 @@ const DernekProfile = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center"> {/* Dark background */}
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-200 border-t-red-600 mx-auto"></div>
-          <p className="mt-6 text-lg text-gray-600 font-medium">Dernek bilgileri yükleniyor...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-500 border-t-red-700 mx-auto"></div> {/* Darker red loader */}
+          <p className="mt-6 text-lg text-gray-400 font-medium">Dernek bilgileri yükleniyor...</p> {/* Lighter text */}
         </div>
       </div>
     );
@@ -131,16 +131,16 @@ const DernekProfile = () => {
 
   if (!dernek) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center"> 
         <div className="text-center max-w-md mx-auto">
-          <div className="h-24 w-24 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
-            <FiArrowLeft className="h-12 w-12 text-gray-400" />
+          <div className="h-24 w-24 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-6 border border-gray-700"> {/* Darker background, border */}
+            <FiArrowLeft className="h-12 w-12 text-gray-500" /> {/* Darker icon */}
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Dernek bulunamadı</h2>
-          <p className="text-gray-600 mb-8">Aradığınız dernek mevcut değil.</p>
+          <h2 className="text-2xl font-bold text-white mb-3">Dernek bulunamadı</h2> {/* White text */}
+          <p className="text-gray-400 mb-8">Aradığınız dernek mevcut değil.</p> {/* Lighter text */}
           <button
             onClick={() => navigate('/dernekler')}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md font-medium"
+            className="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-md font-medium transition-all duration-200" 
           >
             <FiArrowLeft className="mr-2 h-5 w-5" />
             Derneklere Dön
@@ -161,35 +161,35 @@ const DernekProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+    <div className="min-h-screen"> {/* Dark background for the entire page */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-12 py-6 space-y-8">
         {/* Back Button */}
         <div className="flex items-center">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors font-medium"
+            className="inline-flex items-center text-gray-100 hover:text-white transition-colors font-medium" 
           >
             <FiArrowLeft className="mr-2 h-5 w-5" />
             Geri Dön
           </button>
         </div>
 
-        {/* Dernek Header */}
+        {/* Dernek Header (Assuming DernekHeader will be updated for dark theme by you) */}
         <DernekHeader 
           dernek={dernek}
           members={members}
           faaliyetler={faaliyetler}
         />
 
-        {/* Stats Cards */}
+        {/* Stats Cards (Assuming DernekStats will be updated for dark theme by you) */}
         <DernekStats stats={statsData} formatDate={formatDate} />
 
-        {/* YENİ: Leaflet Harita Bölümü - Stats'den sonra, Tabs'den önce */}
-        <div className="bg-white rounded-lg shadow border border-gray-200 p-6">
+        {/* Leaflet Harita Bölümü */}
+        <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-6"> {/* Dark background for map container, stronger shadow, border */}
           <DernekLocationMap dernek={dernek} />
         </div>
 
-        {/* Tabs Content */}
+        {/* Tabs Content (Assuming DernekTabs will be updated for dark theme by you) */}
         <DernekTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}

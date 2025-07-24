@@ -17,6 +17,7 @@
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "list": "^2.0.19",
+    "lucide-react": "^0.525.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.59.0",

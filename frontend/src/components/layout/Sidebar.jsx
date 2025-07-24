@@ -3,12 +3,17 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   FiHome, FiUsers, FiActivity,
-  FiSettings, FiShield, FiUser, FiX,
+  FiSettings, FiShield, FiUser, // FiX, kaldırıldı
   FiSearch, FiPlus, FiGrid, FiLogOut,
-  FiClock, FiCheck, FiAlertCircle // Yeni ikonlar
+  FiClock, FiCheck, FiAlertCircle, FiMoreHorizontal
 } from 'react-icons/fi';
 
-const Sidebar = ({ open, setOpen, mobile }) => {
+// Kırmızı tonlarını merkezi olarak tanımlayalım
+const APP_RED = 'red-500'; // Ana kırmızı renk
+const APP_RED_HOVER = 'red-600'; // Hover durumu için daha koyu kırmızı
+
+// Sidebar bileşeni artık sadece masaüstü için çalışıyor
+const Sidebar = () => { // props olarak open, setOpen, mobile kaldırıldı
   const location = useLocation();
   const { user, hasRole, hasAnyRole, logout } = useAuth();
 
@@ -31,9 +36,9 @@ const Sidebar = ({ open, setOpen, mobile }) => {
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
       {
-        name: 'Faaliyet Paylaş',
-        href: '/faaliyetler/create',
-        icon: FiPlus,
+        name: 'Üye Arama',
+        href: '/uyeler',
+        icon: FiSearch,
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
       {
@@ -43,15 +48,9 @@ const Sidebar = ({ open, setOpen, mobile }) => {
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
       {
-        name: 'Üye Arama',
-        href: '/uyeler',
-        icon: FiSearch,
-        roles: ['super_admin', 'dernek_admin', 'uye']
-      },
-      {
-        name: 'Üyeler',
-        href: '/uyeler/list',
-        icon: FiUsers,
+        name: 'Profil',
+        href: '/profile',
+        icon: FiUser,
         roles: ['super_admin', 'dernek_admin', 'uye']
       }
     ];
@@ -85,34 +84,28 @@ const Sidebar = ({ open, setOpen, mobile }) => {
         roles: ['super_admin']
       },
       {
-        name: 'Faaliyetler',
+        name: 'Faaliyetler (Admin)',
         href: '/admin/faaliyetler/stats',
         icon: FiClock,
         roles: ['super_admin'],
-        badge: true 
+        badge: true
       }
     ];
 
-    const profileItems = [
+    const moreItems = [
       {
-        name: 'Profilim',
-        href: '/profile',
-        icon: FiUser,
-        roles: ['super_admin', 'dernek_admin', 'uye']
-      },
-      {
-        name: 'Ayarlar',
+        name: 'Daha fazla',
         href: '/settings',
-        icon: FiSettings,
-        roles: ['super_admin', 'dernek_admin', 'uye']
+        icon: FiMoreHorizontal,
+        roles: ['dernek_admin', 'uye']
       }
     ];
 
     return [
       ...baseMenuItems,
-      ...dernekAdminItems,
-      ...superAdminItems,
-      ...profileItems
+      ...(hasRole('dernek_admin') ? dernekAdminItems : []),
+      ...(hasRole('super_admin') ? superAdminItems : []),
+      ...(hasAnyRole(['dernek_admin', 'uye']) ? moreItems : []) // Sadece dernek_admin veya üye ise 'Daha fazla' göster
     ].filter(item => item.roles.includes(user?.role));
   };
 
@@ -125,182 +118,92 @@ const Sidebar = ({ open, setOpen, mobile }) => {
     return location.pathname.startsWith(href);
   };
 
-  const handleLinkClick = () => {
-    if (mobile) {
-      setOpen(false);
-    }
-  };
-
-  // Badge bileşeni
   const MenuItemBadge = ({ item }) => {
-    if (item.badge && item.href === '/admin/faaliyetler/bekleyenler') {
+    if (item.badge && item.href === '/admin/faaliyetler/stats') {
       return (
-        <span className="ml-auto inline-flex items-center justify-center h-5 w-5 text-xs font-bold text-white bg-red-500 rounded-full">
-          !
+        <span className={`ml-2 inline-flex items-center justify-center h-2 w-2 bg-${APP_RED} rounded-full animate-pulse`}>
         </span>
       );
     }
     return null;
   };
 
-  if (mobile) {
-    return (
-      <>
-        {/* Mobile sidebar overlay */}
-        {open && (
-          <div className="fixed inset-0 z-40 lg:hidden">
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setOpen(false)} />
+  // Logo için kendi bileşeniniz
+  const AppLogo = () => (
+    <img
+      src="https://onder.org.tr/assets/images/statics/onder-logo.svg"
+      className='h-8 w-auto' // Logo boyutunu ayarla
+      alt="Logo"
+    />
+  );
 
-            <div className="fixed inset-y-0 left-0 flex w-full max-w-xs flex-col bg-white">
-              {/* Close button */}
-              <div className="flex h-16 items-center justify-between px-4 border-b border-gray-200">
-                <div className="flex items-center h-16 px-4 border-b border-gray-200">
-                  <div className="h-4 w-4 flex items-center justify-center">
-                    <span className="text-sm font-bold text-white">
-                      <img src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg" alt="Logo" />
-                    </span>
-                  </div>
-                  <span className="ml-2 text-xl font-semibold text-gray-900">
-                    ÖNDER
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                  onClick={() => setOpen(false)}
-                >
-                  <FiX className="h-6 w-6" />
-                </button>
-              </div>
-
-              {/* Navigation */}
-              <nav className="flex-1 space-y-1 px-4 py-4 overflow-y-auto">
-                {menuItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      onClick={handleLinkClick}
-                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                        isActive(item.href)
-                          ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                    >
-                      <Icon
-                        className={`mr-3 h-5 w-5 ${
-                          isActive(item.href) ? 'text-blue-700' : 'text-gray-400 group-hover:text-gray-500'
-                        }`}
-                      />
-                      <span className="flex-1">{item.name}</span>
-                      <MenuItemBadge item={item} />
-                    </Link>
-                  );
-                })}
-              </nav>
-
-              {/* User info */}
-              <div className="border-t border-gray-200 p-4">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-red-600 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
-                    </span>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">
-                      {user?.isim} {user?.soyisim}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {user?.role === 'super_admin' && 'Süper Admin'}
-                      {user?.role === 'dernek_admin' && 'Dernek Admin'}
-                      {user?.role === 'uye' && 'Üye'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </>
-    );
-  }
-
-  // Desktop sidebar
+  // Masaüstü sidebar renderı
   return (
-    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-      <div className="flex flex-col flex-grow bg-white border-r border-gray-200 overflow-y-auto">
+    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col border-r border-gray-800 bg-black"> {/* lg:w-80 olarak güncellendi */}
+      <div className="flex flex-col flex-grow overflow-y-auto">
         {/* Logo */}
-        <div className="flex items-center h-16 px-4 border-b border-gray-200">
-          <div className="h-4 w-4 flex items-center justify-center">
-            <span className="text-sm font-bold text-white">
-              <img src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg" alt="Logo" />
-            </span>
-          </div>
-          <span className="ml-2 text-xl font-semibold text-gray-900">
-            ÖNDER
-          </span>
+        <div className="flex items-center h-16 pl-6 pr-4 py-4"> {/* Sol boşluk ayarı */}
+          <Link to="/" className="p-2 rounded-full hover:bg-gray-900 hover:bg-opacity-50 transition-colors cursor-pointer">
+            <AppLogo />
+          </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-4 py-4">
+        {/* Navigasyon menüsü */}
+        <nav className="flex-1 pl-6 pr-4 py-2"> {/* Sol boşluk ayarı */}
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                className={`group flex items-center px-4 py-3 text-lg rounded-full transition-all duration-200 ${
                   isActive(item.href)
-                    ? 'bg-red-50 text-red-700 border-r-2 border-red-700'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                    ? `font-bold text-white`
+                    : 'font-normal text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
               >
                 <Icon
-                  className={`mr-3 h-5 w-5 ${
-                    isActive(item.href) ? 'text-red-700' : 'text-gray-400 group-hover:text-gray-500'
-                  }`}
+                  className="mr-4 h-6 w-6"
                 />
-                <span className="flex-1">{item.name}</span>
+                <span className="">{item.name}</span>
                 <MenuItemBadge item={item} />
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-gray-200 bg-gray-50 p-4">
-          <div className="flex items-center justify-between">
-            {/* Sol taraf - Logo ve kullanıcı bilgileri */}
-            <div className="flex items-center space-x-3">
-              {/* Logo/Avatar */}
-              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg">
-                <span className="text-lg font-bold text-white">
-                  {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
-              </div>
-              
-              {/* Kullanıcı bilgileri */}
-              <div className="flex flex-col">
-                <p className="text-sm font-semibold text-gray-900">
-                  {user?.isim} {user?.soyisim}
-                </p>
-                <div className="flex items-center space-x-2">
-                  <span className="inline-flex items-center py-1 rounded-full text-xs font-medium">
-                    {user?.role === 'super_admin' && 'Admin'}
-                    {user?.role === 'dernek_admin' && 'Dernek Yöneticisi'}
-                    {user?.role === 'uye' && 'Dernek Üyesi'}
-                  </span>
-                </div>
-              </div>
-            </div>
+        {/* Gönderi Yayınla Butonu */}
+        <div className="pl-6 pr-4 pb-4"> {/* Sol boşluk ayarı */}
+          <Link
+            to="/faaliyetler/create"
+            className={`flex items-center justify-center w-full bg-${APP_RED} text-white font-bold py-3 px-6 rounded-full hover:bg-${APP_RED_HOVER} transition-colors shadow-lg`}
+          >
+            Gönderi yayınla
+          </Link>
+        </div>
 
+        {/* Kullanıcı Profili ve Çıkış Butonu */}
+        <div className="pl-6 pr-4 pb-6 mt-auto"> {/* Sol boşluk ayarı */}
+          <div className="flex items-center p-3 rounded-full hover:bg-gray-800 transition-colors cursor-pointer group" onClick={() => alert('Profil detayları veya ayarlar açılabilir.')}>
+            <div className={`h-10 w-10 rounded-full bg-${APP_RED} flex items-center justify-center text-white text-lg font-bold flex-shrink-0`}>
+              <span>
+                {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
+              </span>
+            </div>
+            <div className="ml-3 flex-grow overflow-hidden">
+              <p className="text-base font-bold text-white leading-tight truncate">
+                {user?.isim} {user?.soyisim}
+              </p>
+              <p className="text-sm text-gray-500 truncate">
+                @{user?.isim?.toLowerCase() || 'kullanici'}
+              </p>
+            </div>
             <button
               onClick={handleLogout}
-              className="flex items-center justify-center h-10 w-10 rounded-full text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200 group"
+              className="ml-auto p-2 text-red-400 rounded-full hover:bg-gray-900 transition-all flex items-center"
               title="Çıkış Yap"
             >
-              <FiLogOut className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              <FiLogOut className="h-5 w-5" />
             </button>
           </div>
         </div>

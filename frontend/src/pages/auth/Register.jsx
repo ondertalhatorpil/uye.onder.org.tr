@@ -144,7 +144,7 @@ const PersonalInfoSection = ({ formData, handleChange, showPassword, showConfirm
   </div>
 );
 
-// Professional Info Component
+// Professional Info Component - Mezun okul alanı kaldırıldı
 const ProfessionalInfoSection = ({ formData, handleChange, options }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
     <div className="flex items-center mb-6">
@@ -179,18 +179,6 @@ const ProfessionalInfoSection = ({ formData, handleChange, options }) => (
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E2000A] focus:border-transparent transition-all duration-200"
           placeholder="Mesleğinizi girin"
-        />
-      </div>
-
-      <div className="md:col-span-2 space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Mezun Olunan Okul *</label>
-        <input
-          type="text"
-          name="mezun_okul"
-          value={formData.mezun_okul}
-          onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#E2000A] focus:border-transparent transition-all duration-200"
-          placeholder="Mezun olduğunuz okul"
         />
       </div>
     </div>
@@ -423,40 +411,41 @@ const Register = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated, loading } = useAuth();
 
-const [formData, setFormData] = useState({
-  isim: '',
-  soyisim: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  dogum_tarihi: '',
-  sektor: '',
-  meslek: '',
-  telefon: '',
-  il: '',
-  ilce: '',
-  gonullu_dernek: '',
-  calisma_komisyon: '',
-  mezun_okul: '', // Eski alan - backward compatibility için tutun
-  
-  // YENİ EĞİTİM ALANLARI
-  ortaokul_durumu: 'okumadi',
-  ortaokul_id: null,
-  ortaokul_custom: null,
-  ortaokul_mezun_yili: null,
-  ortaokul_sinif: null,
-  
-  lise_durumu: 'okumadi',
-  lise_id: null,
-  lise_custom: null,
-  lise_mezun_yili: null,
-  lise_sinif: null,
-  
-  universite_durumu: 'okumadi',
-  
-  kvkk_onay: false,
-  aydinlatma_metni_onay: false
-});
+  // GÜNCEL FORM STATE - Eski alanlar kaldırıldı
+  const [formData, setFormData] = useState({
+    isim: '',
+    soyisim: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    dogum_tarihi: '',
+    sektor: '',
+    meslek: '',
+    telefon: '',
+    il: '',
+    ilce: '',
+    gonullu_dernek: '',
+    calisma_komisyon: '',
+    mezun_okul: '', // Backward compatibility için tutuldu
+    
+    // EĞİTİM ALANLARI - Sadece gerekli olanlar
+    ortaokul_id: null,
+    ortaokul_custom: null,
+    ortaokul_mezun_yili: null,
+    
+    lise_id: null,
+    lise_custom: null,
+    lise_mezun_yili: null,
+    
+    // Üniversite bilgileri - tam destekli
+    universite_durumu: 'okumadi',
+    universite_adi: '',
+    universite_bolum: '',
+    universite_mezun_yili: null,
+    
+    kvkk_onay: false,
+    aydinlatma_metni_onay: false
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -480,11 +469,11 @@ const [formData, setFormData] = useState({
   });
 
   const handleEducationDataChange = (educationData) => {
-  setFormData(prev => ({
-    ...prev,
-    ...educationData
-  }));
-};
+    setFormData(prev => ({
+      ...prev,
+      ...educationData
+    }));
+  };
 
   // KVKK texts
   const [kvkkTexts, setKvkkTexts] = useState({
@@ -588,97 +577,132 @@ const [formData, setFormData] = useState({
     }));
   };
 
-  // Validation
- const validateForm = () => {
-  const errors = [];
-  
-  if (!formData.isim.trim()) errors.push('İsim zorunlu');
-  if (!formData.soyisim.trim()) errors.push('Soyisim zorunlu');
-  if (!formData.email.trim()) errors.push('Email zorunlu');
-  if (!formData.telefon.trim()) errors.push('Telefon zorunlu');
-  if (!formData.dogum_tarihi) errors.push('Doğum tarihi zorunlu');
-  if (!formData.password) errors.push('Şifre zorunlu');
-  if (formData.password !== formData.confirmPassword) errors.push('Şifreler eşleşmiyor');
-  if (!formData.sektor) errors.push('Sektör zorunlu');
-  if (!formData.meslek.trim()) errors.push('Meslek zorunlu');
-  if (!formData.mezun_okul.trim()) errors.push('Mezun okul zorunlu');
-  if (!formData.il) errors.push('İl zorunlu');
-  if (!formData.ilce) errors.push('İlçe zorunlu');
-  if (!formData.gonullu_dernek) errors.push('Dernek zorunlu');
-  if (!formData.calisma_komisyon) errors.push('Komisyon zorunlu');
-  // YENİ EĞİTİM VALİDASYONLARI
-  
-  // Ortaokul validasyonları
-  if (formData.ortaokul_durumu === 'mezun') {
-    if (!formData.ortaokul_mezun_yili) errors.push('Ortaokul mezuniyet yılı zorunlu');
-    if (!formData.ortaokul_id && !formData.ortaokul_custom) errors.push('Ortaokul seçimi zorunlu');
-  }
-  
-  if (formData.ortaokul_durumu === 'devam_ediyor') {
-    if (!formData.ortaokul_sinif) errors.push('Ortaokul sınıfı zorunlu');
-    if (!formData.ortaokul_id && !formData.ortaokul_custom) errors.push('Ortaokul seçimi zorunlu');
-  }
-  
-  // Lise validasyonları
-  if (formData.lise_durumu === 'mezun') {
-    if (!formData.lise_mezun_yili) errors.push('Lise mezuniyet yılı zorunlu');
-    if (!formData.lise_id && !formData.lise_custom) errors.push('Lise seçimi zorunlu');
-  }
-  
-  if (formData.lise_durumu === 'devam_ediyor') {
-    if (!formData.lise_sinif) errors.push('Lise sınıfı zorunlu');
-    if (!formData.lise_id && !formData.lise_custom) errors.push('Lise seçimi zorunlu');
-  }
-  
-  if (!formData.kvkk_onay) errors.push('KVKK onayı zorunlu');
-  if (!formData.aydinlatma_metni_onay) errors.push('Aydınlatma metni onayı zorunlu');
-
-  return errors;
-};
-
-  // Submit form
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  const errors = validateForm();
-  if (errors.length > 0) {
-    errors.forEach(error => toast.error(error));
-    return;
-  }
-
-  setIsSubmitting(true);
-
-  try {
-    const { confirmPassword, ...submitData } = formData;
+  // GÜNCEL VALIDATION - Eski durumlar kaldırıldı
+  const validateForm = () => {
+    const errors = [];
     
-    // Null değerleri düzenle (backend için)
-    const cleanedData = {
-      ...submitData,
-      ortaokul_id: submitData.ortaokul_id || null,
-      ortaokul_custom: submitData.ortaokul_custom || null,
-      ortaokul_mezun_yili: submitData.ortaokul_mezun_yili || null,
-      ortaokul_sinif: submitData.ortaokul_sinif || null,
-      
-      lise_id: submitData.lise_id || null,
-      lise_custom: submitData.lise_custom || null,
-      lise_mezun_yili: submitData.lise_mezun_yili || null,
-      lise_sinif: submitData.lise_sinif || null,
-    };
+    if (!formData.isim.trim()) errors.push('İsim zorunlu');
+    if (!formData.soyisim.trim()) errors.push('Soyisim zorunlu');
+    if (!formData.email.trim()) errors.push('Email zorunlu');
+    if (!formData.telefon.trim()) errors.push('Telefon zorunlu');
+    if (!formData.dogum_tarihi) errors.push('Doğum tarihi zorunlu');
+    if (!formData.password) errors.push('Şifre zorunlu');
+    if (formData.password !== formData.confirmPassword) errors.push('Şifreler eşleşmiyor');
+    if (!formData.sektor) errors.push('Sektör zorunlu');
+    if (!formData.meslek.trim()) errors.push('Meslek zorunlu');
     
-    const result = await register(cleanedData);
+    if (!formData.il) errors.push('İl zorunlu');
+    if (!formData.ilce) errors.push('İlçe zorunlu');
+    if (!formData.gonullu_dernek) errors.push('Dernek zorunlu');
+    if (!formData.calisma_komisyon) errors.push('Komisyon zorunlu');
     
-    if (result.success) {
-      toast.success('Kayıt başarılı!');
-      navigate('/', { replace: true });
-    } else {
-      toast.error(result.error);
+    // EĞİTİM VALİDASYONLARI - Sadece mezun durumu
+    
+    // Ortaokul validasyonları - mezuniyet yılı seçildiyse okul da seçilmeli
+    if (formData.ortaokul_mezun_yili && !formData.ortaokul_id && !formData.ortaokul_custom) {
+      errors.push('Ortaokul seçimi zorunlu');
     }
-  } catch (error) {
-    toast.error('Kayıt sırasında hata oluştu');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    
+    // Lise validasyonları - mezuniyet yılı seçildiyse okul da seçilmeli
+    if (formData.lise_mezun_yili && !formData.lise_id && !formData.lise_custom) {
+      errors.push('Lise seçimi zorunlu');
+    }
+    
+    // Üniversite validasyonları
+    if (formData.universite_durumu === 'mezun' || formData.universite_durumu === 'devam_ediyor') {
+      if (!formData.universite_adi.trim()) errors.push('Üniversite adı zorunlu');
+      if (!formData.universite_bolum.trim()) errors.push('Üniversite bölümü zorunlu');
+      if (formData.universite_durumu === 'mezun' && !formData.universite_mezun_yili) {
+        errors.push('Üniversite mezuniyet yılı zorunlu');
+      }
+    }
+    
+    if (!formData.kvkk_onay) errors.push('KVKK onayı zorunlu');
+    if (!formData.aydinlatma_metni_onay) errors.push('Aydınlatma metni onayı zorunlu');
+
+    return errors;
+  };
+
+  // GÜNCEL SUBMIT - Eski alanlar kaldırıldı
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    const errors = validateForm();
+    if (errors.length > 0) {
+      errors.forEach(error => toast.error(error));
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { confirmPassword, ...submitData } = formData;
+      
+      // Tüm undefined değerleri null veya boş string olarak temizle
+      const cleanedData = {
+        // Temel bilgiler
+        isim: submitData.isim || '',
+        soyisim: submitData.soyisim || '',
+        email: submitData.email || '',
+        password: submitData.password || '',
+        dogum_tarihi: submitData.dogum_tarihi || null,
+        sektor: submitData.sektor || '',
+        meslek: submitData.meslek || '',
+        telefon: submitData.telefon || '',
+        il: submitData.il || '',
+        ilce: submitData.ilce || '',
+        gonullu_dernek: submitData.gonullu_dernek || '',
+        calisma_komisyon: submitData.calisma_komisyon || '',
+        
+        // Mezun okul alanı - backward compatibility için
+        mezun_okul: submitData.mezun_okul || '',
+        
+        // Ortaokul bilgileri - sadece mezun durumu
+        ortaokul_id: submitData.ortaokul_id || null,
+        ortaokul_custom: submitData.ortaokul_custom ? submitData.ortaokul_custom.trim() : null,
+        ortaokul_mezun_yili: submitData.ortaokul_mezun_yili || null,
+        
+        // Lise bilgileri - sadece mezun durumu
+        lise_id: submitData.lise_id || null,
+        lise_custom: submitData.lise_custom ? submitData.lise_custom.trim() : null,
+        lise_mezun_yili: submitData.lise_mezun_yili || null,
+        
+        // Üniversite bilgileri - tam destekli
+        universite_durumu: submitData.universite_durumu || 'okumadi',
+        universite_adi: submitData.universite_adi ? submitData.universite_adi.trim() : null,
+        universite_bolum: submitData.universite_bolum ? submitData.universite_bolum.trim() : null,
+        universite_mezun_yili: submitData.universite_mezun_yili || null,
+        
+        // KVKK onayları
+        kvkk_onay: Boolean(submitData.kvkk_onay),
+        aydinlatma_metni_onay: Boolean(submitData.aydinlatma_metni_onay)
+      };
+      
+      console.log('Frontend - Gönderilen veri:', cleanedData); // Debug için
+      console.log('Frontend - Üniversite bilgileri kontrol:', {
+        universite_durumu: cleanedData.universite_durumu,
+        universite_adi: cleanedData.universite_adi,
+        universite_bolum: cleanedData.universite_bolum,
+        universite_mezun_yili: cleanedData.universite_mezun_yili,
+        form_universite_adi: formData.universite_adi,
+        form_universite_bolum: formData.universite_bolum
+      });
+      
+      const result = await register(cleanedData);
+      
+      if (result.success) {
+        toast.success('Kayıt başarılı!');
+        navigate('/', { replace: true });
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      toast.error('Kayıt sırasında hata oluştu: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -726,11 +750,12 @@ const handleSubmit = async (e) => {
             options={options}
           />
 
-           <EducationInfoSection
-          formData={formData}
-          handleChange={handleChange}
-          onEducationDataChange={handleEducationDataChange}
-        />
+          {/* Education Info Section */}
+          <EducationInfoSection
+            formData={formData}
+            handleChange={handleChange}
+            onEducationDataChange={handleEducationDataChange}
+          />
 
           {/* Location Info Section */}
           <LocationInfoSection

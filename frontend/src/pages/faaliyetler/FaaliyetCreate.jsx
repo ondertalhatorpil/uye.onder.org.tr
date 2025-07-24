@@ -171,20 +171,20 @@ const FaaliyetCreate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gray-900 text-white"> {/* Arka plan rengi değiştirildi */}
+      <div className="max-w-full sm:max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"> {/* Responsive padding */}
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4">
+        <div className="mb-6 sm:mb-8"> {/* Mobil boşluk */}
+          <div className="flex items-center gap-3 sm:gap-4"> {/* Mobil boşluk */}
             <button
               onClick={() => navigate(-1)}
-              className="p-3 rounded-2xl bg-white shadow-md hover:shadow-lg border border-gray-100 transition-all duration-200 hover:scale-105"
+              className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gray-800 shadow-lg hover:shadow-xl border border-gray-700 transition-all duration-200 hover:scale-105" 
             >
-              <FiArrowLeft className="h-5 w-5 text-gray-600" />
+              <FiArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" /> {/* İkon rengi ve boyutu değiştirildi */}
             </button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Faaliyet Paylaş</h1>
-              <p className="text-gray-600 text-lg">Yaptığınız faaliyeti topluluğa paylaşın</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-red-500">Faaliyet Paylaş</h1> {/* Başlık rengi ve boyutu */}
+              <p className="text-gray-400 text-sm sm:text-lg">Yaptığınız faaliyeti topluluğa paylaşın</p> {/* Alt başlık rengi ve boyutu */}
             </div>
           </div>
         </div>

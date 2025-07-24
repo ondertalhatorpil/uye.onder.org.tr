@@ -32,7 +32,6 @@ const FaaliyetList = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Faaliyetleri getir
   const loadFaaliyetler = async (isRefresh = false) => {
     try {
       if (isRefresh) {
@@ -47,7 +46,6 @@ const FaaliyetList = () => {
         if (filters.page === 1 || isRefresh) {
           setFaaliyetler(response.data || []);
         } else {
-          // Sayfalama - mevcut listeye ekle
           setFaaliyetler(prev => [...prev, ...(response.data || [])]);
         }
         
@@ -66,30 +64,25 @@ const FaaliyetList = () => {
     }
   };
 
-  // Sayfa yüklendiğinde faaliyetleri getir
   useEffect(() => {
     loadFaaliyetler();
   }, [filters]);
 
-  // Refresh
   const handleRefresh = () => {
     setFilters(prev => ({ ...prev, page: 1 }));
     loadFaaliyetler(true);
   };
 
-  // Load More (Infinite Scroll)
   const handleLoadMore = () => {
     if (pagination.page < pagination.totalPages) {
       setFilters(prev => ({ ...prev, page: prev.page + 1 }));
     }
   };
 
-  // Filter değişikliği
   const handleFilterChange = (newFilters) => {
     setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
   };
 
-  // Filtreleri temizle
   const handleClearFilters = () => {
     setFilters({
       page: 1,
@@ -103,43 +96,42 @@ const FaaliyetList = () => {
     setShowFilters(false);
   };
 
-  // Loading state
   if (loading && faaliyetler.length === 0) {
     return <LoadingSpinner message="Faaliyetler yükleniyor..." />;
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-full mx-auto p-4 sm:p-6 lg:max-w-4xl lg:p-8 rounded-none sm:rounded-3xl shadow-none sm:shadow-xl"> {/* max-w-full ve rounded-none mobile için */}
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-red-600">Faaliyetler</h1>
-          <p className="text-gray-600">Topluluktan son faaliyetler</p>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-gray-700"> {/* Mobil dikey, sm sonrası yatay */}
+        <div className="mb-4 sm:mb-0"> {/* Mobil alta boşluk */}
+          <h1 className="text-xl sm:text-2xl font-bold text-red-500">Faaliyetler</h1> {/* Mobil font küçültme */}
+          <p className="text-sm text-gray-400">Topluluktan son faaliyetler</p> {/* Mobil font küçültme */}
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap justify-end gap-2 sm:space-x-3"> {/* Mobil wrap ve gap, sm sonrası space-x */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-700 rounded-xl text-xs sm:text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors shadow-md"
           >
-            <FiFilter className="mr-2 h-4 w-4" />
+            <FiFilter className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> {/* İkon boyutu mobile özel */}
             Filtrele
           </button>
           
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 border border-gray-700 rounded-xl text-xs sm:text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors disabled:opacity-50 shadow-md"
           >
-            <FiRefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <FiRefreshCw className={`mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 ${refreshing ? 'animate-spin' : ''}`} />
             Yenile
           </button>
           
           <Link
             to="/faaliyetler/create"
-            className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors shadow-md"
           >
-            <FiPlus className="mr-2 h-4 w-4" />
+            <FiPlus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
             Paylaş
           </Link>
         </div>
@@ -147,18 +139,20 @@ const FaaliyetList = () => {
 
       {/* Filters */}
       {showFilters && (
-        <FaaliyetFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-        />
+        <div className="mb-6">
+          <FaaliyetFilters
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+        </div>
       )}
 
       {/* Stats */}
       <FaaliyetStats pagination={pagination} />
 
       {/* Faaliyet Listesi */}
-      <div className="space-y-6">
+      <div className="space-y-4 mt-6 sm:space-y-6 sm:mt-8"> {/* Mobil boşluk */}
         {faaliyetler.length > 0 ? (
           faaliyetler.map((faaliyet) => (
             <FaaliyetCard key={faaliyet.id} faaliyet={faaliyet} />
@@ -170,21 +164,21 @@ const FaaliyetList = () => {
 
       {/* Load More Button */}
       {pagination.page < pagination.totalPages && (
-        <div className="text-center mt-8">
+        <div className="text-center mt-8 sm:mt-10"> {/* Mobil boşluk */}
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+            className="inline-flex items-center px-6 py-3 sm:px-8 sm:py-4 bg-gray-800 text-gray-300 rounded-xl sm:rounded-2xl font-semibold hover:bg-gray-700 transition-colors disabled:opacity-50 shadow-lg transform hover:scale-[1.02] text-sm"
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-2 border-white border-t-transparent mr-2"></div>
                 Yükleniyor...
               </>
             ) : (
               <>
                 Daha Fazla Göster
-                <span className="ml-2 text-sm text-gray-500">
+                <span className="ml-2 text-xs sm:text-sm text-gray-500">
                   ({pagination.total - faaliyetler.length} kaldı)
                 </span>
               </>

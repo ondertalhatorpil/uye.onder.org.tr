@@ -7,16 +7,23 @@ const register = async (req, res) => {
     const {
       isim, soyisim, email, password, dogum_tarihi,
       sektor, meslek, telefon, il, ilce, gonullu_dernek,
-      calisma_komisyon,
+      calisma_komisyon, mezun_okul,
       
-      // EĞİTİM BİLGİLERİ - YENİ
-      ortaokul_durumu, ortaokul_id, ortaokul_custom, ortaokul_mezun_yili, ortaokul_sinif,
-      lise_durumu, lise_id, lise_custom, lise_mezun_yili, lise_sinif,
-      universite_durumu,
+      // EĞİTİM BİLGİLERİ - Yeni yapı (eski durumlar kaldırıldı)
+      ortaokul_id, ortaokul_custom, ortaokul_mezun_yili,
+      lise_id, lise_custom, lise_mezun_yili,
+      universite_durumu, universite_adi, universite_bolum, universite_mezun_yili,
       
       // KVKK
       kvkk_onay, aydinlatma_metni_onay
     } = req.body;
+
+    console.log('Backend Controller - Received data:', {
+      universite_durumu,
+      universite_adi,
+      universite_bolum,
+      universite_mezun_yili
+    });
 
     // Basit validasyon
     if (!isim || !soyisim || !email || !password || !dogum_tarihi || !sektor || !meslek || !telefon || !il || !ilce || !gonullu_dernek || !calisma_komisyon) {
@@ -35,58 +42,30 @@ const register = async (req, res) => {
     }
 
     // EĞİTİM BİLGİLERİ VALİDASYONU
-    // Ortaokul validasyonu
-    if (ortaokul_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(ortaokul_durumu)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçersiz ortaokul durumu'
-      });
-    }
-
-    if (ortaokul_durumu === 'mezun' && !ortaokul_mezun_yili) {
+    // Ortaokul validasyonu - Eğer ortaokul bilgisi verilmişse mezuniyet yılı gerekli
+    if ((ortaokul_id || ortaokul_custom) && !ortaokul_mezun_yili) {
       return res.status(400).json({
         success: false,
         error: 'Ortaokul mezuniyet yılı gerekli'
       });
     }
 
-    if (ortaokul_durumu === 'devam_ediyor' && (!ortaokul_sinif || ![5,6,7,8].includes(parseInt(ortaokul_sinif)))) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçerli ortaokul sınıfı seçin (5,6,7,8)'
-      });
-    }
-
-    if ((ortaokul_durumu === 'mezun' || ortaokul_durumu === 'devam_ediyor') && !ortaokul_id && !ortaokul_custom) {
+    if (ortaokul_mezun_yili && !ortaokul_id && !ortaokul_custom) {
       return res.status(400).json({
         success: false,
         error: 'Ortaokul seçimi veya manuel giriş gerekli'
       });
     }
 
-    // Lise validasyonu
-    if (lise_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(lise_durumu)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçersiz lise durumu'
-      });
-    }
-
-    if (lise_durumu === 'mezun' && !lise_mezun_yili) {
+    // Lise validasyonu - Eğer lise bilgisi verilmişse mezuniyet yılı gerekli
+    if ((lise_id || lise_custom) && !lise_mezun_yili) {
       return res.status(400).json({
         success: false,
         error: 'Lise mezuniyet yılı gerekli'
       });
     }
 
-    if (lise_durumu === 'devam_ediyor' && (!lise_sinif || ![9,10,11,12].includes(parseInt(lise_sinif)))) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçerli lise sınıfı seçin (9,10,11,12)'
-      });
-    }
-
-    if ((lise_durumu === 'mezun' || lise_durumu === 'devam_ediyor') && !lise_id && !lise_custom) {
+    if (lise_mezun_yili && !lise_id && !lise_custom) {
       return res.status(400).json({
         success: false,
         error: 'Lise seçimi veya manuel giriş gerekli'
@@ -99,6 +78,30 @@ const register = async (req, res) => {
         success: false,
         error: 'Geçersiz üniversite durumu'
       });
+    }
+
+    // Üniversite bilgilerinin validasyonu
+    if (universite_durumu === 'mezun' || universite_durumu === 'devam_ediyor') {
+      if (!universite_adi || !universite_adi.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Üniversite adı zorunlu'
+        });
+      }
+      
+      if (!universite_bolum || !universite_bolum.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Üniversite bölümü zorunlu'
+        });
+      }
+      
+      if (universite_durumu === 'mezun' && !universite_mezun_yili) {
+        return res.status(400).json({
+          success: false,
+          error: 'Üniversite mezuniyet yılı zorunlu'
+        });
+      }
     }
 
     // Email kontrolü
@@ -131,18 +134,21 @@ const register = async (req, res) => {
       }
     }
 
-    // Kullanıcı oluştur
+    // Kullanıcı oluştur - YENİ YAPIYLA (eski durumlar kaldırıldı)
     const userId = await User.create({
       isim, soyisim, email, password, dogum_tarihi,
       sektor, meslek, telefon, il, ilce, gonullu_dernek,
-      calisma_komisyon,
+      calisma_komisyon, mezun_okul,
       
-      // Eğitim bilgileri
-      ortaokul_durumu: ortaokul_durumu || 'okumadi',
-      ortaokul_id, ortaokul_custom, ortaokul_mezun_yili, ortaokul_sinif,
-      lise_durumu: lise_durumu || 'okumadi', 
-      lise_id, lise_custom, lise_mezun_yili, lise_sinif,
+      // Eğitim bilgileri - Yeni yapı (durumlar otomatik belirlenecek)
+      ortaokul_id, ortaokul_custom, ortaokul_mezun_yili,
+      lise_id, lise_custom, lise_mezun_yili,
+      
+      // Üniversite bilgileri - Tam destekli
       universite_durumu: universite_durumu || 'okumadi',
+      universite_adi: universite_adi || null,
+      universite_bolum: universite_bolum || null,
+      universite_mezun_yili: universite_mezun_yili || null,
       
       kvkk_onay, aydinlatma_metni_onay
     });
