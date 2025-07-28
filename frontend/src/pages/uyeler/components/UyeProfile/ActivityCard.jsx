@@ -18,12 +18,7 @@ const ActivityCard = ({ faaliyet, formatTimeAgo }) => (
       </button>
     </div>
 
-    {/* Activity Content */}
-    {faaliyet.baslik && (
-      <h4 className="font-semibold text-white mb-2 sm:mb-3 text-base sm:text-lg"> {/* Font boyutu ve rengi */}
-        {faaliyet.baslik}
-      </h4>
-    )}
+    
     
     {faaliyet.aciklama && (
       <p className="text-gray-300 mb-3 sm:mb-4 leading-normal text-sm sm:text-base"> {/* Font boyutu, rengi ve satır yüksekliği */}

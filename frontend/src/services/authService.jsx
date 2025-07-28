@@ -80,9 +80,10 @@ export const authService = {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
     
     try {
-      console.log('Making fetch request to:', `${apiUrl}/api/auth/profile`);
+      // DİKKAT: /api eklemeyin çünkü apiUrl zaten /api içeriyor
+      console.log('Making fetch request to:', `${apiUrl}/auth/profile`);
       
-      const response = await fetch(`${apiUrl}/api/auth/profile`, {
+      const response = await fetch(`${apiUrl}/auth/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -130,7 +131,9 @@ export const authService = {
     const token = localStorage.getItem('dernek_token');
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/profile/image`, {
+      // DİKKAT: apiUrl zaten /api içeriyor, bu yüzden /api eklemeyin
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/auth/profile/image`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -142,7 +145,7 @@ export const authService = {
       
       // Başarılıysa kullanıcı bilgilerini güncelle
       if (result.success) {
-        const currentUser = this.getCurrentUser();
+        const currentUser = authService.getCurrentUser();
         if (currentUser) {
           currentUser.profil_fotografi = null;
           localStorage.setItem('dernek_user', JSON.stringify(currentUser));
@@ -171,7 +174,9 @@ export const authService = {
     
     // Relatif path ise API URL ile birleştir
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    return `${baseUrl}/${imagePath}`;
+    // VITE_API_URL zaten /api içeriyorsa, onu kaldırıp base URL'i al
+    const cleanBaseUrl = baseUrl.replace('/api', '');
+    return `${cleanBaseUrl}/${imagePath}`;
   },
 
   // Şifre değiştir
