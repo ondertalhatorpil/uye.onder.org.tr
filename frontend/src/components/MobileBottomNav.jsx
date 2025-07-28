@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services'; // authService'i import et
 import {
   FiHome, FiActivity, FiUser, FiSearch, FiPlus, FiGrid, FiMoreHorizontal
 } from 'react-icons/fi';
@@ -13,6 +14,16 @@ const MobileBottomNav = () => {
   const location = useLocation();
   const { user, hasRole, hasAnyRole } = useAuth();
   const [isUserProfileModalOpen, setUserProfileModalOpen] = useState(false);
+
+  // Profil fotoğrafı URL'ini oluştur
+  const getProfileImageUrl = () => {
+    if (user?.profil_fotografi) {
+      return authService.getProfileImageUrl(user.profil_fotografi);
+    }
+    
+    // Varsayılan avatar (küçük boyut için 32px)
+    return `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=32&rounded=true`;
+  };
 
   const getBottomNavItems = () => {
     let baseItems = [
@@ -96,15 +107,23 @@ const MobileBottomNav = () => {
                     : 'text-gray-400 hover:text-white'
                 } ${item.isProfile ? 'text-white' : ''}`} 
               >
-                {item.isProfile && user?.isim?.charAt(0) ? (
-                    <div className={`h-6 w-6 rounded-full bg-red-600 flex items-center justify-center mb-1 text-sm font-bold`}>
-                        {user.isim.charAt(0).toUpperCase()}
-                    </div>
+                {item.isProfile ? (
+                  // Profil fotoğrafı veya varsayılan avatar
+                  <div className="h-6 w-6 rounded-full bg-gray-700 p-0.5 mb-1 flex-shrink-0">
+                    <img
+                      src={getProfileImageUrl()}
+                      alt={`${user?.isim} ${user?.soyisim}`}
+                      className="h-full w-full rounded-full object-cover"
+                      onError={(e) => {
+                        // Resim yüklenemezse varsayılan avatar'a geç
+                        e.target.src = `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=32&rounded=true`;
+                      }}
+                    />
+                  </div>
                 ) : (
-                    <Icon className="h-5 w-5 mb-1" />
+                  <Icon className="h-5 w-5 mb-1" />
                 )}
                 {!item.isProfile && <span>{item.name}</span>}
-                {item.isProfile && !user?.isim?.charAt(0) && <span>{item.name}</span>} 
               </button>
             );
           })}

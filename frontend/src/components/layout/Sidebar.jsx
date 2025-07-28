@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext'; // Assuming this path is correct
+import { authService } from '../../services'; // authService'i import et
 import {
   FiHome, FiUsers, FiActivity,
   FiSettings, FiShield, FiUser,
@@ -21,6 +22,16 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  // Profil fotoğrafı URL'ini oluştur
+  const getProfileImageUrl = () => {
+    if (user?.profil_fotografi) {
+      return authService.getProfileImageUrl(user.profil_fotografi);
+    }
+    
+    // Varsayılan avatar
+    return `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=64&rounded=true`;
   };
 
   const getMenuItems = () => {
@@ -204,11 +215,20 @@ const Sidebar = () => {
         {/* User Profile and Logout Button */}
         <div className="px-4 pb-6 mt-auto pl-26"> 
           <div className="flex items-center p-2 rounded-full hover:bg-gray-800 transition-colors cursor-pointer group" onClick={() => console.log('Profil detayları veya ayarlar açılabilir.')}> {/* Slightly less padding */}
-            <div className={`h-9 w-9 rounded-full bg-${APP_RED} flex items-center justify-center text-white text-base font-semibold flex-shrink-0`}> {/* Smaller avatar, smaller text */}
-              <span>
-                {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
+            
+            {/* Profil Fotoğrafı */}
+            <div className="h-9 w-9 rounded-full bg-gray-700 p-0.5 flex-shrink-0">
+              <img
+                src={getProfileImageUrl()}
+                alt={`${user?.isim} ${user?.soyisim}`}
+                className="h-full w-full rounded-full object-cover"
+                onError={(e) => {
+                  // Resim yüklenemezse varsayılan avatar'a geç
+                  e.target.src = `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=64&rounded=true`;
+                }}
+              />
             </div>
+            
             <div className="ml-3 flex-grow overflow-hidden">
               <p className="text-sm font-semibold text-white leading-tight truncate"> {/* Smaller text, semibold */}
                 {user?.isim} {user?.soyisim}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { authService } from '../services'; // authService'i import et
 import {
   FiX, FiHome, FiUsers, FiActivity, FiSettings, FiShield,
   FiUser, FiSearch, FiGrid, FiLogOut, FiClock, FiMoreHorizontal,
@@ -18,6 +19,16 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   const handleLogout = () => {
     logout();
     onClose(); 
+  };
+
+  // Profil fotoğrafı URL'ini oluştur
+  const getProfileImageUrl = () => {
+    if (user?.profil_fotografi) {
+      return authService.getProfileImageUrl(user.profil_fotografi);
+    }
+    
+    // Varsayılan avatar
+    return `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=96&rounded=true`;
   };
 
   const isActive = (href) => {
@@ -161,9 +172,19 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
         {/* Kullanıcı Bilgileri */}
         <div className="flex flex-col items-center border-b border-gray-700/50 pb-6 mb-6">
-          <div className={`h-24 w-24 rounded-full bg-${APP_RED} flex items-center justify-center text-white text-4xl font-bold mb-3 shadow-lg`}>
-            <span>{user?.isim?.charAt(0)?.toUpperCase() || 'U'}</span>
+          {/* Profil Fotoğrafı */}
+          <div className="h-24 w-24 rounded-full bg-gray-700 p-0.5 mb-3 shadow-lg">
+            <img
+              src={getProfileImageUrl()}
+              alt={`${user?.isim} ${user?.soyisim}`}
+              className="h-full w-full rounded-full object-cover"
+              onError={(e) => {
+                // Resim yüklenemezse varsayılan avatar'a geç
+                e.target.src = `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=96&rounded=true`;
+              }}
+            />
           </div>
+          
           <h3 className="text-2xl font-bold text-white mb-1">{user?.isim} {user?.soyisim}</h3>
           <p className="text-gray-400 text-sm">@{user?.isim?.toLowerCase() || 'kullanici'}</p>
           {user?.dernek_isim && (
