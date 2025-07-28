@@ -6,6 +6,80 @@ import {
 } from 'react-icons/fi';
 import { UPLOADS_BASE_URL } from '../../../services';
 
+// Profil Avatar Bileşeni
+const ProfileAvatar = ({ user, size = 'md' }) => {
+  const sizeClasses = {
+    xs: 'h-6 w-6',
+    sm: 'h-8 w-8',
+    md: 'h-10 w-10 sm:h-12 sm:w-12',
+    lg: 'h-16 w-16',
+    xl: 'h-20 w-20'
+  };
+
+  const textSizeClasses = {
+    xs: 'text-xs',
+    sm: 'text-sm',
+    md: 'text-base sm:text-lg',
+    lg: 'text-xl',
+    xl: 'text-2xl'
+  };
+
+  // Profil fotoğrafı URL'ini oluştur
+  const getAvatarUrl = () => {
+    if (user?.profil_fotografi) {
+      let imageUrl;
+      
+      // Backend'den gelen tam URL mı kontrol et
+      if (user.profil_fotografi.startsWith('http')) {
+        imageUrl = user.profil_fotografi;
+      } else {
+        // Development vs Production URL belirleme
+        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const baseUrl = isDevelopment 
+          ? 'http://localhost:3001' // Backend port güncellemesi
+          : UPLOADS_BASE_URL || 'https://uye.onder.org.tr';
+        
+        // Eğer profil_fotografi zaten "uploads/" ile başlıyorsa, tekrar ekleme
+        if (user.profil_fotografi.startsWith('uploads/')) {
+          imageUrl = `${baseUrl}/${user.profil_fotografi}`;
+        } else {
+          imageUrl = `${baseUrl}/uploads/profile-images/${user.profil_fotografi}`;
+        }
+      }
+      
+      return imageUrl;
+    }
+    
+    // Varsayılan avatar
+    return `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=128&rounded=true`;
+  };
+
+  return (
+    <div className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0`}>
+      {user?.profil_fotografi ? (
+        <img
+          src={getAvatarUrl()}
+          alt={`${user?.isim} ${user?.soyisim}`}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            // Hata durumunda varsayılan avatar'a geç
+            e.target.style.display = 'none';
+            e.target.nextSibling?.remove();
+            const span = document.createElement('span');
+            span.className = `${textSizeClasses[size]} font-bold text-white`;
+            span.textContent = user?.isim?.charAt(0)?.toUpperCase() || 'U';
+            e.target.parentNode.appendChild(span);
+          }}
+        />
+      ) : (
+        <span className={`${textSizeClasses[size]} font-bold text-white`}>
+          {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
+        </span>
+      )}
+    </div>
+  );
+};
+
 // Görsel Modal Bileşeni
 const ImageModal = ({ image, isOpen, onClose }) => {
   if (!isOpen) return null;
@@ -15,7 +89,7 @@ const ImageModal = ({ image, isOpen, onClose }) => {
       className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-3 sm:p-4"
       onClick={onClose}
     >
-      <div className="relative max-w-full max-h-full lg:max-w-6xl lg:max-h-full"> {/* Added lg:max-w-6xl for larger screens */}
+      <div className="relative max-w-full max-h-full lg:max-w-6xl lg:max-h-full">
         <img
           src={image}
           alt="Büyük görsel"
@@ -39,15 +113,25 @@ const ImageModal = ({ image, isOpen, onClose }) => {
 const TwitterImageGrid = ({ images, onImageClick }) => {
   if (!images || images.length === 0) return null;
 
+  // URL oluşturma helper'ı
+  const getImageUrl = (imageName) => {
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const baseUrl = isDevelopment 
+      ? 'http://localhost:3001' // Backend port güncellemesi
+      : UPLOADS_BASE_URL || 'https://uye.onder.org.tr';
+    
+    return `${baseUrl}/uploads/faaliyet-images/${imageName}`;
+  };
+
   // Tek görsel - Twitter benzeri tam genişlik
   const renderSingleImage = () => (
     <div
-      className="relative w-full rounded-lg sm:rounded-2xl overflow-hidden cursor-pointer group border border-gray-600" /* Rounded-lg for mobile, sm:rounded-2xl for larger screens */
+      className="relative w-full rounded-lg sm:rounded-2xl overflow-hidden cursor-pointer group border border-gray-600"
       style={{ aspectRatio: '16/9' }}
-      onClick={() => onImageClick(`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${images[0]}`)}
+      onClick={() => onImageClick(getImageUrl(images[0]))}
     >
       <img
-        src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${images[0]}`}
+        src={getImageUrl(images[0])}
         alt="Faaliyet görseli"
         className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
         onError={(e) => {
@@ -65,15 +149,15 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
 
   // İki görsel - Twitter benzeri yan yana
   const renderTwoImages = () => (
-    <div className="grid grid-cols-2 gap-0.5 rounded-lg sm:rounded-2xl overflow-hidden border border-gray-600"> {/* Rounded-lg for mobile, sm:rounded-2xl for larger screens */}
+    <div className="grid grid-cols-2 gap-0.5 rounded-lg sm:rounded-2xl overflow-hidden border border-gray-600">
       {images.slice(0, 2).map((image, index) => (
         <div
           key={index}
           className="relative group cursor-pointer aspect-square overflow-hidden"
-          onClick={() => onImageClick(`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${image}`)}
+          onClick={() => onImageClick(getImageUrl(image))}
         >
           <img
-            src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${image}`}
+            src={getImageUrl(image)}
             alt={`Görsel ${index + 1}`}
             className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
             onError={(e) => {
@@ -93,13 +177,13 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
 
   // Üç görsel - Twitter benzeri layout
   const renderThreeImages = () => (
-    <div className="grid grid-cols-2 gap-0.5 rounded-lg sm:rounded-2xl overflow-hidden border border-gray-600"> {/* Rounded-lg for mobile, sm:rounded-2xl for larger screens */}
+    <div className="grid grid-cols-2 gap-0.5 rounded-lg sm:rounded-2xl overflow-hidden border border-gray-600">
       <div
         className="relative group cursor-pointer row-span-2 aspect-square overflow-hidden"
-        onClick={() => onImageClick(`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${images[0]}`)}
+        onClick={() => onImageClick(getImageUrl(images[0]))}
       >
         <img
-          src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${images[0]}`}
+          src={getImageUrl(images[0])}
           alt="Ana görsel"
           className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
           onError={(e) => {
@@ -118,10 +202,10 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
           <div
             key={index + 1}
             className="relative group cursor-pointer aspect-square overflow-hidden"
-            onClick={() => onImageClick(`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${image}`)}
+            onClick={() => onImageClick(getImageUrl(image))}
           >
             <img
-              src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${image}`}
+              src={getImageUrl(image)}
               alt={`Görsel ${index + 2}`}
               className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
               onError={(e) => {
@@ -142,17 +226,17 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
 
   // Dört ve daha fazla görsel - Twitter benzeri grid
   const renderMultipleImages = () => (
-    <div className="grid grid-cols-2 gap-0.5 rounded-lg sm:rounded-2xl overflow-hidden border border-gray-600"> {/* Rounded-lg for mobile, sm:rounded-2xl for larger screens */}
+    <div className="grid grid-cols-2 gap-0.5 rounded-lg sm:rounded-2xl overflow-hidden border border-gray-600">
       {images.slice(0, 3).map((image, index) => (
         <div
           key={index}
           className={`relative group cursor-pointer overflow-hidden ${
             index === 0 ? 'row-span-2 aspect-square' : 'aspect-square'
           }`}
-          onClick={() => onImageClick(`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${image}`)}
+          onClick={() => onImageClick(getImageUrl(image))}
         >
           <img
-            src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${image}`}
+            src={getImageUrl(image)}
             alt={`Görsel ${index + 1}`}
             className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
             onError={(e) => {
@@ -170,10 +254,10 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
       {images.length > 3 && (
         <div
           className="relative group cursor-pointer overflow-hidden aspect-square"
-          onClick={() => onImageClick(`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${images[3]}`)}
+          onClick={() => onImageClick(getImageUrl(images[3]))}
         >
           <img
-            src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${images[3]}`}
+            src={getImageUrl(images[3])}
             alt="Daha fazla"
             className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
             onError={(e) => {
@@ -183,8 +267,8 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/20 group-hover:from-black/90 group-hover:via-black/60 group-hover:to-black/30 transition-all duration-300" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-white font-bold text-lg sm:text-xl mb-1">+{images.length - 3}</div> {/* Smaller text on mobile */}
-              <div className="text-white/90 text-xs sm:text-sm font-medium">daha fazla</div> {/* Smaller text on mobile */}
+              <div className="text-white font-bold text-lg sm:text-xl mb-1">+{images.length - 3}</div>
+              <div className="text-white/90 text-xs sm:text-sm font-medium">daha fazla</div>
             </div>
           </div>
         </div>
@@ -233,50 +317,51 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
 
   return (
     <>
-      <article className="border-b border-gray-800 hover:bg-gray-950 transition-colors duration-200">
-        <div className="flex p-3 sm:p-4"> {/* Increased padding on larger screens */}
-          {/* Sol taraf - Avatar */}
+      <article className="border-b border-gray-800 transition-colors duration-200">
+        <div className="flex p-3 sm:p-4">
+          {/* Sol taraf - Avatar (Profil Fotoğrafı ile) */}
           <div className="flex-shrink-0 mr-3">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center"> {/* Smaller avatar on mobile */}
-              <span className="text-base sm:text-lg font-bold text-white"> {/* Smaller text on mobile */}
-                {faaliyet.isim?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
-            </div>
+            <ProfileAvatar 
+              user={{
+                isim: faaliyet.isim,
+                soyisim: faaliyet.soyisim,
+                profil_fotografi: faaliyet.profil_fotografi
+              }} 
+              size="md" 
+            />
           </div>
 
           {/* Sağ taraf - İçerik */}
           <div className="flex-1 min-w-0">
             {/* Header - İsim, kullanıcı adı, zaman */}
             <div className="flex items-center mb-1">
-              <h3 className="font-bold text-white text-base sm:text-lg mr-1 hover:underline cursor-pointer"> {/* Smaller text on mobile */}
+              <h3 className="font-bold text-white text-base sm:text-lg mr-1 hover:underline cursor-pointer">
                 {faaliyet.isim} {faaliyet.soyisim}
               </h3>
 
-
-             
-              <span className="text-gray-500 text-sm sm:text-base mr-1">·</span> {/* Smaller text on mobile */}
-              <span className="text-gray-500 text-sm sm:text-base hover:underline cursor-pointer"> {/* Smaller text on mobile */}
+              <span className="text-gray-500 text-sm sm:text-base mr-1">·</span>
+              <span className="text-gray-500 text-sm sm:text-base hover:underline cursor-pointer">
                 {formatTimeAgo(faaliyet.created_at)}
               </span>
 
               {/* Sağ tarafta menü butonu */}
               <div className="ml-auto">
-                <button className="p-1 sm:p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors"> {/* Smaller padding on mobile */}
+                <button className="p-1 sm:p-2 rounded-full hover:bg-gray-800 text-gray-500 hover:text-gray-300 transition-colors">
                   <FiMoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" /> 
                 </button>
               </div>
             </div>
 
             {/* Alt etiketler - Dernek ve konum */}
-            <div className="flex flex-wrap items-center mb-2 sm:mb-3"> {/* Added flex-wrap for small screens to prevent overflow */}
+            <div className="flex flex-wrap items-center mb-2 sm:mb-3">
               {faaliyet.gonullu_dernek && (
-                <span className="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs bg-red-900 text-red-200 rounded-full mr-2 mb-1"> {/* Smaller padding on mobile, added mb-1 for wrapping */}
+                <span className="inline-flex items-center px-1.5 py-0.5 sm:px-2 sm:py-1 text-xs bg-red-900 text-red-200 rounded-full mr-2 mb-1">
                   📸 {faaliyet.gonullu_dernek}
                 </span>
               )}
 
               {faaliyet.il && (
-                <span className="text-red-500 text-xs sm:text-sm font-medium mb-1"> {/* Smaller text on mobile, added mb-1 for wrapping */}
+                <span className="text-red-500 text-xs sm:text-sm font-medium mb-1">
                   🇹🇷 #{faaliyet.il?.replace(/\s+/g, '')}{faaliyet.ilce && faaliyet.ilce.replace(/\s+/g, '')}
                 </span>
               )}
@@ -284,16 +369,16 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
 
             {/* Ana içerik - Başlık ve Açıklama */}
             {faaliyet.baslik && (
-              <div className="mb-2 sm:mb-3"> {/* Smaller margin on mobile */}
-                <h2 className="text-white text-base sm:text-lg font-semibold leading-5 sm:leading-6"> {/* Smaller text and line height on mobile */}
+              <div className="mb-2 sm:mb-3">
+                <h2 className="text-white text-base sm:text-lg font-semibold leading-5 sm:leading-6">
                   {faaliyet.baslik}
                 </h2>
               </div>
             )}
 
             {faaliyet.aciklama && (
-              <div className="mb-2 sm:mb-3"> {/* Smaller margin on mobile */}
-                <p className="text-white text-sm sm:text-[15px] leading-4 sm:leading-5 whitespace-pre-wrap"> {/* Smaller text and line height on mobile */}
+              <div className="mb-2 sm:mb-3">
+                <p className="text-white text-sm sm:text-[15px] leading-4 sm:leading-5 whitespace-pre-wrap">
                   {faaliyet.aciklama}
                 </p>
               </div>
@@ -301,7 +386,7 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
 
             {/* Görseller */}
             {faaliyet.gorseller && faaliyet.gorseller.length > 0 && (
-              <div className="mb-2 sm:mb-3"> {/* Smaller margin on mobile */}
+              <div className="mb-2 sm:mb-3">
                 <TwitterImageGrid
                   images={faaliyet.gorseller}
                   onImageClick={handleImageClick}

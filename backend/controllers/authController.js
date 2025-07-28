@@ -1,6 +1,42 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config/config');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Multer konfigürasyonu - profil fotoğrafları için
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = 'uploads/profile-images';
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    // Dosya adı: user_id + timestamp + orijinal uzantı
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `user_${req.user.id}_${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // Sadece resim dosyalarına izin ver
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Sadece resim dosyaları yüklenebilir'), false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: fileFilter
+});
 
 const register = async (req, res) => {
   try {
@@ -150,7 +186,10 @@ const register = async (req, res) => {
       universite_bolum: universite_bolum || null,
       universite_mezun_yili: universite_mezun_yili || null,
       
-      kvkk_onay, aydinlatma_metni_onay
+      kvkk_onay, aydinlatma_metni_onay,
+      
+      // Profil fotoğrafı başlangıçta null
+      profil_fotografi: null
     });
 
     // JWT token oluştur
@@ -345,6 +384,40 @@ const updateProfile = async (req, res) => {
       universite_durumu
     } = req.body;
 
+    // Eğer profil fotoğrafı yüklenmişse, dosya yolunu ekle
+    let updateData = {
+      isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
+      gonullu_dernek, calisma_komisyon,
+      
+      // Eğitim bilgileri - null değerler için default'lar
+      ortaokul_durumu: ortaokul_durumu || 'okumadi',
+      ortaokul_id: ortaokul_id || null,
+      ortaokul_custom: ortaokul_custom || null,
+      ortaokul_mezun_yili: ortaokul_mezun_yili || null,
+      ortaokul_sinif: ortaokul_sinif || null,
+      
+      lise_durumu: lise_durumu || 'okumadi',
+      lise_id: lise_id || null,
+      lise_custom: lise_custom || null, 
+      lise_mezun_yili: lise_mezun_yili || null,
+      lise_sinif: lise_sinif || null,
+      
+      universite_durumu: universite_durumu || 'okumadi'
+    };
+
+    if (req.file) {
+      // Eski profil fotoğrafını sil
+      const oldUser = await User.findById(userId);
+      if (oldUser && oldUser.profil_fotografi) {
+        const oldImagePath = path.join(__dirname, '../', oldUser.profil_fotografi);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      
+      updateData.profil_fotografi = `uploads/profile-images/${req.file.filename}`;
+    }
+
     // Basit validasyon
     if (!isim || !soyisim || !sektor || !meslek) {
       return res.status(400).json({
@@ -418,25 +491,7 @@ const updateProfile = async (req, res) => {
     }
 
     // Profil güncelle
-    const updated = await User.updateProfile(userId, {
-      isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
-      gonullu_dernek, calisma_komisyon,
-      
-      // Eğitim bilgileri - null değerler için default'lar
-      ortaokul_durumu: ortaokul_durumu || 'okumadi',
-      ortaokul_id: ortaokul_id || null,
-      ortaokul_custom: ortaokul_custom || null,
-      ortaokul_mezun_yili: ortaokul_mezun_yili || null,
-      ortaokul_sinif: ortaokul_sinif || null,
-      
-      lise_durumu: lise_durumu || 'okumadi',
-      lise_id: lise_id || null,
-      lise_custom: lise_custom || null, 
-      lise_mezun_yili: lise_mezun_yili || null,
-      lise_sinif: lise_sinif || null,
-      
-      universite_durumu: universite_durumu || 'okumadi'
-    });
+    const updated = await User.updateProfile(userId, updateData);
 
     if (!updated) {
       return res.status(404).json({
@@ -447,6 +502,10 @@ const updateProfile = async (req, res) => {
 
     // Güncellenmiş kullanıcı bilgilerini getir
     const updatedUser = await User.findById(userId);
+    
+    console.log('Updated user profil_fotografi:', updatedUser.profil_fotografi);
+    console.log('File was uploaded:', !!req.file);
+    console.log('Update data profil_fotografi:', updateData.profil_fotografi);
 
     res.json({
       success: true,
@@ -456,9 +515,61 @@ const updateProfile = async (req, res) => {
 
   } catch (error) {
     console.error('Profile update error:', error);
+    
+    // Eğer hata oluştuysa ve dosya yüklenmişse, dosyayı sil
+    if (req.file) {
+      const filePath = path.join(__dirname, '../uploads/profile-images/', req.file.filename);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    
     res.status(500).json({
       success: false,
       error: 'Profil güncellenirken hata oluştu: ' + error.message
+    });
+  }
+};
+
+const deleteProfileImage = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Kullanıcının mevcut profil fotoğrafını al
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    if (!user.profil_fotografi) {
+      return res.status(400).json({
+        success: false,
+        error: 'Silinecek profil fotoğrafı bulunamadı'
+      });
+    }
+
+    // Dosyayı fiziksel olarak sil
+    const imagePath = path.join(__dirname, '../', user.profil_fotografi);
+    if (fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+    }
+
+    // Veritabanından profil fotoğrafı yolunu kaldır
+    await User.updateProfile(userId, { profil_fotografi: null });
+
+    res.json({
+      success: true,
+      message: 'Profil fotoğrafı başarıyla silindi'
+    });
+
+  } catch (error) {
+    console.error('Delete profile image error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Profil fotoğrafı silinirken hata oluştu: ' + error.message
     });
   }
 };
@@ -526,5 +637,7 @@ module.exports = {
   getProfile, 
   changePassword, 
   updateProfile,
-  getKvkkTexts 
+  deleteProfileImage,
+  getKvkkTexts,
+  upload // Multer middleware'ini export et
 };

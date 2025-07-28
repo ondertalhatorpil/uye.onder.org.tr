@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Faaliyet = require('../models/Faaliyet');
 const { pool } = require('../config/database');
 
-// Kullanıcı arama - DÜZELTME
+// Kullanıcı arama - PROFİL FOTOĞRAFI EKLENDİ
 const searchUsers = async (req, res) => {
   try {
     const {
@@ -22,7 +22,7 @@ const searchUsers = async (req, res) => {
     let query = `
       SELECT 
         id, isim, soyisim, sektor, meslek, il, ilce, 
-        gonullu_dernek, calisma_komisyon, created_at
+        gonullu_dernek, calisma_komisyon, profil_fotografi, created_at
       FROM users 
       WHERE role IN ('uye', 'dernek_admin')
     `;
@@ -131,12 +131,12 @@ const searchUsers = async (req, res) => {
   }
 };
 
-// Kullanıcı profil detayı - ONAY DURUMU EKLENDİ
+// Kullanıcı profil detayı - ONAY DURUMU EKLENDİ (zaten User.findById profil_fotografi'yi getiriyor)
 const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Kullanıcı bilgilerini getir
+    // Kullanıcı bilgilerini getir (User.findById zaten profil_fotografi'yi dahil ediyor)
     const user = await User.findById(id);
     
     if (!user) {
@@ -198,7 +198,7 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Dernek üyelerini listele - DÜZELTME
+// Dernek üyelerini listele - PROFİL FOTOĞRAFI EKLENDİ
 const getDernekMembers = async (req, res) => {
   try {
     const { dernekAdi } = req.params;
@@ -208,11 +208,11 @@ const getDernekMembers = async (req, res) => {
     const limitNum = parseInt(limit) || 20;
     const offset = (pageNum - 1) * limitNum;
 
-    // MySQL 8.0 uyumlu query
+    // MySQL 8.0 uyumlu query - profil_fotografi eklendi
     const [users] = await pool.execute(`
       SELECT 
         id, isim, soyisim, sektor, meslek, il, ilce,
-        calisma_komisyon, created_at
+        calisma_komisyon, profil_fotografi, created_at
       FROM users 
       WHERE gonullu_dernek = ? 
         AND role IN ('uye', 'dernek_admin')
@@ -253,7 +253,7 @@ const getDernekMembers = async (req, res) => {
   }
 };
 
-// Tüm kullanıcıları listele (admin) - DÜZELTME
+// Tüm kullanıcıları listele (admin) - PROFİL FOTOĞRAFI EKLENDİ
 const getAllUsers = async (req, res) => {
   try {
     // Sadece admin erişebilir
@@ -272,7 +272,7 @@ const getAllUsers = async (req, res) => {
     const [users] = await pool.execute(`
       SELECT 
         id, isim, soyisim, email, role, sektor, meslek, 
-        il, ilce, gonullu_dernek, created_at
+        il, ilce, gonullu_dernek, profil_fotografi, created_at
       FROM users 
       ORDER BY created_at DESC
       LIMIT ${limitNum} OFFSET ${offset}

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { faaliyetService, constantsService } from '../../services';
+import faaliyetService from '../../services/faaliyetService';
+import constantsService from '../../services/constantsService';
+import { authService } from '../../services';
 import { toast } from 'react-hot-toast';
-import ProfileHeader from './components/ProfileHeader'; // Yolu güncelledim
-import ProfileInfo from './components/ProfileInfo';     // Yolu güncelledim
-import ProfileSidebar from './components/ProfileSidebar'; // Yolu güncelledim
+import ProfileHeader from './components/ProfileHeader';
+import ProfileInfo from './components/ProfileInfo';
+import ProfileSidebar from './components/ProfileSidebar';
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
@@ -12,6 +14,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [myFaaliyetler, setMyFaaliyetler] = useState([]);
   const [loadingFaaliyetler, setLoadingFaaliyetler] = useState(true);
+  
+  // Profil fotoğrafı için yeni state'ler
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -32,14 +39,13 @@ const Profile = () => {
   const [options, setOptions] = useState({
     sektorler: [],
     komisyonlar: [],
-    iller: [], // İller ve ilçeler için de seçenekleri ekleyelim
+    iller: [],
     ilceler: []
   });
 
   // Initialize form data from user
   useEffect(() => {
     if (user) {
-      // Doğum tarihini YYYY-MM-DD formatına dönüştürerek input'ta düzgün görünmesini sağla
       const formattedDogumTarihi = user.dogum_tarihi ? new Date(user.dogum_tarihi).toISOString().split('T')[0] : '';
       setFormData({
         isim: user.isim || '',
@@ -57,18 +63,18 @@ const Profile = () => {
     }
   }, [user]);
 
-  // Load options (sektorler, komisyonlar, iller)
+  // Load options
   useEffect(() => {
     const loadAllOptions = async () => {
       try {
         const [sektorResponse, komisyonResponse, illerResponse] = await Promise.all([
           constantsService.getSektorler(),
           constantsService.getKomisyonlar(),
-          constantsService.getIller() // İlleri de yükle
+          constantsService.getIller()
         ]);
 
         setOptions(prev => ({
-          ...prev, // Mevcut ilceler boş kalabilir
+          ...prev,
           sektorler: sektorResponse.data || [],
           komisyonlar: komisyonResponse.data || [],
           iller: illerResponse.data || []
@@ -102,8 +108,7 @@ const Profile = () => {
     };
 
     loadIlceler();
-  }, [formData.il]); // formData.il değiştiğinde ilçeleri yükle
-
+  }, [formData.il]);
 
   // Load user's activities
   useEffect(() => {
@@ -135,12 +140,97 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
-    // Eğer il değişiyorsa, ilçe seçimini sıfırla
+    
     if (name === 'il' && prev.ilce) {
-        setFormData(prev => ({
-            ...prev,
-            ilce: ''
-        }));
+      setFormData(prev => ({
+        ...prev,
+        ilce: ''
+      }));
+    }
+  };
+
+  // Profil fotoğrafı seçme
+  const handleImageSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  // Fotoğraf validasyonu (yerel fonksiyon)
+  const validateImageFile = (file) => {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    
+    if (!file) {
+      return { valid: false, error: 'Dosya seçilmedi' };
+    }
+    
+    if (file.size > maxSize) {
+      return { valid: false, error: 'Dosya boyutu 5MB\'dan büyük olamaz' };
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+      return { valid: false, error: 'Sadece resim dosyaları (JPG, PNG, GIF, WebP) yüklenebilir' };
+    }
+    
+    return { valid: true };
+  };
+
+  // Fotoğraf değişimi
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    
+    console.log('File selected:', file);
+    
+    if (!file) {
+      setSelectedImage(null);
+      setImagePreview(null);
+      return;
+    }
+    
+    // Dosya validasyonu
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
+      fileInputRef.current.value = '';
+      return;
+    }
+    
+    setSelectedImage(file);
+    console.log('Selected image set:', file.name);
+    
+    // Önizleme oluştur
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+      console.log('Image preview created');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Profil fotoğrafını sil
+  const handleDeleteProfileImage = async () => {
+    if (!window.confirm('Profil fotoğrafını silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await authService.deleteProfileImage();
+      
+      if (response.success) {
+        toast.success('Profil fotoğrafı silindi');
+        // Auth context'i güncelle
+        const updatedProfile = await authService.getProfile();
+        if (updatedProfile.success) {
+          updateProfile(updatedProfile.user);
+        }
+      } else {
+        toast.error(response.error || 'Fotoğraf silinirken hata oluştu');
+      }
+    } catch (error) {
+      console.error('Fotoğraf silme hatası:', error);
+      toast.error('Beklenmeyen bir hata oluştu');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -149,23 +239,34 @@ const Profile = () => {
     try {
       setLoading(true);
       
-      // Tarih formatını düzelt (ISO formatından YYYY-MM-DD'ye)
+      // Tarih formatını düzelt
       const profileData = { ...formData };
       if (profileData.dogum_tarihi) {
-        // Eğer tarih zaten YYYY-MM-DD ise tekrar dönüştürme
         if (!/^\d{4}-\d{2}-\d{2}$/.test(profileData.dogum_tarihi)) {
-            const date = new Date(profileData.dogum_tarihi);
-            profileData.dogum_tarihi = date.toISOString().split('T')[0]; // YYYY-MM-DD formatı
+          const date = new Date(profileData.dogum_tarihi);
+          profileData.dogum_tarihi = date.toISOString().split('T')[0];
         }
       } else {
-        profileData.dogum_tarihi = null; // Boşsa null gönder
+        profileData.dogum_tarihi = null;
       }
       
-      const result = await updateProfile(profileData);
+      // Profil fotoğrafı ile birlikte güncelle
+      const result = await authService.updateProfile(profileData, selectedImage);
       
       if (result.success) {
         toast.success('Profil başarıyla güncellendi');
         setIsEditing(false);
+        
+        // Form'u temizle
+        setSelectedImage(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        
+        // Auth context'i güncelle
+        updateProfile(result.user);
+        
       } else {
         toast.error(result.error);
       }
@@ -179,7 +280,6 @@ const Profile = () => {
 
   // Cancel editing
   const handleCancel = () => {
-    // Reset form data to current user data
     if (user) {
       const formattedDogumTarihi = user.dogum_tarihi ? new Date(user.dogum_tarihi).toISOString().split('T')[0] : '';
       setFormData({
@@ -196,23 +296,41 @@ const Profile = () => {
         mezun_okul: user.mezun_okul || ''
       });
     }
+    
+    // Fotoğraf seçimini temizle
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
     setIsEditing(false);
   };
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-gray-300"> {/* Koyu tema arka planı */}
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-gray-300">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-red-700 mx-auto"></div> {/* Renkler güncellendi */}
-          <p className="mt-4 text-gray-400 font-medium">Profil yükleniyor...</p> {/* Metin rengi güncellendi */}
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-red-700 mx-auto"></div>
+          <p className="mt-4 text-gray-400 font-medium">Profil yükleniyor...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen text-white"> {/* Genel arka plan ve metin rengi */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10"> {/* Responsive padding */}
+    <div className="min-h-screen text-white">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+        
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          className="hidden"
+        />
+        
         {/* Profile Header */}
         <ProfileHeader 
           user={user}
@@ -221,11 +339,14 @@ const Profile = () => {
           onEdit={() => setIsEditing(true)}
           onSave={handleSave}
           onCancel={handleCancel}
+          onImageSelect={handleImageSelect}
+          onDeleteImage={handleDeleteProfileImage}
+          imagePreview={imagePreview}
+          selectedImage={selectedImage}
         />
 
         {/* Main Content */}
-        <div className="mt-6 sm:mt-8 lg:mt-10 flex flex-col lg:flex-row gap-6 lg:gap-8"> {/* Responsive boşluk ve düzen */}
-          {/* Profile Information (Sol taraf - geniş ekranlarda) */}
+        <div className="mt-6 sm:mt-8 lg:mt-10 flex flex-col lg:flex-row gap-6 lg:gap-8">
           <div className="lg:w-2/3">
             <ProfileInfo 
               user={user}
@@ -236,7 +357,6 @@ const Profile = () => {
             />
           </div>
 
-          {/* Statistics and Activities (Sağ taraf - geniş ekranlarda) */}
           <div className="lg:w-1/3">
             <ProfileSidebar 
               user={user}

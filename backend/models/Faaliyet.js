@@ -25,6 +25,7 @@ class Faaliyet {
         u.gonullu_dernek,
         u.il,
         u.ilce,
+        u.profil_fotografi,
         admin.isim as onaylayan_admin_isim,
         admin.soyisim as onaylayan_admin_soyisim
       FROM faaliyet_paylasimlar f
@@ -93,7 +94,8 @@ class Faaliyet {
         u.gonullu_dernek,
         u.il,
         u.ilce,
-        u.role
+        u.role,
+        u.profil_fotografi
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
       WHERE ${whereClause}
@@ -135,6 +137,7 @@ class Faaliyet {
         u.gonullu_dernek,
         u.il,
         u.ilce,
+        u.profil_fotografi,
         admin.isim as onaylayan_admin_isim,
         admin.soyisim as onaylayan_admin_soyisim
       FROM faaliyet_paylasimlar f
@@ -215,6 +218,7 @@ class Faaliyet {
         u.isim,
         u.soyisim,
         u.gonullu_dernek,
+        u.profil_fotografi,
         admin.isim as onaylayan_admin_isim,
         admin.soyisim as onaylayan_admin_soyisim
       FROM faaliyet_paylasimlar f

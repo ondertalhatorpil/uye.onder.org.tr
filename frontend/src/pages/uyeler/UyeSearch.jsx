@@ -41,10 +41,6 @@ const UyeSearch = () => {
     // Tüm filtre değerlerinin boş olup olmadığını kontrol et
     const allFiltersEmpty = Object.values(currentFilters).every(value => !value || (typeof value === 'string' && value.trim() === ''));
     
-    // Eğer tüm filtreler boşsa ve daha önce hiç arama yapılmadıysa (veya sonuçlar boşsa), API'ye istek gönderme.
-    // Ancak QuickSearchBar'dan tetikleniyorsa veya filtrelerden biri aktifse aramayı yap.
-    // Bu mantığı, varsayılan boş aramayı engellemek için biraz daha esnek tutabiliriz.
-    // Örneğin, sadece "name" filtresi varsa ama o da boşsa arama yapmayalım.
     if (allFiltersEmpty) {
       setUyeler([]); // Tüm filtreler boşsa sonuçları temizle
       setLoading(false); // Yükleme durumunu kapat
