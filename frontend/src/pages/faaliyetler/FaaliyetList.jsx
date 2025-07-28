@@ -101,7 +101,7 @@ const FaaliyetList = () => {
   }
 
   return (
-    <div className="max-w-full mx-auto p-4 sm:p-6 lg:max-w-4xl lg:p-8 rounded-none sm:rounded-3xl shadow-none sm:shadow-xl"> {/* max-w-full ve rounded-none mobile için */}
+    <div className="max-w-full mx-auto p-4 sm:p-6 lg:max-w-4xl lg:p-8 "> {/* max-w-full ve rounded-none mobile için */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-gray-700"> {/* Mobil dikey, sm sonrası yatay */}
         <div className="mb-4 sm:mb-0"> {/* Mobil alta boşluk */}

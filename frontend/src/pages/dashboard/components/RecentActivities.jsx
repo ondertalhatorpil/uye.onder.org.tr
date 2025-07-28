@@ -388,7 +388,7 @@ const TwitterActivityCard = ({ faaliyet }) => {
 
 // Twitter Style Boş Durum
 const TwitterEmptyState = () => (
-  <div className="text-center py-8 sm:py-16 px-4 bg-[#121212] min-h-[calc(100vh-100px)] flex flex-col justify-center">
+  <div className="text-center py-8 sm:py-16 px-4 min-h-[calc(100vh-100px)] flex flex-col justify-center">
     <div className="relative mb-4 sm:mb-6">
       <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full bg-gray-900 flex items-center justify-center mx-auto">
         <FiActivity className="h-12 w-12 sm:h-16 sm:w-16 text-gray-600" />
@@ -400,7 +400,7 @@ const TwitterEmptyState = () => (
     </p>
     <Link
       to="/faaliyetler/create"
-      className="inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-blue-500 text-white rounded-full font-bold hover:bg-blue-600 transition-colors text-sm sm:text-base"
+      className="inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-red-500 text-white rounded-full font-bold hover:bg-red-600 transition-colors text-sm sm:text-base"
     >
       <FiPlus className="mr-1.5 h-4 w-4 sm:mr-2 sm:h-5 sm:w-5" />
       İlk Faaliyeti Paylaş
