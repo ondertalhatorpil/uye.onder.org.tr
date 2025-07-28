@@ -132,32 +132,7 @@ const CreateForm = ({
       <form onSubmit={handleSubmit}>
         {/* Form Content */}
         <div className="p-5 sm:p-8 space-y-6 sm:space-y-8"> {/* Padding ve boşluk */}
-          {/* Başlık */}
-          <div>
-            <label htmlFor="baslik" className="block text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3"> {/* Font boyutu ve rengi */}
-              Başlık
-              <span className="text-gray-400 font-normal text-xs sm:text-sm ml-2">(Opsiyonel)</span> {/* Font boyutu ve rengi */}
-            </label>
-            <input
-              type="text"
-              id="baslik"
-              name="baslik"
-              value={formData.baslik}
-              onChange={handleChange}
-              className="block w-full px-4 py-3 sm:px-6 sm:py-4 text-base sm:text-lg border-2 border-gray-600 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 placeholder-gray-500 bg-gray-700 text-white" // Stil değiştirildi
-              placeholder="Faaliyetinize çekici bir başlık verin..."
-              maxLength={100}
-            />
-            <div className="flex justify-between items-center mt-1.5 sm:mt-2"> {/* Boşluk */}
-              <p className="text-xs sm:text-sm text-gray-400"> {/* Font boyutu ve rengi */}
-                Başlık faaliyetinizi öne çıkarır
-              </p>
-              <p className="text-xs text-gray-500">
-                {formData.baslik.length}/100
-              </p>
-            </div>
-          </div>
-
+          
           {/* Açıklama */}
           <div>
             <label htmlFor="aciklama" className="block text-base sm:text-lg font-semibold text-white mb-2 sm:mb-3"> {/* Font boyutu ve rengi */}
@@ -168,7 +143,7 @@ const CreateForm = ({
               name="aciklama"
               value={formData.aciklama}
               onChange={handleChange}
-              rows={5} // Mobil için satır sayısı azaltıldı
+              rows={6} // Satır sayısı artırıldı çünkü başlık kaldırıldı
               className="block w-full px-4 py-3 sm:px-6 sm:py-4 text-base sm:text-lg border-2 border-gray-600 rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 placeholder-gray-500 bg-gray-700 text-white resize-none" // Stil değiştirildi
               placeholder="Faaliyetinizi detaylı bir şekilde anlatın... Ne yaptınız? Nasıl geçti? Deneyimlerinizi paylaşın!"
               maxLength={1000}
@@ -227,7 +202,7 @@ const CreateForm = ({
               </button>
               
               <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left"> {/* Font ve hizalama */}
-                • En az başlık, açıklama veya fotoğraf ekleyin
+                • En az açıklama veya fotoğraf ekleyin
               </div>
             </div>
 

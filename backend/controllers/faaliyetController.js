@@ -88,24 +88,22 @@ console.error('Database error details:', {
   }
 };
 
-// Yeni faaliyet oluştur (beklemede durumunda)
 const createFaaliyet = async (req, res) => {
   try {
-    const { baslik, aciklama, gorseller } = req.body;
+    const { aciklama, gorseller } = req.body; // baslik kaldırıldı
     const user_id = req.user.id;
 
-    // Basit validasyon
-    if (!baslik && !aciklama && (!gorseller || gorseller.length === 0)) {
+    // Basit validasyon - sadece açıklama ve görsel kontrolü
+    if (!aciklama && (!gorseller || gorseller.length === 0)) {
       return res.status(400).json({
         success: false,
-        error: 'Başlık, açıklama veya görsel gerekli'
+        error: 'Açıklama veya görsel gerekli'
       });
     }
 
     // Faaliyet beklemede durumunda oluşturulur
     const faaliyetId = await Faaliyet.create({
       user_id,
-      baslik,
       aciklama,
       gorseller: gorseller || []
     });
@@ -190,7 +188,7 @@ const getMyFaaliyetler = async (req, res) => {
 const updateFaaliyet = async (req, res) => {
   try {
     const { id } = req.params;
-    const { baslik, aciklama } = req.body;
+    const { aciklama } = req.body; // baslik kaldırıldı
     const user_id = req.user.id;
 
     // Önce faaliyet var mı ve kullanıcının mi kontrol et
@@ -217,7 +215,6 @@ const updateFaaliyet = async (req, res) => {
 
     // Güncelleme yapılırsa faaliyet tekrar beklemede durumuna geçer
     const updated = await Faaliyet.updateById(id, user_id, {
-      baslik,
       aciklama,
       gorseller
     });

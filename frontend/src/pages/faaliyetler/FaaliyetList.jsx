@@ -152,7 +152,7 @@ const FaaliyetList = () => {
       <FaaliyetStats pagination={pagination} />
 
       {/* Faaliyet Listesi */}
-      <div className="space-y-4 mt-6 sm:space-y-6 sm:mt-8"> {/* Mobil boşluk */}
+      <div className="space-y-4 mt-6 sm:space-y-6 sm:mt-8"> 
         {faaliyetler.length > 0 ? (
           faaliyetler.map((faaliyet) => (
             <FaaliyetCard key={faaliyet.id} faaliyet={faaliyet} />
@@ -164,7 +164,7 @@ const FaaliyetList = () => {
 
       {/* Load More Button */}
       {pagination.page < pagination.totalPages && (
-        <div className="text-center mt-8 sm:mt-10"> {/* Mobil boşluk */}
+        <div className="text-center mt-8 sm:mt-10"> 
           <button
             onClick={handleLoadMore}
             disabled={loading}

@@ -1,19 +1,21 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext'; // Assuming this path is correct
 import {
   FiHome, FiUsers, FiActivity,
-  FiSettings, FiShield, FiUser, // FiX, kaldırıldı
+  FiSettings, FiShield, FiUser,
   FiSearch, FiPlus, FiGrid, FiLogOut,
-  FiClock, FiCheck, FiAlertCircle, FiMoreHorizontal
+  FiClock, FiAlertCircle, FiMoreHorizontal, FiBell // Added FiBell for notifications as seen in example
 } from 'react-icons/fi';
 
-// Kırmızı tonlarını merkezi olarak tanımlayalım
-const APP_RED = 'red-500'; // Ana kırmızı renk
-const APP_RED_HOVER = 'red-600'; // Hover durumu için daha koyu kırmızı
+// Define color palette and font for consistency
+const APP_RED = 'red-500'; // Main red color
+const APP_RED_HOVER = 'red-600'; // Darker red for hover states
+const TEXT_COLOR_NORMAL = 'gray-400'; // Default text color for inactive items
+const TEXT_COLOR_ACTIVE = 'white'; // Text color for active items
+const BG_HOVER = 'gray-800'; // Background color for hover states
 
-// Sidebar bileşeni artık sadece masaüstü için çalışıyor
-const Sidebar = () => { // props olarak open, setOpen, mobile kaldırıldı
+const Sidebar = () => {
   const location = useLocation();
   const { user, hasRole, hasAnyRole, logout } = useAuth();
 
@@ -28,6 +30,13 @@ const Sidebar = () => { // props olarak open, setOpen, mobile kaldırıldı
         href: '/',
         icon: FiHome,
         roles: ['super_admin', 'dernek_admin', 'uye']
+      },
+      {
+        name: 'Bildirimler', // Added based on the example image
+        href: '/notifications',
+        icon: FiBell,
+        roles: ['super_admin', 'dernek_admin', 'uye'],
+        badge: true // Example for a badge
       },
       {
         name: 'Faaliyetler',
@@ -101,11 +110,12 @@ const Sidebar = () => { // props olarak open, setOpen, mobile kaldırıldı
       }
     ];
 
+    // Filter menu items based on user roles
     return [
       ...baseMenuItems,
       ...(hasRole('dernek_admin') ? dernekAdminItems : []),
       ...(hasRole('super_admin') ? superAdminItems : []),
-      ...(hasAnyRole(['dernek_admin', 'uye']) ? moreItems : []) // Sadece dernek_admin veya üye ise 'Daha fazla' göster
+      ...(hasAnyRole(['dernek_admin', 'uye']) ? moreItems : [])
     ].filter(item => item.roles.includes(user?.role));
   };
 
@@ -119,52 +129,60 @@ const Sidebar = () => { // props olarak open, setOpen, mobile kaldırıldı
   };
 
   const MenuItemBadge = ({ item }) => {
-    if (item.badge && item.href === '/admin/faaliyetler/stats') {
-      return (
-        <span className={`ml-2 inline-flex items-center justify-center h-2 w-2 bg-${APP_RED} rounded-full animate-pulse`}>
-        </span>
-      );
+    if (item.badge) {
+      // Example for a dynamic badge, e.g., notification count
+      let badgeContent = null;
+      if (item.href === '/notifications') {
+        badgeContent = (
+          <span className={`ml-2 inline-flex items-center justify-center h-4 w-4 text-xs font-semibold bg-${APP_RED} text-white rounded-full`}>
+            1 {/* Example static count, replace with dynamic data */}
+          </span>
+        );
+      } else if (item.href === '/admin/faaliyetler/stats') {
+        badgeContent = (
+          <span className={`ml-2 inline-flex items-center justify-center h-2 w-2 bg-${APP_RED} rounded-full animate-pulse`}>
+          </span>
+        );
+      }
+      return badgeContent;
     }
     return null;
   };
 
-  // Logo için kendi bileşeniniz
+  // Logo component
   const AppLogo = () => (
     <img
-      src="https://onder.org.tr/assets/images/statics/onder-logo.svg"
-      className='h-8 w-auto' // Logo boyutunu ayarla
+      src="https://www.onder.org.tr/build/assets/search-bg-842c8fc7.svg"
+      className='h-8 w-auto' 
       alt="Logo"
     />
   );
 
-  // Masaüstü sidebar renderı
   return (
-    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-80 lg:flex-col border-r border-gray-800 bg-black"> {/* lg:w-80 olarak güncellendi */}
+    <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-96 lg:flex-col border-r border-gray-800 font-inter"> 
       <div className="flex flex-col flex-grow overflow-y-auto">
-        {/* Logo */}
-        <div className="flex items-center h-16 pl-6 pr-4 py-4"> {/* Sol boşluk ayarı */}
+        {/* Logo Section */}
+        <div className="flex items-center h-16 pl-26 pr-4 py-4"> 
           <Link to="/" className="p-2 rounded-full hover:bg-gray-900 hover:bg-opacity-50 transition-colors cursor-pointer">
             <AppLogo />
           </Link>
         </div>
 
-        {/* Navigasyon menüsü */}
-        <nav className="flex-1 pl-6 pr-4 py-2"> {/* Sol boşluk ayarı */}
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-4 py-2 pl-24"> 
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`group flex items-center px-4 py-3 text-lg rounded-full transition-all duration-200 ${
+                className={`group flex items-center px-4 py-2 text-base rounded-full transition-all duration-200 mb-1 ${ // Smaller text, less vertical padding, margin-bottom
                   isActive(item.href)
-                    ? `font-bold text-white`
-                    : 'font-normal text-gray-400 hover:bg-gray-800 hover:text-white'
+                    ? `font-semibold text-${TEXT_COLOR_ACTIVE}` // Semibold for active, softer white
+                    : `font-normal text-${TEXT_COLOR_NORMAL} hover:bg-${BG_HOVER} hover:text-${TEXT_COLOR_ACTIVE}` // Normal weight, gray text
                 }`}
               >
-                <Icon
-                  className="mr-4 h-6 w-6"
-                />
+                <Icon className="mr-3 h-5 w-5" /> {/* Smaller icon size */}
                 <span className="">{item.name}</span>
                 <MenuItemBadge item={item} />
               </Link>
@@ -172,38 +190,39 @@ const Sidebar = () => { // props olarak open, setOpen, mobile kaldırıldı
           })}
         </nav>
 
-        {/* Gönderi Yayınla Butonu */}
-        <div className="pl-6 pr-4 pb-4"> {/* Sol boşluk ayarı */}
+        {/* Post Button */}
+        <div className="px-4 pb-4 pl-28"> 
           <Link
             to="/faaliyetler/create"
-            className={`flex items-center justify-center w-full bg-${APP_RED} text-white font-bold py-3 px-6 rounded-full hover:bg-${APP_RED_HOVER} transition-colors shadow-lg`}
+            className={`flex items-center justify-center w-full bg-${APP_RED} text-white font-bold py-2.5 px-6 rounded-full hover:bg-${APP_RED_HOVER} transition-colors shadow-lg text-base`} // Slightly less vertical padding, smaller text
           >
+            <FiPlus className="mr-2 h-5 w-5" /> {/* Added plus icon */}
             Gönderi yayınla
           </Link>
         </div>
 
-        {/* Kullanıcı Profili ve Çıkış Butonu */}
-        <div className="pl-6 pr-4 pb-6 mt-auto"> {/* Sol boşluk ayarı */}
-          <div className="flex items-center p-3 rounded-full hover:bg-gray-800 transition-colors cursor-pointer group" onClick={() => alert('Profil detayları veya ayarlar açılabilir.')}>
-            <div className={`h-10 w-10 rounded-full bg-${APP_RED} flex items-center justify-center text-white text-lg font-bold flex-shrink-0`}>
+        {/* User Profile and Logout Button */}
+        <div className="px-4 pb-6 mt-auto pl-26"> 
+          <div className="flex items-center p-2 rounded-full hover:bg-gray-800 transition-colors cursor-pointer group" onClick={() => console.log('Profil detayları veya ayarlar açılabilir.')}> {/* Slightly less padding */}
+            <div className={`h-9 w-9 rounded-full bg-${APP_RED} flex items-center justify-center text-white text-base font-semibold flex-shrink-0`}> {/* Smaller avatar, smaller text */}
               <span>
                 {user?.isim?.charAt(0)?.toUpperCase() || 'U'}
               </span>
             </div>
             <div className="ml-3 flex-grow overflow-hidden">
-              <p className="text-base font-bold text-white leading-tight truncate">
+              <p className="text-sm font-semibold text-white leading-tight truncate"> {/* Smaller text, semibold */}
                 {user?.isim} {user?.soyisim}
               </p>
-              <p className="text-sm text-gray-500 truncate">
+              <p className="text-xs text-gray-500 truncate"> {/* Even smaller text */}
                 @{user?.isim?.toLowerCase() || 'kullanici'}
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="ml-auto p-2 text-red-400 rounded-full hover:bg-gray-900 transition-all flex items-center"
+              className="ml-auto p-1.5 text-red-400 rounded-full hover:bg-gray-900 transition-all flex items-center" // Smaller padding
               title="Çıkış Yap"
             >
-              <FiLogOut className="h-5 w-5" />
+              <FiLogOut className="h-4 w-4" /> {/* Smaller icon */}
             </button>
           </div>
         </div>

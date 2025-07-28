@@ -687,7 +687,7 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 lg:p-8"> {/* Genel koyu arka plan ve padding */}
+    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8"> {/* Genel koyu arka plan ve padding */}
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 sm:mb-10"> {/* Responsive margin */}

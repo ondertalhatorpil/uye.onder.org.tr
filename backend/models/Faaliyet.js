@@ -1,20 +1,19 @@
-// models/Faaliyet.js - Güncellenmiş versiyon
 const { pool } = require('../config/database');
 
 class Faaliyet {
   // Faaliyet oluştur (artık 'beklemede' durumunda)
   static async create(faaliyetData) {
-    const { user_id, baslik, aciklama, gorseller } = faaliyetData;
+  const { user_id, aciklama, gorseller } = faaliyetData;
 
-    const [result] = await pool.execute(
-      `INSERT INTO faaliyet_paylasimlar 
-       (user_id, baslik, aciklama, gorseller, durum) 
-       VALUES (?, ?, ?, ?, 'beklemede')`,
-      [user_id, baslik || null, aciklama || null, JSON.stringify(gorseller || [])]
-    );
+  const [result] = await pool.execute(
+    `INSERT INTO faaliyet_paylasimlar 
+     (user_id, aciklama, gorseller, durum) 
+     VALUES (?, ?, ?, 'beklemede')`,
+    [user_id, aciklama || null, JSON.stringify(gorseller || [])]
+  );
 
-    return result.insertId;
-  }
+  return result.insertId;
+}
 
   // Faaliyet detayını getir
   static async findById(id) {
@@ -125,7 +124,6 @@ class Faaliyet {
     let query = `
       SELECT 
         f.id,
-        f.baslik,
         f.aciklama,
         f.gorseller,
         f.created_at,
@@ -261,30 +259,28 @@ class Faaliyet {
   }
 
   // Faaliyet güncelle (sadece kendi ve beklemede olan)
-  static async updateById(id, userId, updateData) {
-    const { baslik, aciklama, gorseller } = updateData;
+ static async updateById(id, userId, updateData) {
+  const { aciklama, gorseller } = updateData; 
 
-    const [result] = await pool.execute(`
-      UPDATE faaliyet_paylasimlar 
-      SET baslik = ?, 
-          aciklama = ?, 
-          gorseller = ?, 
-          updated_at = NOW(),
-          durum = 'beklemede',
-          onaylayan_admin_id = NULL,
-          onay_tarihi = NULL,
-          red_nedeni = NULL
-      WHERE id = ? AND user_id = ?
-    `, [
-      baslik || null,
-      aciklama || null,
-      JSON.stringify(gorseller || []),
-      id,
-      userId
-    ]);
+  const [result] = await pool.execute(`
+    UPDATE faaliyet_paylasimlar 
+    SET aciklama = ?, 
+        gorseller = ?, 
+        updated_at = NOW(),
+        durum = 'beklemede',
+        onaylayan_admin_id = NULL,
+        onay_tarihi = NULL,
+        red_nedeni = NULL
+    WHERE id = ? AND user_id = ?
+  `, [
+    aciklama || null,
+    JSON.stringify(gorseller || []),
+    id,
+    userId
+  ]);
 
-    return result.affectedRows > 0;
-  }
+  return result.affectedRows > 0;
+}
 
   // Faaliyet sil (sadece kendi)
   static async deleteById(id, userId) {

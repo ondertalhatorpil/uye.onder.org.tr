@@ -163,7 +163,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
     </div>
   );
 
-  // YENİ: Eğitim durumlarını dinamik olarak hesapla
   const ortaokulStatus = getEducationStatus(user.ortaokul_mezun_yili, user.ortaokul_id, user.ortaokul_custom);
   const liseStatus = getEducationStatus(user.lise_mezun_yili, user.lise_id, user.lise_custom);
 
@@ -252,7 +251,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
         </div>
       </div>
 
-      {/* Eğitim Bilgileri - GÜNCEL YAPIYLA */}
       <div className="bg-gray-800 rounded-xl sm:rounded-3xl shadow-lg border border-gray-700 overflow-hidden">
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-700">
           <h3 className="text-lg sm:text-xl font-bold text-white flex items-center">
@@ -265,7 +263,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
         
         <div className="p-4 sm:p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-            {/* Ortaokul - YENİ YAPIYLA */}
             <EducationSection
               title="Ortaokul"
               icon={FiBook}
@@ -276,7 +273,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               location={user.ortaokul_il && user.ortaokul_ilce ? `${user.ortaokul_il} / ${user.ortaokul_ilce}` : user.ortaokul_il}
             />
 
-            {/* Lise - YENİ YAPIYLA */}
             <EducationSection
               title="Lise"
               icon={FiBook}
@@ -287,7 +283,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               location={user.lise_il && user.lise_ilce ? `${user.lise_il} / ${user.lise_ilce}` : user.lise_il}
             />
 
-            {/* Üniversite - YENİ YAPIYLA */}
             <EducationSection
               title="Üniversite"
               icon={FiBook}
@@ -346,7 +341,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
         </div>
       </div>
 
-      {/* Dernek Bilgileri */}
       <div className="bg-gray-800 rounded-xl sm:rounded-3xl shadow-lg border border-gray-700 overflow-hidden">
         <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-700">
           <h3 className="text-lg sm:text-xl font-bold text-white flex items-center">

@@ -211,7 +211,6 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
             location={user.lise_il && user.lise_ilce ? `${user.lise_il} / ${user.lise_ilce}` : user.lise_il}
           />
 
-          {/* Üniversite */}
           <EducationSection
             title="Üniversite"
             icon={FiBook}

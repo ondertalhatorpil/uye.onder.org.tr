@@ -51,7 +51,7 @@ const getDashboard = async (req, res) => {
     // ONAY BEKLEYENLERİ ÖNE ÇIKART - Son paylaşılan faaliyetler
     const [recentFaaliyetler] = await pool.execute(`
       SELECT 
-        f.id, f.baslik, f.created_at, f.durum,
+        f.id, f.created_at, f.durum,
         u.isim, u.soyisim, u.gonullu_dernek
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
@@ -64,7 +64,7 @@ const getDashboard = async (req, res) => {
     // Bekleyen faaliyetlerin detayları - YENİ
     const [bekleyenFaaliyetler] = await pool.execute(`
       SELECT 
-        f.id, f.baslik, f.aciklama, f.created_at,
+        f.id, f.aciklama, f.created_at,
         u.isim, u.soyisim, u.gonullu_dernek, u.il, u.ilce
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
@@ -143,7 +143,7 @@ const getBekleyenFaaliyetler = async (req, res) => {
 
     let query = `
       SELECT 
-        f.id, f.baslik, f.aciklama, f.gorseller, f.created_at,
+        f.id, f.aciklama, f.gorseller, f.created_at,
         u.isim, u.soyisim, u.gonullu_dernek, u.il, u.ilce, u.sektor
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
@@ -379,7 +379,6 @@ const getFaaliyetOnayGecmisi = async (req, res) => {
             limit = 20,
             durum,
             admin_id,
-            baslik,
             tarih_baslangic,
             tarih_bitis
         } = req.query;
@@ -390,7 +389,7 @@ const getFaaliyetOnayGecmisi = async (req, res) => {
 
         let query = `
       SELECT 
-        f.id, f.baslik, f.aciklama, f.durum, f.onay_tarihi, f.red_nedeni, f.created_at,
+        f.id, f.aciklama, f.durum, f.onay_tarihi, f.red_nedeni, f.created_at,
         u.isim as user_isim, u.soyisim as user_soyisim, u.gonullu_dernek,
         admin.isim as admin_isim, admin.soyisim as admin_soyisim
       FROM faaliyet_paylasimlar f
@@ -409,11 +408,6 @@ const getFaaliyetOnayGecmisi = async (req, res) => {
         if (admin_id && admin_id.trim() !== '') {
             conditions.push('f.onaylayan_admin_id = ?');
             params.push(parseInt(admin_id));
-        }
-
-        if (baslik && baslik.trim() !== '') {
-            conditions.push('f.baslik LIKE ?');
-            params.push(`%${baslik.trim()}%`);
         }
 
         if (tarih_baslangic && tarih_baslangic.trim() !== '') {
