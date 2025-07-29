@@ -50,16 +50,12 @@ export const authService = {
   updateProfile: async (profileData, profileImage = null) => {
     const formData = new FormData();
     
-    console.log('authService.updateProfile called with:');
-    console.log('- profileData:', profileData);
-    console.log('- profileImage:', profileImage);
     
     // Tüm profil bilgilerini FormData'ya ekle
     Object.keys(profileData).forEach(key => {
       const value = profileData[key];
       if (value !== null && value !== undefined && value !== '') {
         formData.append(key, value);
-        console.log(`FormData appended: ${key} = ${value}`);
       }
     });
     
@@ -83,7 +79,7 @@ export const authService = {
       // DİKKAT: /api eklemeyin çünkü apiUrl zaten /api içeriyor
       console.log('Making fetch request to:', `${apiUrl}/auth/profile`);
       
-      const response = await fetch(`${apiUrl}/auth/profile`, {
+      const response = await fetch(`${apiUrl}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`

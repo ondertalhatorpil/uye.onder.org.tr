@@ -4,19 +4,16 @@ import {
   FiCalendar, FiUsers, FiHome, FiBook, FiLock
 } from 'react-icons/fi';
 
-const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
-  // Format date for input
-  const formatDateForInput = (dateString) => {
+const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
         return '';
     }
     return date.toISOString().split('T')[0];
-  };
+};
 
-  // Format date for display
-  const formatDateForDisplay = (dateString) => {
+const formatDateForDisplay = (dateString) => {
     if (!dateString) return 'Belirtilmemiş';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
@@ -27,19 +24,61 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
       month: 'long',
       year: 'numeric'
     });
-  };
+};
 
-  // YENİ: Eğitim durumunu dinamik olarak belirle
+const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder, readOnly = false, options = null, disabled = false, isEditing, onChange }) => (
+  <div className="group">
+    <label className="block text-sm font-semibold text-gray-300 mb-2">
+      {label}
+      {readOnly && <span className="ml-2 text-xs text-gray-500">(Değiştirilemez)</span>}
+    </label>
+    <div className="relative">
+      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+        <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-red-500 transition-colors" />
+      </div>
+      {isEditing && !readOnly ? (
+        options ? (
+          <select
+            name={name}
+            value={value}
+            onChange={onChange}
+            disabled={disabled}
+            className={`w-full pl-11 pr-4 py-3.5 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-700 text-white font-medium ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`} 
+          >
+            <option value="">{placeholder}</option>
+            {options.map(option => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type={type}
+            name={name}
+            value={type === 'date' ? formatDateForInput(value) : value}
+            onChange={onChange}
+            placeholder={placeholder}
+            className="w-full pl-11 pr-4 py-3.5 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-700 text-white font-medium placeholder-gray-500" 
+          />
+        )
+      ) : (
+        <div className="w-full pl-11 pr-4 py-3.5 border border-gray-700 rounded-xl bg-gray-700 text-gray-300 font-medium flex items-center">
+          {type === 'date' ? formatDateForDisplay(value) : (value || 'Belirtilmemiş')}
+          {readOnly && <FiLock className="ml-auto h-4 w-4 text-gray-500" />}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+
+const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
+
   const getEducationStatus = (mezunYili, okulId, customOkul) => {
-    // Mezuniyet yılı varsa mezun
     if (mezunYili) return 'mezun';
-    // Okul seçilmiş ama mezuniyet yılı yoksa (teorik olarak olmamalı)
     if (okulId || customOkul) return 'mezun';
-    // Hiçbiri yoksa okumadı
     return 'okumadi';
   };
 
-  // Eğitim durumu metinleri
   const getEducationStatusText = (status) => {
     switch (status) {
       case 'mezun': return 'Mezun';
@@ -49,16 +88,12 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
     }
   };
 
-  // YENİ: Okul adını getir (ortaokul/lise için)
   const getSchoolName = (okulId, customOkulName, okulAdiField) => {
-    // Custom okul adı varsa onu kullan
     if (customOkulName) return customOkulName;
-    // ID'ye bağlı okul adı varsa onu kullan
     if (okulId && user[okulAdiField]) return user[okulAdiField];
     return 'Belirtilmemiş';
   };
 
-  // YENİ: Üniversite adını getir (direkt alan)
   const getUniversityInfo = () => {
     if (user.universite_durumu === 'okumadi') return 'Okumadım';
     if (user.universite_adi) {
@@ -70,50 +105,6 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
     }
     return 'Belirtilmemiş';
   };
-
-  const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder, readOnly = false, options = null, disabled = false }) => (
-    <div className="group">
-      <label className="block text-sm font-semibold text-gray-300 mb-2">
-        {label}
-        {readOnly && <span className="ml-2 text-xs text-gray-500">(Değiştirilemez)</span>}
-      </label>
-      <div className="relative">
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-          <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-red-500 transition-colors" />
-        </div>
-        {isEditing && !readOnly ? (
-          options ? (
-            <select
-              name={name}
-              value={value}
-              onChange={onChange}
-              disabled={disabled}
-              className={`w-full pl-11 pr-4 py-3.5 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-700 text-white font-medium ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`} 
-            >
-              <option value="">{placeholder}</option>
-              {options.map(option => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={type}
-              name={name}
-              value={type === 'date' ? formatDateForInput(value) : value}
-              onChange={onChange}
-              placeholder={placeholder}
-              className="w-full pl-11 pr-4 py-3.5 border border-gray-600 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 bg-gray-700 text-white font-medium placeholder-gray-500" 
-            />
-          )
-        ) : (
-          <div className="w-full pl-11 pr-4 py-3.5 border border-gray-700 rounded-xl bg-gray-700 text-gray-300 font-medium flex items-center">
-            {type === 'date' ? formatDateForDisplay(value) : (value || 'Belirtilmemiş')}
-            {readOnly && <FiLock className="ml-auto h-4 w-4 text-gray-500" />}
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   const EducationSection = ({ title, icon: Icon, iconColor, status, schoolName, graduationYear, location, bölüm }) => (
     <div className="p-4 border border-gray-700 rounded-xl bg-gray-800 shadow-md">
@@ -188,6 +179,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={formData.isim}
               placeholder="İsminizi giriniz"
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -197,6 +189,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={formData.soyisim}
               placeholder="Soyisminizi giriniz"
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -206,6 +199,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               icon={FiMail}
               value={user.email}
               readOnly={true}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -216,6 +210,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={formData.telefon}
               placeholder="05xxxxxxxxx"
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -225,6 +220,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               icon={FiCalendar}
               value={formData.dogum_tarihi}
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -235,6 +231,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               placeholder="İl seçiniz"
               options={options.iller}
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -246,6 +243,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               options={options.ilceler}
               onChange={onChange}
               disabled={!formData.il || options.ilceler.length === 0}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
           </div>
         </div>
@@ -317,6 +315,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               placeholder="Sektör seçiniz"
               options={options.sektorler}
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -326,6 +325,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               value={formData.meslek}
               placeholder="Mesleğinizi giriniz"
               onChange={onChange}
+              isEditing={isEditing} // Yeni: isEditing prop'unu geçirin
             />
 
             <InputField
@@ -336,6 +336,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
               placeholder="Komisyon seçiniz"
               options={options.komisyonlar}
               onChange={onChange}
+              isEditing={isEditing} 
             />
           </div>
         </div>
@@ -358,6 +359,7 @@ const ProfileInfo = ({ user, formData, isEditing, options, onChange }) => {
             icon={FiHome}
             value={user.gonullu_dernek}
             readOnly={true}
+            isEditing={isEditing} 
           />
         </div>
       </div>

@@ -28,7 +28,7 @@ const MobileBottomNav = () => {
   const getBottomNavItems = () => {
     let baseItems = [
       { name: 'Ana Sayfa', href: '/', icon: FiHome, roles: ['super_admin', 'dernek_admin', 'uye'] },
-      { name: 'Faaliyetler', href: '/faaliyetler', icon: FiActivity, roles: ['super_admin', 'dernek_admin', 'uye'] },
+      { name: 'Dernekler', href: '/dernekler', icon: FiActivity, roles: ['super_admin', 'dernek_admin', 'uye'] },
       { name: 'Üye Arama', href: '/uyeler', icon: FiSearch, roles: ['super_admin', 'dernek_admin', 'uye'] },
     ];
 
