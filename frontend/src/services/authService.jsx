@@ -79,7 +79,7 @@ export const authService = {
       // DİKKAT: /api eklemeyin çünkü apiUrl zaten /api içeriyor
       console.log('Making fetch request to:', `${apiUrl}/auth/profile`);
       
-      const response = await fetch(`${apiUrl}/api/auth/profile`, {
+      const response = await fetch(`${apiUrl}/auth/profile`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`
