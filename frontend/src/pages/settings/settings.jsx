@@ -41,7 +41,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen text-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-xl mx-auto bg-gray-850 rounded-xl sm:rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-gray-700 bg-gray-900 flex items-center">

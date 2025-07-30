@@ -6,14 +6,14 @@ import { authService } from '../../services';
 import { toast } from 'react-hot-toast';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileInfo from './components/ProfileInfo';
-import ProfileSidebar from './components/ProfileSidebar';
+// ProfileSidebar artık kullanılmadığı için import edilmiyor
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [myFaaliyetler, setMyFaaliyetler] = useState([]);
-  const [loadingFaaliyetler, setLoadingFaaliyetler] = useState(true);
+  const [loadingFaaliyetler, setLoadingFaaliyetler] = useState(true); 
   
   // Profil fotoğrafı için yeni state'ler
   const [selectedImage, setSelectedImage] = useState(null);
@@ -110,7 +110,7 @@ const Profile = () => {
     loadIlceler();
   }, [formData.il]);
 
-  // Load user's activities
+  // Load user's activities (myFaaliyetler) - still needed for stats in ProfileHeader
   useEffect(() => {
     const loadMyFaaliyetler = async () => {
       try {
@@ -208,10 +208,13 @@ const Profile = () => {
 
   // Profil fotoğrafını sil
   const handleDeleteProfileImage = async () => {
-    if (!window.confirm('Profil fotoğrafını silmek istediğinizden emin misiniz?')) {
-      return;
-    }
+    // NOT: window.confirm yerine özel bir modal UI kullanılması önerilir.
+    // if (!window.confirm('Profil fotoğrafını silmek istediğinizden emin misiniz?')) {
+    //   return;
+    // }
+    toast.error('Profil fotoğrafı silme onayı için özel bir modal kullanın.'); // Geçici bildirim
 
+    // Aşağıdaki kodu, özel modal onaylandıktan sonra çalıştırın
     try {
       setLoading(true);
       const response = await authService.deleteProfileImage();
@@ -343,25 +346,18 @@ const Profile = () => {
           onDeleteImage={handleDeleteProfileImage}
           imagePreview={imagePreview}
           selectedImage={selectedImage}
+          myFaaliyetler={myFaaliyetler} 
         />
 
         {/* Main Content */}
-        <div className="mt-6 sm:mt-8 lg:mt-10 flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <div className="lg:w-2/3">
+        <div className="mt-6 sm:mt-8 lg:mt-10"> 
+          <div className="w-full"> 
             <ProfileInfo 
               user={user}
               formData={formData}
               isEditing={isEditing}
               options={options}
               onChange={handleChange}
-            />
-          </div>
-
-          <div className="lg:w-1/3">
-            <ProfileSidebar 
-              user={user}
-              myFaaliyetler={myFaaliyetler}
-              loadingFaaliyetler={loadingFaaliyetler}
             />
           </div>
         </div>

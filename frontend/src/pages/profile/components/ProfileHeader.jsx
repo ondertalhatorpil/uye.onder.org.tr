@@ -10,7 +10,6 @@ const ProfileHeader = ({
   onSave, 
   onCancel, 
   onImageSelect, 
-  onDeleteImage,
   imagePreview,
   selectedImage 
 }) => {
@@ -73,17 +72,7 @@ const ProfileHeader = ({
                   <FiCamera className="h-3 w-3 text-white" />
                 </button>
                 
-                {/* Silme butonu - sadece profil fotoğrafı varsa göster */}
-                {(user.profil_fotografi || selectedImage) && (
-                  <button 
-                    onClick={onDeleteImage}
-                    className="p-2 bg-gray-600 rounded-full shadow-md border border-gray-500 hover:bg-gray-700 transition-colors z-10"
-                    title="Profil fotoğrafını sil"
-                    type="button"
-                  >
-                    <FiTrash2 className="h-3 w-3 text-white" />
-                  </button>
-                )}
+                
               </div>
             )}
             
