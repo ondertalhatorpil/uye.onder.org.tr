@@ -105,25 +105,32 @@ const MyDernek = () => {
 
 
   // Form değişikliği
- const handleChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name.startsWith('social_')) {
-      const socialField = name.replace('social_', '');
-      setFormData(prev => ({
-        ...prev,
-        dernek_sosyal_medya_hesaplari: {
-          ...prev.dernek_sosyal_medya_hesaplari,
-          [socialField]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  
+  if (name.startsWith('social_')) {
+    const socialField = name.replace('social_', '');
+    setFormData(prev => ({
+      ...prev,
+      dernek_sosyal_medya_hesaplari: {
+        ...prev.dernek_sosyal_medya_hesaplari,
+        [socialField]: value
+      }
+    }));
+  } else {
+    // Tarih alanı için özel işlem
+    let processedValue = value;
+    if (name === 'dernek_kuruluş_tarihi' && value) {
+      // YYYY-MM-DD formatında olduğundan emin ol
+      processedValue = value;
     }
-  };
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: processedValue
+    }));
+  }
+};
 
   // Logo seçimi
   const handleLogoSelect = (e) => {
@@ -176,25 +183,44 @@ const MyDernek = () => {
 
   // Dernek bilgilerini kaydet
   const handleSave = async () => {
-    try {
-      setSaving(true);
-      
-      const response = await dernekService.updateMyDernek(formData);
-      
-      if (response.success) {
-        setDernek(response.data);
-        setIsEditing(false);
-        toast.success('Dernek bilgileri güncellendi');
-      } else {
-        toast.error(response.error || 'Güncelleme başarısız');
+  try {
+    setSaving(true);
+    
+    // Tarih formatını kontrol et ve düzelt
+    const dataToSend = { ...formData };
+    if (dataToSend.dernek_kuruluş_tarihi) {
+      // Date input'undan gelen değer zaten YYYY-MM-DD formatında olmalı
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(dataToSend.dernek_kuruluş_tarihi)) {
+        // Eğer farklı formattaysa dönüştür
+        const date = new Date(dataToSend.dernek_kuruluş_tarihi);
+        if (!isNaN(date.getTime())) {
+          dataToSend.dernek_kuruluş_tarihi = date.toISOString().split('T')[0];
+        } else {
+          toast.error('Geçerli bir tarih giriniz');
+          return;
+        }
       }
-    } catch (error) {
-      console.error('Update dernek error:', error);
-      toast.error('Güncelleme sırasında hata oluştu');
-    } finally {
-      setSaving(false);
     }
-  };
+    
+    console.log('Gönderilecek tarih:', dataToSend.dernek_kuruluş_tarihi);
+    
+    const response = await dernekService.updateMyDernek(dataToSend);
+    
+    if (response.success) {
+      setDernek(response.data);
+      setIsEditing(false);
+      toast.success('Dernek bilgileri güncellendi');
+    } else {
+      toast.error(response.error || 'Güncelleme başarısız');
+    }
+  } catch (error) {
+    console.error('Update dernek error:', error);
+    toast.error('Güncelleme sırasında hata oluştu');
+  } finally {
+    setSaving(false);
+  }
+};
 
   // Düzenlemeyi iptal et
   const handleCancel = () => {
@@ -222,11 +248,17 @@ const MyDernek = () => {
     return `${UPLOADS_BASE_URL}/uploads/dernek-logos/${dernek.dernek_logosu}`;
   };
 
-  // Tarih formatla
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return dateString.split('T')[0]; // YYYY-MM-DD formatına çevir
-  };
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  
+  // Eğer zaten YYYY-MM-DD formatındaysa direkt döndür
+  if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateString;
+  }
+  
+  // ISO string'i YYYY-MM-DD'ye çevir
+  return dateString.split('T')[0];
+};
 
   // Loading state
   if (loading) {
@@ -255,7 +287,7 @@ const MyDernek = () => {
 
 return (
   // Ana kapsayıcıya daha koyu arka plan verildi
-  <div className="min-h-screen bg-gray-950 text-white py-12"> {/* Genel metin rengi beyaz, padding artırıldı */}
+  <div className="min-h-screen text-white py-12"> {/* Genel metin rengi beyaz, padding artırıldı */}
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"> {/* padding ve boşluk artırıldı */}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"> {/* Responsive düzenleme */}
@@ -647,52 +679,15 @@ return (
             </div>
           </div>
 
-          {/* Konum Bilgisi Kartı */}
           <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 relative overflow-hidden">
-            {/* Dekoratif gradyan */}
-            <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-red-600 to-blue-600"></div>
+          <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-red-600 to-red-600"></div>
 
-            <div className="p-8"> {/* Padding artırıldı */}
-              <h3 className="text-xl font-semibold text-white mb-6 flex items-center border-b border-gray-700 pb-3">
-                <FiMapPin className="mr-3 h-6 w-6 text-red-500" />
-                Konum Durumu
-              </h3>
-              
-              {dernek.dernek_latitude && dernek.dernek_longitude ? (
-                <div className="text-center py-4"> {/* Padding */}
-                  <div className="h-16 w-16 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-4 border border-green-800/50 shadow-md"> {/* İkon kapsayıcı stili */}
-                    <FiMapPin className="h-8 w-8 text-green-400" /> {/* İkon boyutu */}
-                  </div>
-                  <p className="text-lg font-semibold text-green-200 mb-1">Konum Belirlendi</p>
-                  <p className="text-sm text-green-300">
-                    Derneğiniz haritada başarıyla işaretlendi.
-                  </p>
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="h-16 w-16 rounded-full bg-yellow-900/30 flex items-center justify-center mx-auto mb-4 border border-yellow-800/50 shadow-md"> {/* İkon kapsayıcı stili */}
-                    <FiMapPin className="h-8 w-8 text-yellow-400" />
-                  </div>
-                  <p className="text-lg font-semibold text-yellow-200 mb-2">Konum Bekleniyor</p>
-                  <p className="text-sm text-yellow-300 mb-5">
-                    Derneğiniz henüz harita üzerinde bir konuma sahip değil.
-                  </p>
-                  <button
-                    onClick={() => setIsLocationModalOpen(true)}
-                    className="w-full inline-flex items-center justify-center px-5 py-2.5 text-base font-semibold text-yellow-400 bg-yellow-900/30 border border-yellow-800/50 rounded-xl hover:bg-yellow-900/50 transition-all duration-300 transform hover:scale-105 shadow-md"
-                  >
-                    <FiMapPin className="mr-2 h-5 w-5" />
-                    Konum Belirle
-                  </button>
-                </div>
-              )}
-            </div>
+          
           </div>
         </div>
       </div>
     </div>
 
-    {/* YENİ: Konum Seçici Modal */}
     <LocationPickerModal
       isOpen={isLocationModalOpen}
       onClose={() => setIsLocationModalOpen(false)}
