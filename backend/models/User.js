@@ -42,7 +42,11 @@ class User {
       aydinlatma_metni_onay: userData.aydinlatma_metni_onay ? 1 : 0,
       
       // Profil fotoğrafı - register sırasında null
-      profil_fotografi: userData.profil_fotografi || null
+      profil_fotografi: userData.profil_fotografi || null,
+      
+      // GİZLİLİK AYARLARI - VARSAYILAN DEĞERLER
+      show_email: userData.show_email !== undefined ? userData.show_email : 1,
+      show_phone: userData.show_phone !== undefined ? userData.show_phone : 0
     };
 
     console.log('Cleaned user data:', cleanUserData);
@@ -77,17 +81,13 @@ class User {
       cleanUserData.universite_mezun_yili,   // 23
       cleanUserData.kvkk_onay,               // 24
       cleanUserData.aydinlatma_metni_onay,   // 25
-      cleanUserData.profil_fotografi         // 26
+      cleanUserData.profil_fotografi,        // 26
+      cleanUserData.show_email,              // 27 - YENİ
+      cleanUserData.show_phone               // 28 - YENİ
     ];
 
     console.log('Insert values:', insertValues);
     console.log('Insert values length:', insertValues.length);
-    console.log('Üniversite bilgileri:', {
-      universite_durumu: cleanUserData.universite_durumu,
-      universite_adi: cleanUserData.universite_adi,
-      universite_bolum: cleanUserData.universite_bolum,
-      universite_mezun_yili: cleanUserData.universite_mezun_yili
-    });
 
     // Undefined kontrol
     const hasUndefined = insertValues.some(val => val === undefined);
@@ -107,8 +107,9 @@ class User {
         universite_durumu, universite_adi, universite_bolum, universite_mezun_yili,
         
         kvkk_onay, aydinlatma_metni_onay, profil_fotografi,
+        show_email, show_phone,
         kvkk_onay_tarihi, aydinlatma_onay_tarihi
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       insertValues
     );
 
@@ -130,7 +131,7 @@ class User {
       `SELECT 
         u.id, u.isim, u.soyisim, u.email, u.dogum_tarihi, u.sektor, u.meslek,
         u.telefon, u.il, u.ilce, u.gonullu_dernek, u.calisma_komisyon, u.mezun_okul,
-        u.role, u.created_at, u.profil_fotografi,
+        u.role, u.created_at, u.profil_fotografi, u.show_email, u.show_phone,
         
         u.ortaokul_id, u.ortaokul_custom, u.ortaokul_mezun_yili,
         u.lise_id, u.lise_custom, u.lise_mezun_yili,
@@ -186,6 +187,7 @@ class User {
       SELECT 
         u.id, u.isim, u.soyisim, u.sektor, u.meslek, u.il, u.ilce, u.gonullu_dernek, u.created_at,
         u.universite_durumu, u.universite_adi, u.universite_bolum, u.profil_fotografi,
+        u.show_email, u.show_phone,
         ortaokul.kurum_adi as ortaokul_adi,
         lise.kurum_adi as lise_adi
       FROM users u
@@ -254,7 +256,10 @@ class User {
       universite_durumu, universite_adi, universite_bolum, universite_mezun_yili,
       
       // Profil fotoğrafı
-      profil_fotografi
+      profil_fotografi,
+      
+      // GİZLİLİK AYARLARI - YENİ
+      show_email, show_phone
     } = updateData;
 
     // Tüm undefined değerleri null'a çevir ve tarih formatını düzelt
@@ -324,6 +329,39 @@ class User {
       updateValues.push(profil_fotografi || null);
     }
 
+    // GİZLİLİK AYARLARI GÜNCELLEMESİ - YENİ
+    if (show_email !== undefined || show_phone !== undefined) {
+      if (profil_fotografi !== undefined) {
+        updateFields = `
+          isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
+          telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
+          
+          ortaokul_id = ?, ortaokul_custom = ?, ortaokul_mezun_yili = ?,
+          lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
+          universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
+          
+          profil_fotografi = ?, show_email = ?, show_phone = ?,
+          updated_at = NOW()
+        `;
+        updateValues.push(show_email !== undefined ? (show_email ? 1 : 0) : null);
+        updateValues.push(show_phone !== undefined ? (show_phone ? 1 : 0) : null);
+      } else {
+        updateFields = `
+          isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
+          telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
+          
+          ortaokul_id = ?, ortaokul_custom = ?, ortaokul_mezun_yili = ?,
+          lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
+          universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
+          
+          show_email = ?, show_phone = ?,
+          updated_at = NOW()
+        `;
+        updateValues.push(show_email !== undefined ? (show_email ? 1 : 0) : null);
+        updateValues.push(show_phone !== undefined ? (show_phone ? 1 : 0) : null);
+      }
+    }
+
     // Undefined kontrol
     const hasUndefined = updateValues.some(val => val === undefined);
     if (hasUndefined) {
@@ -341,6 +379,51 @@ class User {
     );
 
     return result.affectedRows > 0;
+  }
+
+  // GİZLİLİK AYARLARI GÜNCELLEME FONKSİYONU - YENİ
+  static async updatePrivacySettings(userId, privacyData) {
+    const { show_email, show_phone } = privacyData;
+
+    console.log('Updating privacy settings for user:', userId, { show_email, show_phone });
+
+    const [result] = await pool.execute(
+      `UPDATE users SET 
+        show_email = ?, 
+        show_phone = ?, 
+        updated_at = NOW() 
+      WHERE id = ?`,
+      [
+        show_email !== undefined ? (show_email ? 1 : 0) : null,
+        show_phone !== undefined ? (show_phone ? 1 : 0) : null,
+        userId
+      ]
+    );
+
+    return result.affectedRows > 0;
+  }
+
+  // KULLANICI BİLGİLERİNİ GİZLİLİK AYARLARINA GÖRE FİLTRELE - YENİ
+  static filterUserDataByPrivacy(user, viewerId = null) {
+    // Eğer kendi profilini görüyorsa veya admin ise tam bilgileri döndür
+    if (viewerId && (viewerId === user.id || user.role === 'super_admin')) {
+      return user;
+    }
+
+    // Gizlilik ayarlarına göre bilgileri filtrele
+    const filteredUser = { ...user };
+
+    // E-posta gizliliği
+    if (!user.show_email) {
+      filteredUser.email = null;
+    }
+
+    // Telefon gizliliği
+    if (!user.show_phone) {
+      filteredUser.telefon = null;
+    }
+
+    return filteredUser;
   }
 
   // Eğitim istatistikleri

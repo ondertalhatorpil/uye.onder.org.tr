@@ -180,6 +180,31 @@ export const authService = {
     return await api.put('/auth/change-password', passwordData);
   },
 
+  // GİZLİLİK AYARLARI - YENİ FONKSİYONLAR
+  // Gizlilik ayarlarını getir
+  getPrivacySettings: async () => {
+    const response = await api.get('/auth/privacy-settings');
+    return response;
+  },
+
+  // Gizlilik ayarlarını güncelle
+  updatePrivacySettings: async (privacyData) => {
+    const response = await api.put('/auth/privacy-settings', privacyData);
+    
+    // Başarılıysa kullanıcı bilgilerini güncelle (gizlilik ayarları dahil)
+    if (response.success && response.data) {
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        // Kullanıcı nesnesine gizlilik ayarlarını ekle
+        currentUser.show_email = response.data.show_email;
+        currentUser.show_phone = response.data.show_phone;
+        localStorage.setItem('dernek_user', JSON.stringify(currentUser));
+      }
+    }
+    
+    return response;
+  },
+
   // Çıkış yap
   logout: () => {
     localStorage.removeItem('dernek_token');

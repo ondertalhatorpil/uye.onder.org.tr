@@ -631,6 +631,96 @@ const changePassword = async (req, res) => {
   }
 };
 
+
+const getPrivacySettings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        show_email: Boolean(user.show_email),
+        show_phone: Boolean(user.show_phone)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get privacy settings error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Gizlilik ayarları getirilemedi: ' + error.message
+    });
+  }
+};
+
+// Gizlilik ayarlarını güncelle
+const updatePrivacySettings = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { show_email, show_phone } = req.body;
+
+    // Validasyon
+    if (show_email !== undefined && typeof show_email !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'show_email boolean değer olmalıdır'
+      });
+    }
+
+    if (show_phone !== undefined && typeof show_phone !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'show_phone boolean değer olmalıdır'
+      });
+    }
+
+    // En az bir ayar gönderilmiş olmalı
+    if (show_email === undefined && show_phone === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'En az bir gizlilik ayarı belirtilmelidir'
+      });
+    }
+
+    // Ayarları güncelle
+    const updated = await User.updatePrivacySettings(userId, { show_email, show_phone });
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        error: 'Kullanıcı bulunamadı veya güncelleme başarısız'
+      });
+    }
+
+    // Güncellenmiş ayarları getir
+    const user = await User.findById(userId);
+
+    res.json({
+      success: true,
+      message: 'Gizlilik ayarları başarıyla güncellendi',
+      data: {
+        show_email: Boolean(user.show_email),
+        show_phone: Boolean(user.show_phone)
+      }
+    });
+
+  } catch (error) {
+    console.error('Update privacy settings error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Gizlilik ayarları güncellenirken hata oluştu: ' + error.message
+    });
+  }
+};
+
 module.exports = { 
   register, 
   login, 
@@ -639,5 +729,7 @@ module.exports = {
   updateProfile,
   deleteProfileImage,
   getKvkkTexts,
-  upload // Multer middleware'ini export et
+  getPrivacySettings,     
+  updatePrivacySettings,  
+  upload 
 };

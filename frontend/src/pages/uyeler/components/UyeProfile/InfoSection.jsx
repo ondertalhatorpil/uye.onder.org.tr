@@ -1,10 +1,23 @@
 import React from 'react';
 import { 
   FiUser, FiMail, FiPhone, FiMapPin, FiBriefcase,
-  FiCalendar, FiUsers, FiHome, FiBook
+  FiCalendar, FiUsers, FiHome, FiBook, FiEyeOff
 } from 'react-icons/fi';
 
 const InfoSection = ({ user, formatDateForDisplay }) => {
+  // DEBUG: Kullanıcı verisini konsola yazdır
+  console.log('InfoSection - User data:', user);
+  console.log('InfoSection - Email visibility:', { 
+    email: user.email, 
+    show_email: user.show_email,
+    isEmailPrivate: !user.email 
+  });
+  console.log('InfoSection - Phone visibility:', { 
+    telefon: user.telefon, 
+    show_phone: user.show_phone,
+    isPhonePrivate: !user.telefon 
+  });
+
   // Eğitim durumu belirleme fonksiyonu
   const getEducationStatus = (mezunYili, okulId, customOkul) => {
     if (mezunYili) return 'mezun';           // Mezuniyet yılı varsa mezun
@@ -78,7 +91,8 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
     </div>
   );
 
-  const InfoField = ({ label, value, icon: Icon }) => (
+  // GİZLİLİK KONTROLÜ İÇİN InfoField COMPONENT'İ GÜNCELLENDİ
+  const InfoField = ({ label, value, icon: Icon, isPrivate = false, privateReason = '' }) => (
     <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-700 rounded-xl border border-gray-600">
       <div className="flex items-center">
         <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-gray-600 flex items-center justify-center mr-2 sm:mr-3 shadow-sm">
@@ -86,7 +100,19 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
         </div>
         <span className="text-sm font-medium text-gray-300">{label}</span>
       </div>
-      <span className="text-sm font-semibold text-white text-right break-words max-w-[60%] sm:max-w-none">{value || 'Belirtilmemiş'}</span>
+      
+      {isPrivate ? (
+        <div className="flex items-center text-right">
+          <div className="flex items-center text-gray-500 text-sm">
+            <FiEyeOff className="h-4 w-4 mr-1" />
+            <span>{privateReason}</span>
+          </div>
+        </div>
+      ) : (
+        <span className="text-sm font-semibold text-white text-right break-words max-w-[60%] sm:max-w-none">
+          {value || 'Belirtilmemiş'}
+        </span>
+      )}
     </div>
   );
 
@@ -94,6 +120,10 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
   const ortaokulStatus = getEducationStatus(user.ortaokul_mezun_yili, user.ortaokul_id, user.ortaokul_custom);
   const liseStatus = getEducationStatus(user.lise_mezun_yili, user.lise_id, user.lise_custom);
   const universiteStatus = user.universite_durumu || 'okumadi';
+
+  // GİZLİLİK KONTROLÜ - E-posta ve telefon için
+  const isEmailPrivate = !user.email; // Backend'den null geliyorsa gizli demektir
+  const isPhonePrivate = !user.telefon; // Backend'den null geliyorsa gizli demektir
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
@@ -116,16 +146,25 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
               value={`${user.isim} ${user.soyisim}`}
               icon={FiUser}
             />
+            
+            {/* E-POSTA GİZLİLİK KONTROLÜ */}
             <InfoField
               label="Email"
               value={user.email}
               icon={FiMail}
+              isPrivate={isEmailPrivate}
+              privateReason="Gizli"
             />
+            
+            {/* TELEFON GİZLİLİK KONTROLÜ */}
             <InfoField
               label="Telefon"
               value={user.telefon}
               icon={FiPhone}
+              isPrivate={isPhonePrivate}
+              privateReason="Gizli"
             />
+            
             <InfoField
               label="Doğum Tarihi"
               value={formatDateForDisplay(user.dogum_tarihi)}

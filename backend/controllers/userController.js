@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Faaliyet = require('../models/Faaliyet');
 const { pool } = require('../config/database');
 
-// Kullanıcı arama - PROFİL FOTOĞRAFI EKLENDİ
+// Kullanıcı arama - PROFİL FOTOĞRAFI EKLENDİ + GİZLİLİK KONTROLÜ
 const searchUsers = async (req, res) => {
   try {
     const {
@@ -22,7 +22,8 @@ const searchUsers = async (req, res) => {
     let query = `
       SELECT 
         id, isim, soyisim, sektor, meslek, il, ilce, 
-        gonullu_dernek, calisma_komisyon, profil_fotografi, created_at
+        gonullu_dernek, calisma_komisyon, profil_fotografi, created_at,
+        email, telefon, show_email, show_phone
       FROM users 
       WHERE role IN ('uye', 'dernek_admin')
     `;
@@ -96,6 +97,29 @@ const searchUsers = async (req, res) => {
 
     const [users] = await pool.execute(query, params);
 
+    // GİZLİLİK KONTROLÜ - Her kullanıcı için bilgileri filtrele
+    const viewerId = req.user ? req.user.id : null;
+    const filteredUsers = users.map(user => {
+      // Gizlilik ayarlarına göre filtrele
+      const filteredUser = { ...user };
+      
+      // E-posta gizliliği kontrolü
+      if (!user.show_email && (!viewerId || (viewerId !== user.id))) {
+        filteredUser.email = null;
+      }
+      
+      // Telefon gizliliği kontrolü
+      if (!user.show_phone && (!viewerId || (viewerId !== user.id))) {
+        filteredUser.telefon = null;
+      }
+      
+      // Gizlilik ayarlarını response'dan kaldır (güvenlik)
+      delete filteredUser.show_email;
+      delete filteredUser.show_phone;
+      
+      return filteredUser;
+    });
+
     // Toplam sayı için count query
     let countQuery = `
       SELECT COUNT(*) as total
@@ -112,7 +136,7 @@ const searchUsers = async (req, res) => {
 
     res.json({
       success: true,
-      data: users,
+      data: filteredUsers,
       pagination: {
         total,
         page: pageNum,
@@ -131,10 +155,11 @@ const searchUsers = async (req, res) => {
   }
 };
 
-// Kullanıcı profil detayı - ONAY DURUMU EKLENDİ (zaten User.findById profil_fotografi'yi getiriyor)
+// Kullanıcı profil detayı - ONAY DURUMU EKLENDİ + GİZLİLİK KONTROLÜ
 const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
+    const viewerId = req.user ? req.user.id : null;
 
     // Kullanıcı bilgilerini getir (User.findById zaten profil_fotografi'yi dahil ediyor)
     const user = await User.findById(id);
@@ -145,6 +170,9 @@ const getUserProfile = async (req, res) => {
         error: 'Kullanıcı bulunamadı'
       });
     }
+
+    // GİZLİLİK KONTROLÜ - User model'indeki fonksiyonu kullan
+    const filteredUser = User.filterUserDataByPrivacy(user, viewerId);
 
     // Kullanıcının TÜM faaliyetlerini getir (sadece kendisi görüyorsa)
     // Başkaları sadece onaylananları görür
@@ -175,7 +203,7 @@ const getUserProfile = async (req, res) => {
     res.json({
       success: true,
       data: {
-        user,
+        user: filteredUser,
         faaliyetler,
         stats: {
           toplam_faaliyet: stats.toplam_faaliyet,
@@ -198,21 +226,23 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Dernek üyelerini listele - PROFİL FOTOĞRAFI EKLENDİ
+// Dernek üyelerini listele - PROFİL FOTOĞRAFI EKLENDİ + GİZLİLİK KONTROLÜ
 const getDernekMembers = async (req, res) => {
   try {
     const { dernekAdi } = req.params;
     const { page = 1, limit = 20 } = req.query;
+    const viewerId = req.user ? req.user.id : null;
 
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 20;
     const offset = (pageNum - 1) * limitNum;
 
-    // MySQL 8.0 uyumlu query - profil_fotografi eklendi
+    // MySQL 8.0 uyumlu query - profil_fotografi eklendi + gizlilik alanları
     const [users] = await pool.execute(`
       SELECT 
         id, isim, soyisim, sektor, meslek, il, ilce,
-        calisma_komisyon, profil_fotografi, created_at
+        calisma_komisyon, profil_fotografi, created_at,
+        email, telefon, show_email, show_phone
       FROM users 
       WHERE gonullu_dernek = ? 
         AND role IN ('uye', 'dernek_admin')
@@ -221,6 +251,27 @@ const getDernekMembers = async (req, res) => {
         isim ASC
       LIMIT ${limitNum} OFFSET ${offset}
     `, [dernekAdi]);
+
+    // GİZLİLİK KONTROLÜ
+    const filteredUsers = users.map(user => {
+      const filteredUser = { ...user };
+      
+      // E-posta gizliliği kontrolü
+      if (!user.show_email && (!viewerId || (viewerId !== user.id))) {
+        filteredUser.email = null;
+      }
+      
+      // Telefon gizliliği kontrolü
+      if (!user.show_phone && (!viewerId || (viewerId !== user.id))) {
+        filteredUser.telefon = null;
+      }
+      
+      // Gizlilik ayarlarını response'dan kaldır
+      delete filteredUser.show_email;
+      delete filteredUser.show_phone;
+      
+      return filteredUser;
+    });
 
     // Toplam üye sayısı
     const [countResult] = await pool.execute(`
@@ -234,7 +285,7 @@ const getDernekMembers = async (req, res) => {
 
     res.json({
       success: true,
-      data: users,
+      data: filteredUsers,
       dernek: dernekAdi,
       pagination: {
         total,
@@ -269,10 +320,12 @@ const getAllUsers = async (req, res) => {
     const limitNum = parseInt(limit) || 50;
     const offset = (pageNum - 1) * limitNum;
 
+    // ADMİN TÜM BİLGİLERİ GÖREBİLİR - GİZLİLİK KISITLAMASI YOK
     const [users] = await pool.execute(`
       SELECT 
         id, isim, soyisim, email, role, sektor, meslek, 
-        il, ilce, gonullu_dernek, profil_fotografi, created_at
+        il, ilce, gonullu_dernek, profil_fotografi, created_at,
+        telefon, show_email, show_phone
       FROM users 
       ORDER BY created_at DESC
       LIMIT ${limitNum} OFFSET ${offset}
@@ -319,7 +372,9 @@ const getUserStats = async (req, res) => {
         SUM(CASE WHEN role = 'super_admin' THEN 1 ELSE 0 END) as admin_sayisi,
         SUM(CASE WHEN role = 'dernek_admin' THEN 1 ELSE 0 END) as dernek_admin_sayisi,
         SUM(CASE WHEN role = 'uye' THEN 1 ELSE 0 END) as uye_sayisi,
-        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as son_30_gun_kayit
+        SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as son_30_gun_kayit,
+        SUM(CASE WHEN show_email = 1 THEN 1 ELSE 0 END) as email_gosterenler,
+        SUM(CASE WHEN show_phone = 1 THEN 1 ELSE 0 END) as telefon_gosterenler
       FROM users
     `);
 

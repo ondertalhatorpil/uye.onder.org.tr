@@ -547,14 +547,25 @@ const Register = () => {
     loadDernekler();
   }, [formData.il, formData.ilce]);
 
-  // Handle input change
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-  };
+  const { name, value, type, checked } = e.target;
+  
+  let processedValue = value;
+  
+  // İSİM VE SOYİSİM İÇİN HER KELİMENİN BAŞ HARFİNİ BÜYÜK YAP - YENİ (7 satır kod!)
+  if (name === 'isim' || name === 'soyisim') {
+    processedValue = value
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  
+  setFormData(prev => ({
+    ...prev,
+    [name]: type === 'checkbox' ? checked : processedValue
+  }));
+};
 
   // GÜNCEL VALIDATION
   const validateForm = () => {

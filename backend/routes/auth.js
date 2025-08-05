@@ -3,27 +3,31 @@ const {
   register, 
   login, 
   getProfile, 
-  updateProfile, 
   changePassword, 
-  getKvkkTexts,
+  updateProfile,
   deleteProfileImage,
+  getKvkkTexts,
+  getPrivacySettings,     // YENİ
+  updatePrivacySettings,  // YENİ
   upload 
 } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/register', register);
+// Public routes
+router.post('/register', upload.single('profil_fotografi'), register);
 router.post('/login', login);
+router.get('/kvkk-texts', getKvkkTexts);
+
+// Protected routes
 router.get('/profile', auth, getProfile);
-
-// Profil güncelleme - profil fotoğrafı ile birlikte
 router.put('/profile', auth, upload.single('profil_fotografi'), updateProfile);
-
-// Profil fotoğrafını silme
-router.delete('/profile/image', auth, deleteProfileImage);
-
+router.delete('/profile-image', auth, deleteProfileImage);
 router.put('/change-password', auth, changePassword);
-router.get('/kvkk-texts', getKvkkTexts); 
+
+// GİZLİLİK AYARLARI ROUTEları - YENİ
+router.get('/privacy-settings', auth, getPrivacySettings);
+router.put('/privacy-settings', auth, updatePrivacySettings);
 
 module.exports = router;

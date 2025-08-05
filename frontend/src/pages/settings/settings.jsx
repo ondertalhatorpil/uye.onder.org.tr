@@ -1,53 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { FiMail, FiPhone, FiSave, FiAlertCircle, FiCode } from 'react-icons/fi'; // FiCode ikonu eklendi
-import { toast } from 'react-hot-toast'; // Toast bildirimleri için
+import { FiSave, FiAlertCircle } from 'react-icons/fi';
+import { toast } from 'react-hot-toast';
+import authService from '../../services/authService'; 
 
 const Settings = () => {
-  // Ayar durumları, başlangıçta kullanıcı tercihlerinden veya varsayılandan gelsin
-  const [showEmail, setShowEmail] = useState(true); // Varsayılan olarak true
-  const [showPhone, setShowPhone] = useState(false); // Varsayılan olarak false
-  const [isSaving, setIsSaving] = useState(false); // Kaydetme durumu
 
-  // Gerçek bir uygulamada, bu useEffect içinde kullanıcının mevcut ayarlarını API'den çekerdiniz.
-  // Örnek olarak, localStorage'dan okuyalım:
+  const [showEmail, setShowEmail] = useState(true);
+  const [showPhone, setShowPhone] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const savedEmailSetting = localStorage.getItem('showEmail');
-    const savedPhoneSetting = localStorage.getItem('showPhone');
+    const loadSettings = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        console.log('Gizlilik ayarları yükleniyor...');
+        const response = await authService.getPrivacySettings();
+        
+        console.log('Privacy settings response:', response);
+        
+        if (response.success) {
+          setShowEmail(response.data.show_email);
+          setShowPhone(response.data.show_phone);
+          console.log('Ayarlar yüklendi:', { 
+            show_email: response.data.show_email, 
+            show_phone: response.data.show_phone 
+          });
+        } else {
+          throw new Error(response.error || 'Ayarlar yüklenemedi');
+        }
+      } catch (err) {
+        console.error('Settings load error:', err);
+        setError(err.message);
+        toast.error('Ayarlar yüklenirken hata oluştu: ' + err.message);
+        
+        // Hata durumunda varsayılan değerleri kullan
+        setShowEmail(true);
+        setShowPhone(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    if (savedEmailSetting !== null) {
-      setShowEmail(JSON.parse(savedEmailSetting));
-    }
-    if (savedPhoneSetting !== null) {
-      setShowPhone(JSON.parse(savedPhoneSetting));
-    }
+    loadSettings();
   }, []);
 
+  // Ayarları kaydet
   const handleSaveSettings = async () => {
-    setIsSaving(true);
-    // Burada sunucuya bir API çağrısı yapardınız
-    // Örn: await userService.updateUserSettings({ showEmail, showPhone });
+    try {
+      setIsSaving(true);
+      setError(null);
 
-    // API çağrısı simülasyonu
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Ayarlar kaydedildi:', { showEmail, showPhone });
-        localStorage.setItem('showEmail', JSON.stringify(showEmail));
-        localStorage.setItem('showPhone', JSON.stringify(showPhone));
-        setIsSaving(false);
+      console.log('Ayarlar kaydediliyor:', { show_email: showEmail, show_phone: showPhone });
+      
+      const response = await authService.updatePrivacySettings({
+        show_email: showEmail,
+        show_phone: showPhone
+      });
+
+      console.log('Privacy settings update response:', response);
+
+      if (response.success) {
         toast.success('Ayarlar başarıyla kaydedildi!');
-        resolve();
-      }, 1500); // 1.5 saniye gecikme
-    });
+        console.log('Güncellenmiş ayarlar:', response.data);
+      } else {
+        throw new Error(response.error || 'Ayarlar kaydedilemedi');
+      }
+    } catch (err) {
+      console.error('Settings save error:', err);
+      setError(err.message);
+      toast.error('Ayarlar kaydedilirken hata oluştu: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  // Loading durumu
+  if (isLoading) {
+    return (
+      <div className="min-h-screen text-white p-4 sm:p-6 lg:p-8">
+        <div className="max-w-xl mx-auto bg-gray-850 rounded-xl sm:rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
+          <div className="p-8 text-center">
+            <div className="animate-spin mx-auto h-8 w-8 border-4 border-red-500 border-t-transparent rounded-full mb-4"></div>
+            <p className="text-gray-400">Ayarlar yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-xl mx-auto bg-gray-850 rounded-xl sm:rounded-2xl shadow-xl border border-gray-700 overflow-hidden">
         {/* Header */}
         <div className="p-4 sm:p-6 border-b border-gray-700 bg-gray-900 flex items-center">
-          <h1 className="text-xl sm:text-2xl font-bold text-white flex-1">Ayarlar</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white flex-1">Gizlilik Ayarları</h1>
           <button
-            // onClick={handleSaveSettings}
+            onClick={handleSaveSettings}
             disabled={isSaving}
             className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
               isSaving
@@ -72,13 +124,13 @@ const Settings = () => {
           </button>
         </div>
 
-        {/* Geliştirme Aşamasında Uyarısı */}
-        <div className="p-4 bg-yellow-900/20 text-yellow-300 border-b border-yellow-800 flex items-center">
-            <FiCode className="h-5 w-5 mr-3 flex-shrink-0" />
-            <p className="text-sm sm:text-base font-medium">
-                Bu sayfa **geliştirme aşamasındadır**. 
-            </p>
-        </div>
+        {/* Hata mesajı */}
+        {error && (
+          <div className="p-4 bg-red-900/20 text-red-300 border-b border-red-800 flex items-center">
+            <FiAlertCircle className="h-5 w-5 mr-3 flex-shrink-0" />
+            <p className="text-sm font-medium">{error}</p>
+          </div>
+        )}
 
         {/* Settings Body */}
         <div className="p-4 sm:p-6 space-y-6">
@@ -90,7 +142,7 @@ const Settings = () => {
                   E-posta Adresimi Herkese Göster
                 </label>
                 <p className="text-sm text-gray-400 mt-1">
-                  E-posta adresinizin profilinizde herkese açık görünmesini sağlar.
+                  E-posta adresinizin profilinizde ve arama sonuçlarında görünmesini sağlar.
                 </p>
               </div>
             </div>
@@ -100,9 +152,10 @@ const Settings = () => {
                 id="showEmailToggle"
                 className="sr-only peer"
                 checked={showEmail}
-                onChange={() => setShowEmail(!showEmail)}
+                onChange={(e) => setShowEmail(e.target.checked)}
+                disabled={isSaving}
               />
-              <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-red-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+              <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-red-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
             </label>
           </div>
 
@@ -114,7 +167,7 @@ const Settings = () => {
                   Telefon Numaramı Herkese Göster
                 </label>
                 <p className="text-sm text-gray-400 mt-1">
-                  Telefon numaranızın profilinizde herkese açık görünmesini sağlar.
+                  Telefon numaranızın profilinizde ve arama sonuçlarında görünmesini sağlar.
                 </p>
               </div>
             </div>
@@ -124,20 +177,46 @@ const Settings = () => {
                 id="showPhoneToggle"
                 className="sr-only peer"
                 checked={showPhone}
-                onChange={() => setShowPhone(!showPhone)}
+                onChange={(e) => setShowPhone(e.target.checked)}
+                disabled={isSaving}
               />
-              <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-red-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+              <div className="w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-red-500 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
             </label>
           </div>
 
-          {/* Bilgi Kutusu (İsteğe bağlı) */}
+          {/* Bilgi Kutusu */}
           <div className="flex items-start p-4 bg-blue-900/20 rounded-lg border border-blue-900 text-blue-300 shadow-sm">
             <FiAlertCircle className="h-5 w-5 mr-3 mt-0.5 text-blue-400 flex-shrink-0" />
             <div>
               <h3 className="font-semibold text-white text-base">Gizlilik Notu</h3>
-              <p className="text-sm">
-                Bu ayarlar sadece profil sayfanızdaki görünürlüğü etkiler. Verileriniz sistemimizde güvende tutulmaktadır.
+              <p className="text-sm mb-2">
+                Bu ayarlar sadece profil sayfanızdaki ve arama sonuçlarındaki görünürlüğü etkiler.
               </p>
+              <ul className="text-xs space-y-1">
+                <li>• Verileriniz sistemimizde güvende tutulmaktadır</li>
+                <li>• Kendi profilinizi her zaman tam olarak görürsünüz</li>
+                <li>• Sistem yöneticileri tüm bilgileri görebilir</li>
+                <li>• Değişiklikler anında etkili olur</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Mevcut Durum Özeti */}
+          <div className="bg-gray-900 p-4 rounded-lg border border-gray-600">
+            <h3 className="font-semibold text-white text-base mb-3">Mevcut Ayarlarınız</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">E-posta Görünürlüğü:</span>
+                <span className={`font-medium ${showEmail ? 'text-green-400' : 'text-red-400'}`}>
+                  {showEmail ? 'Herkese Açık' : 'Gizli'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400">Telefon Görünürlüğü:</span>
+                <span className={`font-medium ${showPhone ? 'text-green-400' : 'text-red-400'}`}>
+                  {showPhone ? 'Herkese Açık' : 'Gizli'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
