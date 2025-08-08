@@ -96,7 +96,7 @@ const handleSubmit = async (e) => {
               className='w-66 h-66' 
               alt="Logo" 
             />
-            </div>
+           
           </div>
         </div>
       </div>
