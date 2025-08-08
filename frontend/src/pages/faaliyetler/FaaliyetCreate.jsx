@@ -150,7 +150,7 @@ const FaaliyetCreate = () => {
       const response = await faaliyetService.createFaaliyet(faaliyetData);
       
       if (response.success) {
-        toast.success('Faaliyet başarıyla paylaşıldı!');
+        toast.success('Faaliyet yönetici onayına gönderildi!');
         
         // Preview URL'leri temizle
         imagePreview.forEach(preview => {

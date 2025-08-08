@@ -7,6 +7,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import VerifyResetCode from './pages/auth/VerifyResetCode';
+import ResetPassword from './pages/auth/ResetPassword';
+
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/dashboard/Dashboard';
 import FaaliyetCreate from './pages/faaliyetler/FaaliyetCreate';
@@ -67,6 +71,11 @@ function App() {
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Şifre Sıfırlama Routes - YENİ */}
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-reset-code" element={<VerifyResetCode />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Protected routes with Layout */}
             <Route

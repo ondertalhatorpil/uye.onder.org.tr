@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 
 app.use(cors({
-  origin: true,  
+  origin: true,
   credentials: true
 }));
 
@@ -31,7 +31,6 @@ app.get('/', (req, res) => {
   });
 });
 
-
 // Routes
 try {
   const authRoutes = require('./routes/auth');
@@ -42,7 +41,6 @@ try {
   const adminRoutes = require('./routes/admin');
   const okullarRoutes = require('./routes/okullar');
 
-
   app.use('/api/auth', authRoutes);
   app.use('/api/dernekler', dernekRoutes);
   app.use('/api/constants', constantRoutes);
@@ -51,12 +49,29 @@ try {
   app.use('/api/admin', adminRoutes);
   app.use('/api/okullar', okullarRoutes);
 
-
   console.log('✅ Tüm route\'lar başarıyla yüklendi!');
-
 } catch (error) {
   console.error('❌ Route loading error:', error.message);
 }
+
+// SMS Service kontrolü - YENİ EKLENEN KISIM
+const checkSmsServiceOnStartup = async () => {
+  try {
+    const smsService = require('./services/smsService');
+    const serviceStatus = await smsService.checkServiceHealth();
+    
+    if (serviceStatus.status === 'healthy') {
+      console.log(`✅ SMS Service: ${serviceStatus.mode} modunda çalışıyor`);
+    } else {
+      console.log(`⚠️ SMS Service Uyarısı: ${serviceStatus.message}`);
+    }
+  } catch (error) {
+    console.error('❌ SMS Service kontrolü başarısız:', error.message);
+  }
+};
+
+// SMS servis kontrolünü export et ki server.js'te kullanabilelim
+app.checkSmsService = checkSmsServiceOnStartup;
 
 app.use('*', (req, res) => {
   res.status(404).json({
