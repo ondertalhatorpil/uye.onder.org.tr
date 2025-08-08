@@ -96,13 +96,6 @@ const handleSubmit = async (e) => {
               className='w-66 h-66' 
               alt="Logo" 
             />
-            <div className="mt-8 text-center">
-              <h3 className="text-2xl font-bold text-white mb-4">
-                Şifrenizi mi unuttunuz?
-              </h3>
-              <p className="text-gray-400 text-lg max-w-md">
-                Merak etmeyin, kayıtlı telefon numaranıza SMS kodu göndereceğiz.
-              </p>
             </div>
           </div>
         </div>

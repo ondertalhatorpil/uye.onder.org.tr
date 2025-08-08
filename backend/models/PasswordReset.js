@@ -96,9 +96,9 @@ class PasswordReset {
     console.log('🔍 Database\'de aranan:', phone);
     
     const [rows] = await pool.execute(
-      'SELECT id, isim, soyisim, email, telefon FROM users WHERE telefon = ? AND role IN ("uye", "dernek_admin")',
-      [phone]
-    );
+  'SELECT id, isim, soyisim, email, telefon, role FROM users WHERE telefon = ?',
+  [phone]
+);
     
     console.log('🔍 Bulunan sonuç sayısı:', rows.length);
     if (rows.length > 0) {
