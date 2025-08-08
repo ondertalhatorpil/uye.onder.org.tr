@@ -2,17 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { constantsService, authService } from '../../services';
-import EducationInfoSection from './EducationInfoSection'; // Bu bileşenin stilinin ayrı olarak güncellenmesi gerekebilir.
+import EducationInfoSection from './EducationInfoSection'; 
 
 import { toast } from 'react-hot-toast';
 import { 
   FiUser, FiMail, FiLock, FiEye, FiEyeOff, 
   FiPhone, FiCalendar, FiMapPin, FiUserPlus,
   FiBriefcase, FiShield, FiX, FiCheck, FiInfo,
-  FiUsers, // Bu satırı ekleyin
-  FiHome // Bu satırı da ekleyebiliriz, isteğe bağlı dernek ikonu için
+  FiUsers, 
+  FiHome 
 } from 'react-icons/fi';
-// InputField Helper Component (Yeniden kullanılabilirlik için)
 const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder, onChange, showToggle, toggleVisibility, isPassword = false, options = null, disabled = false, hint = null }) => (
   <div className="space-y-2">
     <label htmlFor={name} className="block text-sm font-medium text-gray-300"> {/* Label rengi */}
@@ -65,15 +64,15 @@ const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder
 
 // Personal Info Component
 const PersonalInfoSection = ({ formData, handleChange, showPassword, showConfirmPassword, setShowPassword, setShowConfirmPassword }) => (
-  <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
-    <div className="flex items-center mb-4 sm:mb-6"> {/* Responsive margin */}
-      <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> {/* İkon kapsayıcı rengi ve boyutu */}
+  <div className="p-4 sm:p-6"> 
+    <div className="flex items-center mb-4 sm:mb-6"> 
+      <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> 
         <FiUser className="w-5 h-5 text-white" />
       </div>
-      <h3 className="text-lg sm:text-xl font-semibold text-white ml-3">Kişisel Bilgiler</h3> {/* Metin rengi ve boyutu */}
+      <h3 className="text-lg sm:text-xl font-semibold text-white ml-3">Kişisel Bilgiler</h3> 
     </div>
     
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> {/* Responsive grid ve boşluk */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> 
       <InputField
         label="İsim"
         name="isim"
@@ -153,8 +152,8 @@ const PersonalInfoSection = ({ formData, handleChange, showPassword, showConfirm
 
 // Professional Info Component
 const ProfessionalInfoSection = ({ formData, handleChange, options }) => (
-  <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
-    <div className="flex items-center mb-4 sm:mb-6"> {/* Responsive margin */}
+  <div className="p-4 sm:p-6"> 
+    <div className="flex items-center mb-4 sm:mb-6"> 
       <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> {/* İkon kapsayıcı rengi ve boyutu */}
         <FiBriefcase className="w-5 h-5 text-white" />
       </div>
@@ -186,15 +185,15 @@ const ProfessionalInfoSection = ({ formData, handleChange, options }) => (
 
 // Location Info Component
 const LocationInfoSection = ({ formData, handleChange, options, loadingStates }) => (
-  <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
-    <div className="flex items-center mb-4 sm:mb-6"> {/* Responsive margin */}
-      <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> {/* İkon kapsayıcı rengi ve boyutu */}
+  <div className="p-4 sm:p-6"> 
+    <div className="flex items-center mb-4 sm:mb-6"> 
+      <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> 
         <FiMapPin className="w-5 h-5 text-white" />
       </div>
-      <h3 className="text-lg sm:text-xl font-semibold text-white ml-3">Konum & Dernek Bilgileri</h3> {/* Metin rengi ve boyutu */}
+      <h3 className="text-lg sm:text-xl font-semibold text-white ml-3">Konum & Dernek Bilgileri</h3> 
     </div>
     
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> {/* Responsive grid ve boşluk */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> 
       <InputField
         label="İl"
         name="il"
@@ -249,8 +248,8 @@ const LocationInfoSection = ({ formData, handleChange, options, loadingStates })
 
 // Privacy Agreements Component
 const PrivacyAgreementsSection = ({ formData, handleChange, onShowKvkk, onShowAydinlatma }) => (
-  <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
-    <div className="flex items-center mb-4 sm:mb-6"> {/* Responsive margin */}
+  <div className="p-4 sm:p-6"> 
+    <div className="flex items-center mb-4 sm:mb-6"> 
       <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> {/* İkon kapsayıcı rengi ve boyutu */}
         <FiShield className="w-5 h-5 text-white" />
       </div>
@@ -258,7 +257,7 @@ const PrivacyAgreementsSection = ({ formData, handleChange, onShowKvkk, onShowAy
     </div>
     
     <div className="space-y-4 sm:space-y-6"> {/* Responsive boşluk */}
-      <div className="bg-gray-700 rounded-lg p-3 sm:p-4 border border-gray-600"> {/* Koyu tema arka planı, responsive padding */}
+      <div className="p-3 sm:p-4 "> 
         <div className="flex items-start space-x-3"> {/* Responsive boşluk */}
           <input
             type="checkbox"
@@ -269,7 +268,7 @@ const PrivacyAgreementsSection = ({ formData, handleChange, onShowKvkk, onShowAy
             className="mt-1 h-5 w-5 text-red-600 border-gray-500 rounded focus:ring-red-600 bg-gray-600 cursor-pointer" // Koyu tema stilleri
           />
           <div className="flex-1">
-            <label htmlFor="kvkk_onay" className="text-sm text-gray-300 cursor-pointer"> {/* Metin rengi */}
+            <label htmlFor="kvkk_onay" className="text-sm text-gray-300 cursor-pointer"> 
               <span className="text-red-500 font-medium">*</span> Kişisel Verilerin Korunması Kanunu kapsamında{' '}
               <button
                 type="button"
@@ -284,7 +283,7 @@ const PrivacyAgreementsSection = ({ formData, handleChange, onShowKvkk, onShowAy
         </div>
       </div>
 
-      <div className="bg-gray-700 rounded-lg p-3 sm:p-4 border border-gray-600"> {/* Koyu tema arka planı, responsive padding */}
+      <div className="p-3 sm:p-4 "> {/* Koyu tema arka planı, responsive padding */}
         <div className="flex items-start space-x-3"> {/* Responsive boşluk */}
           <input
             type="checkbox"
@@ -295,7 +294,7 @@ const PrivacyAgreementsSection = ({ formData, handleChange, onShowKvkk, onShowAy
             className="mt-1 h-5 w-5 text-red-600 border-gray-500 rounded focus:ring-red-600 bg-gray-600 cursor-pointer" // Koyu tema stilleri
           />
           <div className="flex-1">
-            <label htmlFor="aydinlatma_metni_onay" className="text-sm text-gray-300 cursor-pointer"> {/* Metin rengi */}
+            <label htmlFor="aydinlatma_metni_onay" className="text-sm text-gray-300 cursor-pointer"> 
               <span className="text-red-500 font-medium">*</span> Kişisel verilerin işlenmesine ilişkin{' '}
               <button
                 type="button"
@@ -535,7 +534,7 @@ const Register = () => {
           ...prev,
           dernekler: response.data || []
         }));
-        setFormData(prev => ({ ...prev, gonullu_dernek: '' })); // Derneği sıfırla
+        setFormData(prev => ({ ...prev, gonullu_dernek: '' })); 
       } catch (error) {
         console.error('Dernekler error:', error);
         toast.error('Dernekler yüklenemedi');
@@ -552,7 +551,6 @@ const Register = () => {
   
   let processedValue = value;
   
-  // İSİM VE SOYİSİM İÇİN HER KELİMENİN BAŞ HARFİNİ BÜYÜK YAP - YENİ (7 satır kod!)
   if (name === 'isim' || name === 'soyisim') {
     processedValue = value
       .toLowerCase()
@@ -594,18 +592,15 @@ const Register = () => {
     if (!formData.gonullu_dernek) errors.push('Gönüllü dernek seçimi zorunlu.');
     if (!formData.calisma_komisyon) errors.push('Çalışma komisyonu seçimi zorunlu.');
     
-    // EĞİTİM VALİDASYONLARI
-    // Ortaokul validasyonları - mezuniyet yılı seçildiyse okul da seçilmeli
+    
     if (formData.ortaokul_mezun_yili && !formData.ortaokul_id && !formData.ortaokul_custom) {
       errors.push('Ortaokul seçimi veya özel okul adı zorunlu.');
     }
     
-    // Lise validasyonları - mezuniyet yılı seçildiyse okul da seçilmeli
     if (formData.lise_mezun_yili && !formData.lise_id && !formData.lise_custom) {
       errors.push('Lise seçimi veya özel okul adı zorunlu.');
     }
     
-    // Üniversite validasyonları
     if (formData.universite_durumu === 'mezun' || formData.universite_durumu === 'devam_ediyor') {
       if (!formData.universite_adi.trim()) errors.push('Üniversite adı zorunlu.');
       if (!formData.universite_bolum.trim()) errors.push('Üniversite bölümü zorunlu.');
@@ -620,7 +615,6 @@ const Register = () => {
     return errors;
   };
 
-  // GÜNCEL SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -635,7 +629,6 @@ const Register = () => {
     try {
       const { confirmPassword, ...submitData } = formData;
       
-      // Tüm undefined değerleri null veya boş string olarak temizle
       const cleanedData = {
         isim: submitData.isim || '',
         soyisim: submitData.soyisim || '',
@@ -688,27 +681,24 @@ const Register = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black"> {/* Koyu arka plan */}
+      <div className="min-h-screen flex items-center justify-center bg-black"> 
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-red-500 mx-auto"></div> {/* Spinner renkleri */}
-          <p className="mt-4 text-gray-400 font-medium">Yükleniyor...</p> {/* Metin rengi */}
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-red-500 mx-auto"></div> 
+          <p className="mt-4 text-gray-400 font-medium">Yükleniyor...</p> 
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 lg:p-8"> {/* Genel koyu arka plan ve padding */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white p-4 sm:p-6 lg:p-8"> 
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8 sm:mb-10"> {/* Responsive margin */}
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 h-16 bg-gradient-to-r from-red-600 to-red-700 rounded-2xl mb-3 sm:mb-4 shadow-lg"> {/* İkon kapsayıcı boyutu, rengi, gölgesi */}
-            <FiUserPlus className="w-7 h-7 sm:w-8 h-8 text-white" /> {/* İkon boyutu */}
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2"> {/* Responsive font boyutu, metin rengi */}
+        <div className="text-center mb-8 sm:mb-10 pt-22 sm:pt-8"> 
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2"> 
             Yeni Üye Kayıt Formu
           </h1>
-          <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto"> {/* Responsive font boyutu, metin rengi */}
+          <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto"> 
             Dernek yönetim sistemine katılın ve topluluğumuzun bir parçası olun.
           </p>
         </div>
@@ -753,8 +743,7 @@ const Register = () => {
             onShowAydinlatma={() => setShowAydinlatmaModal(true)}
           />
 
-          {/* Submit Button */}
-          <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
+          <div className="p-4 sm:p-6"> 
             <button
               type="submit"
               disabled={isSubmitting}
@@ -775,8 +764,8 @@ const Register = () => {
           </div>
         </form>
 
-        <div className="text-center mt-6 sm:mt-8"> {/* Responsive margin */}
-          <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
+        <div className="text-center mt-6 sm:mt-8"> 
+          <div className="p-4 sm:p-6"> {/* Koyu tema arka planı, responsive padding */}
             <p className="text-gray-300 text-sm sm:text-base"> {/* Metin rengi, responsive font boyutu */}
               Zaten hesabınız var mı?{' '}
               <Link 

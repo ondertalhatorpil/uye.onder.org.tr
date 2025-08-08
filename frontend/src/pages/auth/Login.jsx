@@ -81,7 +81,7 @@ const Login = () => {
     <div className="min-h-screen bg-black flex">
       {/* Left side - Brand/Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black"></div>
+        <div className="absolute inset-1 bg-gradient-to-br from-gray-900 to-black"></div>
         <div className="relative z-10 flex items-center justify-center w-full">
           <div className="text-center">
               <img
@@ -236,7 +236,7 @@ const Login = () => {
           {/* Footer */}
           <div className="text-center mt-8">
             <p className="text-xs text-gray-600">
-              © 2024 Dernek Yönetim Sistemi. Tüm hakları saklıdır.
+              © 2025 ÖNDER. Tüm hakları saklıdır.
             </p>
           </div>
         </div>

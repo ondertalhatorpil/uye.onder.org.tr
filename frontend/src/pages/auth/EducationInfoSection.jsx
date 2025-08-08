@@ -7,9 +7,8 @@ import {
   FiX, 
   FiCalendar, 
   FiMapPin 
-} from 'react-icons/fi'; // FiSchool kaldırıldı, FiCalendar ve FiMapPin eklendi
+} from 'react-icons/fi'; 
 
-// InputField Helper Component (Tekrar tanımlanıyor, emin olmak için)
 const InputField = ({ label, name, type = "text", icon: Icon, value, placeholder, onChange, options = null, disabled = false, hint = null, required = false }) => (
   <div className="space-y-2">
     <label htmlFor={name} className="block text-sm font-medium text-gray-300">
@@ -245,7 +244,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
   const liseState = schoolSearchStates.lise;
 
   return (
-    <div className="bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-gray-700 p-4 sm:p-6">
+    <div className="p-4 sm:p-6">
       <div className="flex items-center mb-4 sm:mb-6">
         <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0">
           <FiBook className="w-5 h-5 text-white" />
@@ -255,7 +254,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
 
       <div className="space-y-6 sm:space-y-8">
         {/* ORTAOKUL BİLGİLERİ */}
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 sm:p-5 relative">
+        <div className="p-4 sm:p-5 relative">
           <h4 className="text-base sm:text-lg font-medium text-white mb-4">Ortaokul Bilgileri</h4>
           
           {/* Temizle butonu */}
@@ -283,7 +282,6 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
             />
           </div>
 
-          {/* Ortaokul Seçimi - Sadece mezuniyet yılı seçildiyse göster */}
           {formData.ortaokul_mezun_yili && (
             <div className="space-y-4 mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -389,7 +387,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
         </div>
 
         {/* LİSE BİLGİLERİ */}
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 sm:p-5 relative">
+        <div className="p-4 sm:p-5 relative">
           <h4 className="text-base sm:text-lg font-medium text-white mb-4">Lise Bilgileri</h4>
 
           {/* Temizle butonu */}
@@ -523,7 +521,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
         </div>
 
         {/* ÜNİVERSİTE DURUMU */}
-        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 sm:p-5">
+        <div className="p-4 sm:p-5">
           <h4 className="text-base sm:text-lg font-medium text-white mb-4">Üniversite Bilgileri</h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
