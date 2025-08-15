@@ -3,15 +3,13 @@ const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 
-// Database bağlantısı - config/database.js'deki ayarları kullanın
 const db = mysql.createConnection({
-  host: 'localhost',     // Kendi database ayarlarınızı yazın
-  user: 'root',          // Kendi database ayarlarınızı yazın  
-  password: '',  // Kendi database ayarlarınızı yazın
-  database: 'dernek_system' // Kendi database adınızı yazın
+  host: 'localhost',    
+  user: 'root',           
+  password: '', 
+  database: 'dernek_system'
 });
 
-// Excel dosyalarını import eden fonksiyon
 async function importOkulExcel(filename, okulTuru) {
   try {
     const filePath = path.join(__dirname, '..', filename);

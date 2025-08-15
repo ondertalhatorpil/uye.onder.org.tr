@@ -21,7 +21,7 @@ const DernekHeader = ({
   };
 
   return (
-    <div className=" rounded-2xl shadow-xl p-6 mb-8"> {/* Dark background, border, shadow, padding */}
+    <div className="p-6 mb-8"> {/* Dark background, border, shadow, padding */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div className="mb-6 lg:mb-0">
           <h1 className="text-3xl font-bold text-red-500 mb-2"> {/* Red header text */}

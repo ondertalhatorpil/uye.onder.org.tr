@@ -190,7 +190,7 @@ const LocationInfoSection = ({ formData, handleChange, options, loadingStates })
       <div className="w-9 h-9 sm:w-10 h-10 bg-red-700 rounded-lg flex items-center justify-center flex-shrink-0"> 
         <FiMapPin className="w-5 h-5 text-white" />
       </div>
-      <h3 className="text-lg sm:text-xl font-semibold text-white ml-3">Konum & Dernek Bilgileri</h3> 
+      <h3 className="text-lg sm:text-xl font-semibold text-white ml-3">Dernek Bilgileri</h3> 
     </div>
     
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"> 

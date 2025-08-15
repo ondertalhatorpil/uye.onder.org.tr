@@ -14,7 +14,7 @@ const DernekList = () => {
   // Filter states
   const [filters, setFilters] = useState({
     search: '',
-    il: 'İstanbul', // Varsayılan olarak İstanbul seçili
+    il: 'İSTANBUL', // Varsayılan olarak İstanbul seçili
     ilce: ''
   });
   const [showFilters, setShowFilters] = useState(false);
