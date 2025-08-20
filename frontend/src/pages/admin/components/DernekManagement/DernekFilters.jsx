@@ -21,17 +21,17 @@ const DernekFilters = ({
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div className="bg-red-700 rounded-2xl shadow-lg p-6 mb-8">
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="mb-6">
+            <form onSubmit={handleSearch}>
                 <div className="relative">
-                    <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Dernek adı, başkan, şehir ara..."
-                        className="w-full pl-12 pr-32 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg"
+                        className="w-full pl-12 pr-32 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-lg placeholder-white"
                     />
                     <button
                         type="submit"

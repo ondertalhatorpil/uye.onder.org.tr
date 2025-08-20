@@ -260,17 +260,17 @@ const DernekManagement = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen  py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                 {/* Modern Header */}
-                <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                <div className="p-8 mb-8">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                         <div className="mb-6 lg:mb-0">
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                            <h1 className="text-3xl font-bold text-white mb-2">
                                 Dernek Yönetimi
                             </h1>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <div className="flex items-center space-x-4 text-sm text-white">
                                 <div className="flex items-center">
                                     <FiGrid className="mr-2 h-4 w-4" />
                                     <span>Toplam {filteredDernekler.length} dernek</span>

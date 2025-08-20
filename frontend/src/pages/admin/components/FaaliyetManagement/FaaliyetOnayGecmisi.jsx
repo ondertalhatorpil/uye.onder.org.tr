@@ -188,10 +188,10 @@ const fetchFaaliyetGecmisi = async () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-white mb-2">
               Faaliyet Onay Geçmişi
             </h1>
-            <p className="text-gray-600">
+            <p className="text-white">
               Onaylanmış ve reddedilmiş faaliyetlerin detaylı geçmişi
             </p>
           </div>
@@ -204,7 +204,7 @@ const fetchFaaliyetGecmisi = async () => {
             </Link>
             <Link
               to="/admin/faaliyetler/bekleyenler"
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+              className="px-4 py-2 bg-gray-200 text-red-700 rounded hover:bg-gray-300 transition"
             >
               Onay Bekleyenler
             </Link>
@@ -213,17 +213,17 @@ const fetchFaaliyetGecmisi = async () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow mb-6">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-red-700 rounded-lg shadow mb-6">
+        <div className="p-6 border-b">
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Durum
               </label>
               <select
                 value={filters.durum}
                 onChange={(e) => handleFilterChange('durum', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tümü</option>
                 <option value="onaylandi">Onaylandı</option>
@@ -232,13 +232,13 @@ const fetchFaaliyetGecmisi = async () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Admin
               </label>
               <select
                 value={filters.admin_id}
                 onChange={(e) => handleFilterChange('admin_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Tümü</option>
                 {admins.map(admin => (
@@ -250,46 +250,46 @@ const fetchFaaliyetGecmisi = async () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Başlık
               </label>
               <input
                 type="text"
                 value={filters.baslik}
                 onChange={(e) => handleFilterChange('baslik', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-white placeholder:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Faaliyet ara..."
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Başlangıç Tarihi
               </label>
               <input
                 type="date"
                 value={filters.tarih_baslangic}
                 onChange={(e) => handleFilterChange('tarih_baslangic', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-white mb-2">
                 Bitiş Tarihi
               </label>
               <input
                 type="date"
                 value={filters.tarih_bitis}
                 onChange={(e) => handleFilterChange('tarih_bitis', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div className="flex items-end">
               <button
                 onClick={clearFilters}
-                className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                className="w-full px-4 py-2 bg-red-900 text-white rounded-md hover:bg-gray-700 transition-colors"
               >
                 Temizle
               </button>
@@ -301,33 +301,33 @@ const fetchFaaliyetGecmisi = async () => {
       {/* Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-red-100">
+            <thead className="bg-red-600">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Faaliyet / Kullanıcı
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Dernek
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Durum
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   İşlem Yapan Admin
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   Oluşturulma Tarihi
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                   İşlem Tarihi
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-white uppercase tracking-wider">
                   İşlemler
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-gray-200 divide-y divide-gray-400">
               {loading ? (
                 <tr>
                   <td colSpan="7" className="px-6 py-12 text-center">

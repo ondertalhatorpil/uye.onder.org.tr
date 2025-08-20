@@ -90,7 +90,7 @@ const AdminDashboard = () => {
   const aktifDernekler = dashboardData?.aktifDernekler || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 p-8">
       {/* Header */}
       <div className="bg-gradient-to-r from-red-500 to-red-900 rounded-lg shadow-lg p-6 text-white">
         <div className="flex items-center justify-between">
@@ -302,112 +302,47 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Alt İstatistikler */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* İl Bazında Dağılım */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">İl Bazında Kullanıcı Dağılımı</h2>
-          </div>
-          <div className="p-6">
-            <div className="space-y-3">
-              {ilDagilim.slice(0, 8).map((il, index) => (
-                <div key={il.il} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-sm font-medium text-gray-600">
-                      #{index + 1}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FiMapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900">{il.il}</span>
-                    </div>
-                  </div>
-                  <div className="text-sm font-bold text-red-600">
-                    {formatNumber(il.kullanici_sayisi)}
-                  </div>
-                </div>
-              ))}
-            </div>
+<div className="bg-white rounded-lg shadow p-6">
+  <h2 className="text-lg font-semibold text-gray-900 mb-4">İl Bazında Kullanıcı Dağılımı</h2>
+  <div className="space-y-3">
+    {ilDagilim.slice(0, 8).map((il, index) => (
+      <div key={il.il} className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="text-sm font-medium text-gray-600">#{index + 1}</div>
+          <div className="flex items-center space-x-2">
+            <FiMapPin className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-900">{il.il}</span>
           </div>
         </div>
+        <div className="text-sm font-bold text-red-600">{formatNumber(il.kullanici_sayisi)}</div>
+      </div>
+    ))}
+  </div>
+</div>
 
-        {/* Aktif Dernekler */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">En Aktif Dernekler</h2>
+<div className="bg-white rounded-lg shadow p-6">
+  <h2 className="text-lg font-semibold text-gray-900 mb-4">En Aktif Dernekler</h2>
+  <div className="space-y-3">
+    {aktifDernekler.slice(0, 8).map((dernek, index) => (
+      <div key={dernek.gonullu_dernek} className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="text-sm font-medium text-gray-600">#{index + 1}</div>
+          <div className="flex items-center space-x-2">
+            <FiGrid className="h-4 w-4 text-gray-400" />
+            <span className="text-sm font-medium text-gray-900 truncate">{dernek.gonullu_dernek}</span>
           </div>
-          <div className="p-6">
-            <div className="space-y-3">
-              {aktifDernekler.slice(0, 8).map((dernek, index) => (
-                <div key={dernek.gonullu_dernek} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-sm font-medium text-gray-600">
-                      #{index + 1}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <FiGrid className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {dernek.gonullu_dernek}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-blue-600">
-                      {formatNumber(dernek.faaliyet_sayisi)}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {dernek.aktif_uye_sayisi} aktif üye
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-sm font-bold text-blue-600">{formatNumber(dernek.faaliyet_sayisi)}</div>
+          <div className="text-xs text-gray-500">{dernek.aktif_uye_sayisi} aktif üye</div>
         </div>
       </div>
+    ))}
+  </div>
+</div>
 
-      {/* Hızlı Erişim */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Hızlı Erişim</h2>
-        </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              to="/admin/users"
-              className="flex items-center justify-between p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <FiUsers className="h-5 w-5 text-blue-600" />
-                <span className="font-medium text-blue-900">Kullanıcı Yönetimi</span>
-              </div>
-              <div className="text-blue-600">→</div>
-            </Link>
-            
-            <Link
-              to="/admin/dernekler"
-              className="flex items-center justify-between p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <FiGrid className="h-5 w-5 text-green-600" />
-                <span className="font-medium text-green-900">Dernek Yönetimi</span>
-              </div>
-              <div className="text-green-600">→</div>
-            </Link>
-            
-            <Link
-              to="/admin/analytics"
-              className="flex items-center justify-between p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-            >
-              <div className="flex items-center space-x-3">
-                <FiTrendingUp className="h-5 w-5 text-purple-600" />
-                <span className="font-medium text-purple-900">Analiz & Raporlar</span>
-              </div>
-              <div className="text-purple-600">→</div>
-            </Link>
-          </div>
-        </div>
-      </div>
+
+
     </div>
   );
 };

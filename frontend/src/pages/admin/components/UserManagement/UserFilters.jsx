@@ -17,24 +17,24 @@ const UserFilters = ({
   onClearFilters
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-red-600 rounded-lg shadow p-6 mb-12">
       {/* Search Bar */}
-      <form onSubmit={onSearch} className="mb-4">
+      <form onSubmit={onSearch}>
         <div className="flex items-center space-x-4">
           <div className="flex-1 relative">
-            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white h-5 w-5" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="İsim, email, dernek ara..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 placeholder-white"
             />
           </div>
           <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 text-white"
           >
             <option value="all">Tüm Roller</option>
             <option value="super_admin">Süper Admin</option>
@@ -43,7 +43,7 @@ const UserFilters = ({
           </select>
           <button
             type="submit"
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            className="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded-lg font-medium transition-colors"
           >
             Ara
           </button>

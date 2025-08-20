@@ -215,11 +215,11 @@ const FaaliyetOnayStats = () => {
 
 
   const StatCard = ({ title, value, change, icon: Icon, color = 'blue' }) => (
-    <div className={`bg-white rounded-lg shadow p-6 border-l-4 border-${color}-500`}>
+    <div className={`bg-red-600 rounded-lg shadow p-6 border-l-4 border-${color}-500`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
+          <p className="text-sm font-medium text-white">{title}</p>
+          <p className="text-2xl font-semibold text-white">{value}</p>
           {change && (
             <p className={`text-sm ${change > 0 ? 'text-green-600' : 'text-red-600'} flex items-center`}>
               {change > 0 ? <FiTrendingUp className="w-4 h-4 mr-1" /> : <FiTrendingDown className="w-4 h-4 mr-1" />}
@@ -260,10 +260,10 @@ const FaaliyetOnayStats = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-white mb-2">
               Faaliyet İstatistikleri
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-100">
               Detaylı faaliyet analizleri ve performans metrikleri
             </p>
           </div>
@@ -276,7 +276,7 @@ const FaaliyetOnayStats = () => {
             </Link>
             <Link
               to="/admin/faaliyetler/onay-gecmisi"
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
+              className="px-4 py-2 bg-gray-200 text-red-700 rounded hover:bg-gray-300 transition"
             >
               Onay Geçmişi
             </Link>
@@ -315,69 +315,69 @@ const FaaliyetOnayStats = () => {
 
       {/* Onay Oranları */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <div className="bg-red-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <FiPieChart className="w-5 h-5 mr-2" />
             Onay Oranları
           </h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Onaylanma Oranı</span>
-              <span className="text-lg font-semibold text-green-600">
+              <span className="text-sm text-white">Onaylanma Oranı</span>
+              <span className="text-lg font-semibold text-white">
                 {calculatePercentage(stats.genel.onaylanan, stats.genel.toplam_faaliyet)}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-white rounded-full h-2">
               <div
-                className="bg-green-600 h-2 rounded-full"
+                className="bg-gray-800 h-2 rounded-full"
                 style={{ width: `${calculatePercentage(stats.genel.onaylanan, stats.genel.toplam_faaliyet)}%` }}
               ></div>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Bekleyen Oranı</span>
-              <span className="text-lg font-semibold text-yellow-600">
+              <span className="text-sm text-white">Bekleyen Oranı</span>
+              <span className="text-lg font-semibold text-white">
                 {calculatePercentage(stats.genel.beklemede, stats.genel.toplam_faaliyet)}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-yellow-600 h-2 rounded-full"
+                className="bg-gray-800 h-2 rounded-full"
                 style={{ width: `${calculatePercentage(stats.genel.beklemede, stats.genel.toplam_faaliyet)}%` }}
               ></div>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Reddetme Oranı</span>
-              <span className="text-lg font-semibold text-red-600">
+              <span className="text-sm text-white">Reddetme Oranı</span>
+              <span className="text-lg font-semibold text-white">
                 {calculatePercentage(stats.genel.reddedilen, stats.genel.toplam_faaliyet)}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-red-600 h-2 rounded-full"
+                className="bg-gray-800 h-2 rounded-full"
                 style={{ width: `${calculatePercentage(stats.genel.reddedilen, stats.genel.toplam_faaliyet)}%` }}
               ></div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <div className="bg-red-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <FiUsers className="w-5 h-5 mr-2" />
             Admin Performansı
           </h3>
           <div className="space-y-3">
             {stats.adminStats.slice(0, 5).map((admin, index) => (
               <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-white">
                   {admin.isim} {admin.soyisim}
                 </span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-green-600">
+                  <span className="text-sm text-green-500">
                     {admin.onaylanan}
                   </span>
-                  <span className="text-sm text-red-600">
+                  <span className="text-sm text-yellow-300">
                     {admin.reddedilen}
                   </span>
                 </div>
@@ -386,22 +386,22 @@ const FaaliyetOnayStats = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <div className="bg-red-800 rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
             <FiBarChart className="w-5 h-5 mr-2" />
             Son 7 Günlük Trend
           </h3>
           <div className="space-y-3">
             {stats.gunlukTrend.slice(0, 7).map((trend, index) => (
               <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-white">
                   {new Date(trend.tarih).toLocaleDateString('tr-TR')}
                 </span>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-green-600">
+                  <span className="text-sm text-green-500">
                     +{trend.onaylanan || 0}
                   </span>
-                  <span className="text-sm text-red-600">
+                  <span className="text-sm text-yellow-300">
                     -{trend.reddedilen || 0}
                   </span>
                 </div>
