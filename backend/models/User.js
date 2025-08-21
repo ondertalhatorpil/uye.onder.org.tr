@@ -245,52 +245,84 @@ class User {
   }
 
   // Profil güncelleme - EĞİTİM BİLGİLERİ VE PROFİL FOTOĞRAFI DAHİL
-  static async updateProfile(userId, updateData) {
-    const {
-      isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
-      gonullu_dernek, calisma_komisyon, mezun_okul,
-      
-      // Eğitim bilgileri - sadece mezun durumları
-      ortaokul_id, ortaokul_custom, ortaokul_mezun_yili,
-      lise_id, lise_custom, lise_mezun_yili,
-      universite_durumu, universite_adi, universite_bolum, universite_mezun_yili,
-      
-      // Profil fotoğrafı
-      profil_fotografi,
-      
-      // GİZLİLİK AYARLARI - YENİ
-      show_email, show_phone
-    } = updateData;
+static async updateProfile(userId, updateData) {
+  console.log('💾 User.updateProfile çağrıldı');
+  console.log('🆔 User ID:', userId);
+  console.log('📋 Update Data:', updateData);
 
-    // Tüm undefined değerleri null'a çevir ve tarih formatını düzelt
-    const cleanData = {
-      isim: isim || null,
-      soyisim: soyisim || null,
-      dogum_tarihi: dogum_tarihi ? (dogum_tarihi.split('T')[0]) : null, // ISO tarihini YYYY-MM-DD'ye çevir
-      sektor: sektor || null,
-      meslek: meslek || null,
-      telefon: telefon || null,
-      il: il || null,
-      ilce: ilce || null,
-      gonullu_dernek: gonullu_dernek || null,
-      calisma_komisyon: calisma_komisyon || null,
-      mezun_okul: mezun_okul || null,
-      
-      ortaokul_id: ortaokul_id || null,
-      ortaokul_custom: ortaokul_custom || null,
-      ortaokul_mezun_yili: ortaokul_mezun_yili || null,
-      
-      lise_id: lise_id || null,
-      lise_custom: lise_custom || null,
-      lise_mezun_yili: lise_mezun_yili || null,
-      
-      universite_durumu: universite_durumu || 'okumadi',
-      universite_adi: universite_adi || null,
-      universite_bolum: universite_bolum || null,
-      universite_mezun_yili: universite_mezun_yili || null
-    };
+  const {
+    isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
+    gonullu_dernek, calisma_komisyon, mezun_okul,
+    
+    // Eğitim bilgileri - tüm değerler korunacak
+    ortaokul_id, ortaokul_custom, ortaokul_mezun_yili,
+    lise_id, lise_custom, lise_mezun_yili,
+    universite_durumu, universite_adi, universite_bolum, universite_mezun_yili,
+    
+    // Profil fotoğrafı
+    profil_fotografi,
+    
+    // GİZLİLİK AYARLARI
+    show_email, show_phone
+  } = updateData;
 
-    let updateFields = `
+  // Tüm değerleri temizle ve null kontrolü yap
+  const cleanData = {
+    isim: isim || null,
+    soyisim: soyisim || null,
+    dogum_tarihi: dogum_tarihi ? (dogum_tarihi.includes('T') ? dogum_tarihi.split('T')[0] : dogum_tarihi) : null,
+    sektor: sektor || null,
+    meslek: meslek || null,
+    telefon: telefon || null,
+    il: il || null,
+    ilce: ilce || null,
+    gonullu_dernek: gonullu_dernek || null,
+    calisma_komisyon: calisma_komisyon || null,
+    mezun_okul: mezun_okul || null,
+    
+    // Eğitim bilgileri - tüm değerler muhafaza edilecek
+    ortaokul_id: ortaokul_id !== undefined ? ortaokul_id : null,
+    ortaokul_custom: ortaokul_custom !== undefined ? ortaokul_custom : null,
+    ortaokul_mezun_yili: ortaokul_mezun_yili !== undefined ? ortaokul_mezun_yili : null,
+    
+    lise_id: lise_id !== undefined ? lise_id : null,
+    lise_custom: lise_custom !== undefined ? lise_custom : null,
+    lise_mezun_yili: lise_mezun_yili !== undefined ? lise_mezun_yili : null,
+    
+    universite_durumu: universite_durumu !== undefined ? universite_durumu : 'okumadi',
+    universite_adi: universite_adi !== undefined ? universite_adi : null,
+    universite_bolum: universite_bolum !== undefined ? universite_bolum : null,
+    universite_mezun_yili: universite_mezun_yili !== undefined ? universite_mezun_yili : null
+  };
+
+  console.log('🧹 Temizlenmiş data:', cleanData);
+
+  let updateFields = `
+    isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
+    telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
+    
+    ortaokul_id = ?, ortaokul_custom = ?, ortaokul_mezun_yili = ?,
+    lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
+    universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
+    
+    updated_at = NOW()
+  `;
+
+  let updateValues = [
+    cleanData.isim, cleanData.soyisim, cleanData.dogum_tarihi, 
+    cleanData.sektor, cleanData.meslek, cleanData.telefon, 
+    cleanData.il, cleanData.ilce, cleanData.gonullu_dernek, 
+    cleanData.calisma_komisyon, cleanData.mezun_okul,
+    
+    cleanData.ortaokul_id, cleanData.ortaokul_custom, cleanData.ortaokul_mezun_yili,
+    cleanData.lise_id, cleanData.lise_custom, cleanData.lise_mezun_yili,
+    cleanData.universite_durumu, cleanData.universite_adi, 
+    cleanData.universite_bolum, cleanData.universite_mezun_yili
+  ];
+
+  // Profil fotoğrafı güncellemesi varsa ekle
+  if (profil_fotografi !== undefined) {
+    updateFields = `
       isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
       telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
       
@@ -298,22 +330,15 @@ class User {
       lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
       universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
       
+      profil_fotografi = ?,
       updated_at = NOW()
     `;
+    updateValues.push(profil_fotografi || null);
+    console.log('📸 Profil fotoğrafı güncelleniyor:', profil_fotografi);
+  }
 
-    let updateValues = [
-      cleanData.isim, cleanData.soyisim, cleanData.dogum_tarihi, 
-      cleanData.sektor, cleanData.meslek, cleanData.telefon, 
-      cleanData.il, cleanData.ilce, cleanData.gonullu_dernek, 
-      cleanData.calisma_komisyon, cleanData.mezun_okul,
-      
-      cleanData.ortaokul_id, cleanData.ortaokul_custom, cleanData.ortaokul_mezun_yili,
-      cleanData.lise_id, cleanData.lise_custom, cleanData.lise_mezun_yili,
-      cleanData.universite_durumu, cleanData.universite_adi, 
-      cleanData.universite_bolum, cleanData.universite_mezun_yili
-    ];
-
-    // Profil fotoğrafı güncellemesi varsa ekle
+  // GİZLİLİK AYARLARI GÜNCELLEMESİ
+  if (show_email !== undefined || show_phone !== undefined) {
     if (profil_fotografi !== undefined) {
       updateFields = `
         isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
@@ -323,63 +348,49 @@ class User {
         lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
         universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
         
-        profil_fotografi = ?,
+        profil_fotografi = ?, show_email = ?, show_phone = ?,
         updated_at = NOW()
       `;
-      updateValues.push(profil_fotografi || null);
+      updateValues.push(show_email !== undefined ? (show_email ? 1 : 0) : null);
+      updateValues.push(show_phone !== undefined ? (show_phone ? 1 : 0) : null);
+    } else {
+      updateFields = `
+        isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
+        telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
+        
+        ortaokul_id = ?, ortaokul_custom = ?, ortaokul_mezun_yili = ?,
+        lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
+        universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
+        
+        show_email = ?, show_phone = ?,
+        updated_at = NOW()
+      `;
+      updateValues.push(show_email !== undefined ? (show_email ? 1 : 0) : null);
+      updateValues.push(show_phone !== undefined ? (show_phone ? 1 : 0) : null);
     }
-
-    // GİZLİLİK AYARLARI GÜNCELLEMESİ - YENİ
-    if (show_email !== undefined || show_phone !== undefined) {
-      if (profil_fotografi !== undefined) {
-        updateFields = `
-          isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
-          telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
-          
-          ortaokul_id = ?, ortaokul_custom = ?, ortaokul_mezun_yili = ?,
-          lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
-          universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
-          
-          profil_fotografi = ?, show_email = ?, show_phone = ?,
-          updated_at = NOW()
-        `;
-        updateValues.push(show_email !== undefined ? (show_email ? 1 : 0) : null);
-        updateValues.push(show_phone !== undefined ? (show_phone ? 1 : 0) : null);
-      } else {
-        updateFields = `
-          isim = ?, soyisim = ?, dogum_tarihi = ?, sektor = ?, meslek = ?, 
-          telefon = ?, il = ?, ilce = ?, gonullu_dernek = ?, calisma_komisyon = ?, mezun_okul = ?,
-          
-          ortaokul_id = ?, ortaokul_custom = ?, ortaokul_mezun_yili = ?,
-          lise_id = ?, lise_custom = ?, lise_mezun_yili = ?,
-          universite_durumu = ?, universite_adi = ?, universite_bolum = ?, universite_mezun_yili = ?,
-          
-          show_email = ?, show_phone = ?,
-          updated_at = NOW()
-        `;
-        updateValues.push(show_email !== undefined ? (show_email ? 1 : 0) : null);
-        updateValues.push(show_phone !== undefined ? (show_phone ? 1 : 0) : null);
-      }
-    }
-
-    // Undefined kontrol
-    const hasUndefined = updateValues.some(val => val === undefined);
-    if (hasUndefined) {
-      console.error('UNDEFINED VALUES FOUND in updateProfile:', updateValues.map((val, index) => val === undefined ? `Index ${index}: undefined` : null).filter(Boolean));
-      throw new Error('Undefined values found in update parameters');
-    }
-
-    updateValues.push(userId);
-
-    console.log('Update SQL values:', updateValues);
-
-    const [result] = await pool.execute(
-      `UPDATE users SET ${updateFields} WHERE id = ?`,
-      updateValues
-    );
-
-    return result.affectedRows > 0;
   }
+
+  // Undefined kontrol
+  const hasUndefined = updateValues.some(val => val === undefined);
+  if (hasUndefined) {
+    console.error('❌ UNDEFINED VALUES FOUND in updateProfile:', updateValues.map((val, index) => val === undefined ? `Index ${index}: undefined` : null).filter(Boolean));
+    throw new Error('Undefined values found in update parameters');
+  }
+
+  updateValues.push(userId);
+
+  console.log('📝 Final SQL Values:', updateValues);
+  console.log('📝 Final SQL Fields:', updateFields);
+
+  const [result] = await pool.execute(
+    `UPDATE users SET ${updateFields} WHERE id = ?`,
+    updateValues
+  );
+
+  console.log('✅ Update SQL executed, affected rows:', result.affectedRows);
+
+  return result.affectedRows > 0;
+}
 
   // GİZLİLİK AYARLARI GÜNCELLEME FONKSİYONU - YENİ
   static async updatePrivacySettings(userId, privacyData) {

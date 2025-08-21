@@ -373,121 +373,93 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const userId = req.user.id; // auth middleware'den gelir
+    const userId = req.user.id;
+    
+    // Önce mevcut kullanıcı verilerini al
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    console.log('🔍 Mevcut kullanıcı verileri:', {
+      ortaokul_id: currentUser.ortaokul_id,
+      ortaokul_custom: currentUser.ortaokul_custom,
+      ortaokul_mezun_yili: currentUser.ortaokul_mezun_yili,
+      lise_id: currentUser.lise_id,
+      lise_custom: currentUser.lise_custom,
+      lise_mezun_yili: currentUser.lise_mezun_yili,
+      universite_durumu: currentUser.universite_durumu,
+      universite_adi: currentUser.universite_adi,
+      universite_bolum: currentUser.universite_bolum,
+      universite_mezun_yili: currentUser.universite_mezun_yili
+    });
+
     const {
       isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
       gonullu_dernek, calisma_komisyon,
       
-      // Eğitim bilgileri
-      ortaokul_durumu, ortaokul_id, ortaokul_custom, ortaokul_mezun_yili, ortaokul_sinif,
-      lise_durumu, lise_id, lise_custom, lise_mezun_yili, lise_sinif,
-      universite_durumu
+      // Eğitim bilgileri - sadece gönderilmişse güncelle, yoksa mevcut değerleri koru
+      ortaokul_id, ortaokul_custom, ortaokul_mezun_yili,
+      lise_id, lise_custom, lise_mezun_yili,
+      universite_durumu, universite_adi, universite_bolum, universite_mezun_yili
     } = req.body;
 
-    // Eğer profil fotoğrafı yüklenmişse, dosya yolunu ekle
-    let updateData = {
-      isim, soyisim, dogum_tarihi, sektor, meslek, telefon, il, ilce,
-      gonullu_dernek, calisma_komisyon,
+    console.log('📥 Gelen profil güncelleme verisi:', req.body);
+
+    // Eğitim verilerini kontrol et - sadece gönderilmişse güncelle
+    const updateData = {
+      isim: isim || currentUser.isim,
+      soyisim: soyisim || currentUser.soyisim,
+      dogum_tarihi: dogum_tarihi || currentUser.dogum_tarihi,
+      sektor: sektor || currentUser.sektor,
+      meslek: meslek || currentUser.meslek,
+      telefon: telefon || currentUser.telefon,
+      il: il || currentUser.il,
+      ilce: ilce || currentUser.ilce,
+      gonullu_dernek: gonullu_dernek || currentUser.gonullu_dernek,
+      calisma_komisyon: calisma_komisyon || currentUser.calisma_komisyon,
       
-      // Eğitim bilgileri - null değerler için default'lar
-      ortaokul_durumu: ortaokul_durumu || 'okumadi',
-      ortaokul_id: ortaokul_id || null,
-      ortaokul_custom: ortaokul_custom || null,
-      ortaokul_mezun_yili: ortaokul_mezun_yili || null,
-      ortaokul_sinif: ortaokul_sinif || null,
+      // Eğitim verilerini koru - sadece açıkça gönderilmişse güncelle
+      ortaokul_id: ortaokul_id !== undefined ? ortaokul_id : currentUser.ortaokul_id,
+      ortaokul_custom: ortaokul_custom !== undefined ? ortaokul_custom : currentUser.ortaokul_custom,
+      ortaokul_mezun_yili: ortaokul_mezun_yili !== undefined ? ortaokul_mezun_yili : currentUser.ortaokul_mezun_yili,
       
-      lise_durumu: lise_durumu || 'okumadi',
-      lise_id: lise_id || null,
-      lise_custom: lise_custom || null, 
-      lise_mezun_yili: lise_mezun_yili || null,
-      lise_sinif: lise_sinif || null,
+      lise_id: lise_id !== undefined ? lise_id : currentUser.lise_id,
+      lise_custom: lise_custom !== undefined ? lise_custom : currentUser.lise_custom,
+      lise_mezun_yili: lise_mezun_yili !== undefined ? lise_mezun_yili : currentUser.lise_mezun_yili,
       
-      universite_durumu: universite_durumu || 'okumadi'
+      universite_durumu: universite_durumu !== undefined ? universite_durumu : currentUser.universite_durumu,
+      universite_adi: universite_adi !== undefined ? universite_adi : currentUser.universite_adi,
+      universite_bolum: universite_bolum !== undefined ? universite_bolum : currentUser.universite_bolum,
+      universite_mezun_yili: universite_mezun_yili !== undefined ? universite_mezun_yili : currentUser.universite_mezun_yili
     };
 
+    // Eğer profil fotoğrafı yüklenmişse, dosya yolunu ekle
     if (req.file) {
       // Eski profil fotoğrafını sil
-      const oldUser = await User.findById(userId);
-      if (oldUser && oldUser.profil_fotografi) {
-        const oldImagePath = path.join(__dirname, '../', oldUser.profil_fotografi);
+      if (currentUser.profil_fotografi) {
+        const oldImagePath = path.join(__dirname, '../', currentUser.profil_fotografi);
         if (fs.existsSync(oldImagePath)) {
           fs.unlinkSync(oldImagePath);
+          console.log('🗑️ Eski profil fotoğrafı silindi:', oldImagePath);
         }
       }
       
       updateData.profil_fotografi = `uploads/profile-images/${req.file.filename}`;
+      console.log('📸 Yeni profil fotoğrafı:', updateData.profil_fotografi);
     }
 
-    // Basit validasyon
-    if (!isim || !soyisim || !sektor || !meslek) {
+    console.log('💾 Güncellenecek veri:', updateData);
+
+    // Basit validasyon - sadece zorunlu alanlar
+    if (!updateData.isim || !updateData.soyisim || !updateData.sektor || !updateData.meslek) {
       return res.status(400).json({
         success: false,
         error: 'İsim, soyisim, sektör ve meslek zorunlu'
       });
-    }
-
-    // EĞİTİM VALİDASYONLARI (register'daki gibi)
-    if (ortaokul_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(ortaokul_durumu)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçersiz ortaokul durumu'
-      });
-    }
-
-    if (ortaokul_durumu === 'mezun' && !ortaokul_mezun_yili) {
-      return res.status(400).json({
-        success: false,
-        error: 'Ortaokul mezuniyet yılı gerekli'
-      });
-    }
-
-    if (ortaokul_durumu === 'devam_ediyor' && (!ortaokul_sinif || ![5,6,7,8].includes(parseInt(ortaokul_sinif)))) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçerli ortaokul sınıfı seçin (5,6,7,8)'
-      });
-    }
-
-    if (lise_durumu && !['mezun', 'devam_ediyor', 'okumadi'].includes(lise_durumu)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçersiz lise durumu'
-      });
-    }
-
-    if (lise_durumu === 'mezun' && !lise_mezun_yili) {
-      return res.status(400).json({
-        success: false,
-        error: 'Lise mezuniyet yılı gerekli'
-      });
-    }
-
-    if (lise_durumu === 'devam_ediyor' && (!lise_sinif || ![9,10,11,12].includes(parseInt(lise_sinif)))) {
-      return res.status(400).json({
-        success: false,
-        error: 'Geçerli lise sınıfı seçin (9,10,11,12)'
-      });
-    }
-
-    // Seçilen okulları kontrol et
-    if (ortaokul_id) {
-      const ortaokulExists = await User.checkOkulExists(ortaokul_id, 'ortaokul');
-      if (!ortaokulExists) {
-        return res.status(400).json({
-          success: false,
-          error: 'Seçilen ortaokul bulunamadı'
-        });
-      }
-    }
-
-    if (lise_id) {
-      const liseExists = await User.checkOkulExists(lise_id, 'lise');
-      if (!liseExists) {
-        return res.status(400).json({
-          success: false,
-          error: 'Seçilen lise bulunamadı'
-        });
-      }
     }
 
     // Profil güncelle
@@ -496,16 +468,26 @@ const updateProfile = async (req, res) => {
     if (!updated) {
       return res.status(404).json({
         success: false,
-        error: 'Kullanıcı bulunamadı'
+        error: 'Profil güncellenemedi'
       });
     }
 
     // Güncellenmiş kullanıcı bilgilerini getir
     const updatedUser = await User.findById(userId);
     
-    console.log('Updated user profil_fotografi:', updatedUser.profil_fotografi);
-    console.log('File was uploaded:', !!req.file);
-    console.log('Update data profil_fotografi:', updateData.profil_fotografi);
+    console.log('✅ Profil başarıyla güncellendi');
+    console.log('🎓 Güncellenmiş eğitim verileri:', {
+      ortaokul_id: updatedUser.ortaokul_id,
+      ortaokul_custom: updatedUser.ortaokul_custom,
+      ortaokul_mezun_yili: updatedUser.ortaokul_mezun_yili,
+      lise_id: updatedUser.lise_id,
+      lise_custom: updatedUser.lise_custom,
+      lise_mezun_yili: updatedUser.lise_mezun_yili,
+      universite_durumu: updatedUser.universite_durumu,
+      universite_adi: updatedUser.universite_adi,
+      universite_bolum: updatedUser.universite_bolum,
+      universite_mezun_yili: updatedUser.universite_mezun_yili
+    });
 
     res.json({
       success: true,
@@ -514,13 +496,14 @@ const updateProfile = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Profile update error:', error);
+    console.error('❌ Profile update error:', error);
     
     // Eğer hata oluştuysa ve dosya yüklenmişse, dosyayı sil
     if (req.file) {
       const filePath = path.join(__dirname, '../uploads/profile-images/', req.file.filename);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
+        console.log('🗑️ Hata nedeniyle yüklenen dosya silindi');
       }
     }
     

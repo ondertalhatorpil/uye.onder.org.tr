@@ -47,68 +47,95 @@ export const authService = {
   },
 
   // Profil güncelle (form data ile - profil fotoğrafı desteği)
-  updateProfile: async (profileData, profileImage = null) => {
-    const formData = new FormData();
+updateProfile: async (profileData, profileImage = null) => {
+  const formData = new FormData();
+  
+  console.log('📤 Frontend updateProfile çağrıldı');
+  console.log('📋 Profil verisi:', profileData);
+  console.log('🖼️ Profil resmi var mı?', !!profileImage);
+  
+  // Sadece değişen ve boş olmayan profil bilgilerini FormData'ya ekle
+  // EĞİTİM VERİLERİNİ GÖNDERME - backend mevcut değerleri koruyor
+  const allowedFields = [
+    'isim', 'soyisim', 'dogum_tarihi', 'sektor', 'meslek', 
+    'telefon', 'il', 'ilce', 'gonullu_dernek', 'calisma_komisyon'
+  ];
+  
+  allowedFields.forEach(key => {
+    const value = profileData[key];
+    if (value !== null && value !== undefined && value !== '') {
+      formData.append(key, value);
+      console.log(`✅ FormData'ya eklendi: ${key} = ${value}`);
+    }
+  });
+  
+  // Profil fotoğrafı varsa ekle
+  if (profileImage) {
+    formData.append('profil_fotografi', profileImage);
+    console.log('📸 FormData appended: profil_fotografi =', profileImage.name);
+  }
+  
+  // FormData içeriğini kontrol et
+  console.log('📦 FormData contents:');
+  for (let [key, value] of formData.entries()) {
+    console.log(`${key}:`, value);
+  }
+  
+  // NOT: Eğitim verilerini GÖNDERMİYORUZ - backend mevcut değerleri koruyor
+  console.log('ℹ️ Eğitim verileri gönderilmedi - backend mevcut değerleri koruyor');
+  
+  // FormData için özel API çağrısı (Content-Type header'ı otomatik ayarlanacak)
+  const token = localStorage.getItem('dernek_token');
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  
+  try {
+    console.log('🌐 Making fetch request to:', `${apiUrl}/auth/profile`);
     
-    
-    // Tüm profil bilgilerini FormData'ya ekle
-    Object.keys(profileData).forEach(key => {
-      const value = profileData[key];
-      if (value !== null && value !== undefined && value !== '') {
-        formData.append(key, value);
-      }
+    const response = await fetch(`${apiUrl}/auth/profile`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+        // Content-Type header'ı eklemeyin, FormData otomatik ayarlar
+      },
+      body: formData
     });
     
-    // Profil fotoğrafı varsa ekle
-    if (profileImage) {
-      formData.append('profil_fotografi', profileImage);
-      console.log('FormData appended: profil_fotografi =', profileImage.name);
-    }
+    console.log('📥 Response status:', response.status);
+    console.log('📥 Response headers:', Object.fromEntries(response.headers.entries()));
     
-    // FormData içeriğini kontrol et
-    console.log('FormData contents:');
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
+    const result = await response.json();
+    console.log('📥 Response body:', result);
     
-    // FormData için özel API çağrısı (Content-Type header'ı otomatik ayarlanacak)
-    const token = localStorage.getItem('dernek_token');
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    
-    try {
-      // DİKKAT: /api eklemeyin çünkü apiUrl zaten /api içeriyor
-      console.log('Making fetch request to:', `${apiUrl}/auth/profile`);
+    // User bilgilerini güncelle
+    if (result.success && result.user) {
+      localStorage.setItem('dernek_user', JSON.stringify(result.user));
+      console.log('✅ User bilgileri localStorage\'da güncellendi');
       
-      const response = await fetch(`${apiUrl}/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`
-          // Content-Type header'ı eklemeyin, FormData otomatik ayarlar
-        },
-        body: formData
+      // Eğitim verilerinin korunduğunu logla
+      console.log('🎓 Korunan eğitim verileri:', {
+        ortaokul_id: result.user.ortaokul_id,
+        ortaokul_custom: result.user.ortaokul_custom,
+        ortaokul_mezun_yili: result.user.ortaokul_mezun_yili,
+        lise_id: result.user.lise_id,
+        lise_custom: result.user.lise_custom,
+        lise_mezun_yili: result.user.lise_mezun_yili,
+        universite_durumu: result.user.universite_durumu,
+        universite_adi: result.user.universite_adi,
+        universite_bolum: result.user.universite_bolum,
+        universite_mezun_yili: result.user.universite_mezun_yili
       });
-      
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      
-      const result = await response.json();
-      console.log('Response body:', result);
-      
-      // User bilgilerini güncelle
-      if (result.success && result.user) {
-        localStorage.setItem('dernek_user', JSON.stringify(result.user));
-      }
-      
-      return result;
-      
-    } catch (error) {
-      console.error('Profile update error:', error);
-      return {
-        success: false,
-        error: 'Profil güncellenirken hata oluştu: ' + error.message
-      };
     }
-  },
+    
+    return result;
+    
+  } catch (error) {
+    console.error('❌ Profile update error:', error);
+    return {
+      success: false,
+      error: 'Profil güncellenirken hata oluştu: ' + error.message
+    };
+  }
+},
 
   // Sadece profil bilgilerini güncelle (fotoğraf olmadan)
   updateProfileData: async (profileData) => {
