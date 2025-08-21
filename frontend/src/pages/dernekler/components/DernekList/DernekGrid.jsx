@@ -106,7 +106,7 @@ const DernekGrid = ({ dernekler, viewMode, filters, onClearFilters }) => {
             <div className="flex flex-col space-y-3 mt-4 sm:mt-0"> {/* Mobil için üst boşluk, sm'den sonra sıfır */}
               <Link
                 to={`/dernekler/${encodeURIComponent(dernek.dernek_adi)}`}
-                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#FA2C37] hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
               >
                 <FiExternalLink className="mr-2 h-4 w-4" />
                 Görüntüle
@@ -127,7 +127,7 @@ const DernekGrid = ({ dernekler, viewMode, filters, onClearFilters }) => {
           <div className="flex space-x-3 mt-4">
             <Link
               to={`/dernekler/${encodeURIComponent(dernek.dernek_adi)}`}
-              className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
+              className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#FA2C37] hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
             >
               <FiExternalLink className="mr-2 h-4 w-4" />
               Görüntüle

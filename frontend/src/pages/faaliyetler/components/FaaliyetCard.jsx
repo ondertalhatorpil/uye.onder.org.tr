@@ -355,7 +355,7 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
             {/* Alt etiketler - Dernek ve konum */}
             <div className="flex flex-wrap items-center mb-2 sm:mb-3">
               {faaliyet.gonullu_dernek && (
-  <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-red-900 text-red-200 rounded-full mr-2 mb-1">
+  <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-[#FA2C37] text-red-200 rounded-full mr-2 mb-1">
     📸 {faaliyet.gonullu_dernek.length > 35 
          ? faaliyet.gonullu_dernek.substring(0, 35) + '...' 
          : faaliyet.gonullu_dernek}
@@ -363,7 +363,7 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
 )}
 
               {faaliyet.il && (
-                <span className="text-red-500 text-xs sm:text-sm font-medium mb-1">
+                <span className="text-[#FA2C37] text-xs sm:text-sm font-medium mb-1">
                   🇹🇷 #{faaliyet.il?.replace(/\s+/g, '')}{faaliyet.ilce && faaliyet.ilce.replace(/\s+/g, '')}
                 </span>
               )}

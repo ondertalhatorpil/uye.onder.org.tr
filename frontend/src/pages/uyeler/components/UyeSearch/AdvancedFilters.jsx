@@ -126,7 +126,7 @@ const AdvancedFilters = ({ filters, options, onFilterChange, onClearFilters }) =
           {hasActiveFilters && (
             <button
               onClick={onClearFilters}
-              className="inline-flex items-center px-3 py-2 text-xs sm:text-sm font-medium text-red-300 bg-red-800 rounded-lg sm:rounded-xl hover:bg-red-700 transition-colors border border-red-700 w-full sm:w-auto justify-center"
+              className="inline-flex items-center px-3 py-2 text-xs sm:text-sm font-medium text-red-300 bg-[#FA2C37] rounded-lg sm:rounded-xl hover:bg-red-700 transition-colors border border-red-700 w-full sm:w-auto justify-center"
             >
               <FiTrash2 className="mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> {/* İkon boyutu */}
               Filtreleri Temizle

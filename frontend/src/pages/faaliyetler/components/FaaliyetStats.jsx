@@ -7,7 +7,7 @@ const FaaliyetStats = ({ pagination }) => {
       {/* Toplam Faaliyet Sayısı */}
       <div className="bg-gray-800 rounded-2xl shadow-lg p-6 flex items-center justify-between border border-gray-700"> {/* Koyu arka plan, gölge, kenarlık */}
         <div className="flex items-center">
-          <div className="h-12 w-12 rounded-full bg-blue-700 flex items-center justify-center mr-4"> {/* Koyu mavi arka plan */}
+          <div className="h-12 w-12 rounded-full bg-[#FA2C37] flex items-center justify-center mr-4"> {/* Koyu mavi arka plan */}
             <FiBarChart2 className="h-6 w-6 text-blue-200" /> {/* Açık mavi ikon */}
           </div>
           <div>
@@ -20,7 +20,7 @@ const FaaliyetStats = ({ pagination }) => {
       {/* Toplam Sayfa Sayısı */}
       <div className="bg-gray-800 rounded-2xl shadow-lg p-6 flex items-center justify-between border border-gray-700"> {/* Koyu arka plan, gölge, kenarlık */}
         <div className="flex items-center">
-          <div className="h-12 w-12 rounded-full bg-purple-700 flex items-center justify-center mr-4"> {/* Koyu mor arka plan */}
+          <div className="h-12 w-12 rounded-full bg-[#FA2C37] flex items-center justify-center mr-4"> {/* Koyu mor arka plan */}
             <FiUsers className="h-6 w-6 text-purple-200" /> {/* Açık mor ikon */}
           </div>
           <div>

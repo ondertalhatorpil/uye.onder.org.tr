@@ -13,7 +13,7 @@ const QuickSearchBar = ({ searchValue, onSearchChange, onQuickSearch, loading, s
       <div className="p-4 sm:p-6 lg:p-8"> {/* Responsive padding */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6"> {/* Responsive hizalama ve boşluk */}
           <div className="flex items-center gap-3 flex-grow"> {/* flex-grow eklendi */}
-            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-red-800 flex items-center justify-center flex-shrink-0"> {/* Daha koyu kırmızı simge arka planı */}
+            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-[#FA2C37] flex items-center justify-center flex-shrink-0"> {/* Daha koyu kırmızı simge arka planı */}
               <FiSearch className="h-4 w-4 sm:h-5 sm:w-5 text-red-200" /> {/* Daha açık kırmızı simge */}
             </div>
             <div>
@@ -76,7 +76,7 @@ const QuickSearchBar = ({ searchValue, onSearchChange, onQuickSearch, loading, s
           <button
             onClick={onQuickSearch}
             disabled={loading}
-            className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl sm:rounded-2xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-[1.02] min-w-[100px] text-sm sm:text-base justify-center flex items-center" 
+            className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-[#FA2C37] text-white rounded-xl sm:rounded-2xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:scale-[1.02] min-w-[100px] text-sm sm:text-base justify-center flex items-center" 
           >
             {loading ? (
               <div className="flex items-center justify-center">
@@ -94,8 +94,8 @@ const QuickSearchBar = ({ searchValue, onSearchChange, onQuickSearch, loading, s
         {/* Search Tips */}
         <div className="mt-5 sm:mt-6 p-3 sm:p-4 bg-gray-700 rounded-xl sm:rounded-2xl border border-gray-600"> {/* Responsive padding, arka plan, yuvarlatma, kenarlık */}
           <div className="flex items-start gap-2 sm:gap-3"> {/* Responsive boşluk */}
-            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-red-800 flex items-center justify-center flex-shrink-0 mt-0.5"> {/* Boyut, yuvarlatma, arka plan */}
-              <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-red-200" fill="currentColor" viewBox="0 0 20 20"> {/* İkon boyutu ve rengi */}
+            <div className="h-5 w-5 sm:h-6 sm:w-6 rounded-md bg-[#FA2C37] flex items-center justify-center flex-shrink-0 mt-0.5"> {/* Boyut, yuvarlatma, arka plan */}
+              <svg className="h-3 w-3  sm:h-3.5 sm:w-3.5 text-red-200" fill="currentColor" viewBox="0 0 20 20"> {/* İkon boyutu ve rengi */}
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
             </div>

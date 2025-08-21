@@ -60,7 +60,7 @@ const ProfileAvatar = ({ user, size = 'lg' }) => {
   };
 
   return (
-    <div className={`${sizeClasses[size]} ${roundedClasses[size]} bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center shadow-md sm:shadow-lg overflow-hidden flex-shrink-0`}>
+    <div className={`${sizeClasses[size]} ${roundedClasses[size]} bg-[#FA2C37] flex items-center justify-center shadow-md sm:shadow-lg overflow-hidden flex-shrink-0`}>
       {user?.profil_fotografi ? (
         <img
           src={getAvatarUrl()}
@@ -143,7 +143,7 @@ const MemberCard = ({ uye }) => {
         <div className="flex gap-2 sm:gap-3">
           <Link
             to={`/uyeler/${uye.id}`}
-            className="flex-1 inline-flex items-center justify-center px-4 py-2.5 sm:py-3 text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg sm:rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-md hover:shadow-lg" 
+            className="flex-1 inline-flex items-center justify-center px-4 py-2.5 sm:py-3 text-sm font-semibold text-white bg-[#FA2C37] rounded-lg sm:rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-md hover:shadow-lg" 
           >
             <FiUser className="mr-2 h-4 w-4" />
             Profil
@@ -193,7 +193,7 @@ const EmptyState = ({ hasFilters, onClearFilters, onShowFilters }) => {
   return (
     <div className="text-center py-12 sm:py-16 bg-gray-900 rounded-xl sm:rounded-3xl border border-gray-800 p-4">
       <div className="max-w-md mx-auto">
-        <div className="h-20 w-20 sm:h-24 w-24 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-red-700 to-red-800 flex items-center justify-center mx-auto mb-5 sm:mb-6">
+        <div className="h-20 w-20 sm:h-24 w-24 rounded-2xl sm:rounded-3xl bg-[#FA2C37] flex items-center justify-center mx-auto mb-5 sm:mb-6">
           <FiSearch className="h-10 w-10 sm:h-12 w-12 text-red-200" />
         </div>
         <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">
@@ -205,7 +205,7 @@ const EmptyState = ({ hasFilters, onClearFilters, onShowFilters }) => {
         </p>
         <button
           onClick={onShowFilters}
-          className="inline-flex items-center px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl sm:rounded-2xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-base" 
+          className="inline-flex items-center px-6 py-3 sm:px-8 sm:py-4 bg-[#FA2C37] text-white rounded-xl sm:rounded-2xl font-semibold hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 text-base" 
         >
           <FiFilter className="mr-2 h-4 w-4 sm:h-5 w-5" />
           Gelişmiş Arama Yap
@@ -241,7 +241,7 @@ const SearchResults = ({ uyeler, loading, filters, onClearFilters, onShowFilters
       <div className="px-4 py-4 sm:px-8 sm:py-6 border-b border-gray-800">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="h-9 w-9 sm:h-10 w-10 rounded-lg sm:rounded-xl bg-red-700 flex items-center justify-center">
+            <div className="h-9 w-9 sm:h-10 w-10 rounded-lg sm:rounded-xl bg-[#FA2C37] flex items-center justify-center">
               <FiUsers className="h-4 w-4 sm:h-5 w-5 text-red-100" />
             </div>
             <div>

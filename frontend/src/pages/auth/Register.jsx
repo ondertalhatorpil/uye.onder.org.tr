@@ -108,7 +108,7 @@ const PersonalInfoSection = ({ formData, handleChange, showPassword, showConfirm
         icon={FiPhone}
         value={formData.telefon}
         onChange={handleChange}
-        placeholder="05XX XXX XX XX"
+        placeholder="5XX XXX XX XX"
       />
 
       <InputField

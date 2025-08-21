@@ -105,7 +105,7 @@ const FaaliyetList = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 pb-4 border-b border-gray-700"> {/* Mobil dikey, sm sonrası yatay */}
         <div className="mb-4 sm:mb-0"> {/* Mobil alta boşluk */}
-          <h1 className="text-xl sm:text-2xl font-bold text-red-500">Faaliyetler</h1> {/* Mobil font küçültme */}
+          <h1 className="text-xl sm:text-2xl font-bold text-[#FA2C37]">Faaliyetler</h1> {/* Mobil font küçültme */}
           <p className="text-sm text-gray-400">Topluluktan son faaliyetler</p> {/* Mobil font küçültme */}
         </div>
         
@@ -129,7 +129,7 @@ const FaaliyetList = () => {
           
           <Link
             to="/faaliyetler/create"
-            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors shadow-md"
+            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-[#FA2C37] text-white rounded-xl font-medium hover:bg-red-700 transition-colors shadow-md"
           >
             <FiPlus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
             Paylaş
