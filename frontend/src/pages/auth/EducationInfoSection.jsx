@@ -271,7 +271,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
-              label="Mezuniyet Yılı (Ortaokul)"
+              label="Ortaokul Mezuniyet Yılı (Opsiyonel)"
               name="ortaokul_mezun_yili"
               type="select"
               icon={FiCalendar}
@@ -412,6 +412,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
               onChange={handleChange}
               placeholder="Yıl seçiniz"
               options={years}
+              required
             />
           </div>
 
@@ -526,7 +527,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputField
-              label="Üniversite Durumunuz"
+              label="Üniversite Durumunuz (Opsiyonel)"
               name="universite_durumu"
               type="select"
               icon={FiBook} 
@@ -537,7 +538,7 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
                 { value: 'devam_ediyor', label: 'Devam Ediyorum' },
                 { value: 'mezun', label: 'Mezunum' }
               ]}
-              required
+              
             />
 
             {/* Mezuniyet Yılı - Sadece mezun ise göster */}
