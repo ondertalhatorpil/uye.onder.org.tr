@@ -696,10 +696,10 @@ const Register = () => {
         {/* Header */}
         <div className="text-center mb-8 sm:mb-10 pt-22 sm:pt-8"> 
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2"> 
-            Yeni Üye Kayıt Formu
+            ÖNDER SOSYAL
           </h1>
           <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto"> 
-            Dernek yönetim sistemine katılın ve topluluğumuzun bir parçası olun.
+            Yeni Üye Kayıt Formu
           </p>
         </div>
 
