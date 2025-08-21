@@ -26,7 +26,6 @@ const FaaliyetCreate = () => {
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form değişikliklerini handle et
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -35,17 +34,14 @@ const FaaliyetCreate = () => {
     }));
   };
 
-  // Resim seçimi handle et
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     
-    // Maximum 4 resim
     if (selectedImages.length + files.length > 4) {
       toast.error('En fazla 4 resim yükleyebilirsiniz');
       return;
     }
 
-    // Dosya boyutu kontrolü (5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     const validFiles = files.filter(file => {
       if (file.size > maxSize) {
@@ -61,7 +57,6 @@ const FaaliyetCreate = () => {
 
     if (validFiles.length === 0) return;
 
-    // Resim preview'ları oluştur
     const newPreviews = validFiles.map(file => ({
       file,
       url: URL.createObjectURL(file),
@@ -71,18 +66,15 @@ const FaaliyetCreate = () => {
     setSelectedImages(prev => [...prev, ...validFiles]);
     setImagePreview(prev => [...prev, ...newPreviews]);
 
-    // Input'u temizle
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  // Resim silme
   const removeImage = (indexToRemove) => {
     setSelectedImages(prev => prev.filter((_, index) => index !== indexToRemove));
     setImagePreview(prev => {
       const newPreviews = prev.filter((_, index) => index !== indexToRemove);
-      // URL'leri temizle
       if (prev[indexToRemove]) {
         URL.revokeObjectURL(prev[indexToRemove].url);
       }
@@ -90,14 +82,13 @@ const FaaliyetCreate = () => {
     });
   };
 
-  // Resimleri upload et
   const uploadImages = async () => {
     if (selectedImages.length === 0) return [];
 
     setUploadingImages(true);
     try {
       const formData = new FormData();
-      selectedImages.forEach((file, index) => {
+      selectedImages.forEach((file) => {
         formData.append('images', file);
       });
 
@@ -116,16 +107,14 @@ const FaaliyetCreate = () => {
     }
   };
 
-  // Form validation
   const validateForm = () => {
-    if (!formData.baslik.trim() && !formData.aciklama.trim() && selectedImages.length === 0) {
-      toast.error('En az başlık, açıklama veya resim eklemelisiniz');
+    if (!formData.aciklama.trim() && selectedImages.length === 0) {
+      toast.error('En az açıklama veya resim eklemelisiniz');
       return false;
     }
     return true;
   };
 
-  // Form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -134,17 +123,15 @@ const FaaliyetCreate = () => {
     setIsSubmitting(true);
     
     try {
-      // Önce resimleri yükle
       let imageUrls = [];
       if (selectedImages.length > 0) {
         imageUrls = await uploadImages();
       }
 
-      // Faaliyet oluştur
       const faaliyetData = {
         baslik: formData.baslik.trim(),
         aciklama: formData.aciklama.trim(),
-        gorseller: imageUrls // Backend'den gelen dosya isimleri
+        gorseller: imageUrls
       };
 
       const response = await faaliyetService.createFaaliyet(faaliyetData);
@@ -152,12 +139,10 @@ const FaaliyetCreate = () => {
       if (response.success) {
         toast.success('Faaliyet yönetici onayına gönderildi!');
         
-        // Preview URL'leri temizle
         imagePreview.forEach(preview => {
           URL.revokeObjectURL(preview.url);
         });
         
-        // Ana sayfaya yönlendir
         navigate('/', { replace: true });
       } else {
         throw new Error(response.error || 'Faaliyet paylaşılamadı');
@@ -171,25 +156,21 @@ const FaaliyetCreate = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white"> {/* Arka plan rengi değiştirildi */}
-      <div className="max-w-full sm:max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8"> {/* Responsive padding */}
-        {/* Header */}
-        <div className="mb-6 sm:mb-8"> {/* Mobil boşluk */}
-          <div className="flex items-center gap-3 sm:gap-4"> {/* Mobil boşluk */}
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gray-800 shadow-lg hover:shadow-xl border border-gray-700 transition-all duration-200 hover:scale-105" 
-            >
-              <FiArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-300" /> {/* İkon rengi ve boyutu değiştirildi */}
-            </button>
-            <div>
-              <h1 className="text-xl sm:text-3xl font-bold text-red-500">Faaliyet Paylaş</h1> {/* Başlık rengi ve boyutu */}
-              <p className="text-gray-400 text-sm sm:text-lg">Yaptığınız faaliyeti topluluğa paylaşın</p> {/* Alt başlık rengi ve boyutu */}
-            </div>
+    <div className="min-h-screen text-white flex justify-center items-center p-4">
+      <div className="w-full max-w-2xl">
+        <div className="mb-6 flex items-center gap-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-3 rounded-full bg-gray-800 shadow-xl hover:shadow-2xl border border-gray-700 transition-all duration-200" 
+          >
+            <FiArrowLeft className="h-5 w-5 text-gray-300" />
+          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-[#FA2C37]">Faaliyet Paylaş</h1>
+            <p className="text-gray-400 text-sm">Yaptığınız faaliyeti topluluğa paylaşın</p>
           </div>
         </div>
-
-        {/* Form Component */}
+        
         <CreateForm
           user={user}
           formData={formData}
