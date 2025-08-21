@@ -156,7 +156,7 @@ const FaaliyetCreate = () => {
   };
 
   return (
-    <div className="min-h-screen text-white flex justify-center items-center p-4">
+    <div className="min-h-screen text-white flex justify-center items-center py-4 px-4 sm:px-4">
       <div className="w-full max-w-2xl">
         <div className="mb-6 flex items-center gap-4">
           <button
@@ -166,8 +166,8 @@ const FaaliyetCreate = () => {
             <FiArrowLeft className="h-5 w-5 text-gray-300" />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-[#FA2C37]">Faaliyet Paylaş</h1>
-            <p className="text-gray-400 text-sm">Yaptığınız faaliyeti topluluğa paylaşın</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#FA2C37]">Faaliyet Paylaş</h1>
+            <p className="text-gray-400 text-sm sm:text-base">Yaptığınız faaliyeti topluluğa paylaşın</p>
           </div>
         </div>
         
@@ -183,7 +183,6 @@ const FaaliyetCreate = () => {
           handleSubmit={handleSubmit}
           isSubmitting={isSubmitting}
           uploadingImages={uploadingImages}
-          navigate={navigate}
         />
       </div>
     </div>

@@ -32,17 +32,12 @@ const CreateForm = ({
         {imagePreview.map((preview, index) => (
           <div 
             key={preview.id} 
-            className="relative group overflow-hidden rounded-xl"
-            style={{
-              // Dinamik yükseklik ayarı
-              paddingBottom: imagePreview.length === 1 ? '100%' : '50%',
-              height: 0
-            }}
+            className="relative group overflow-hidden rounded-xl h-32 sm:h-40" // Yükseklik azaltıldı
           >
             <img
               src={preview.url}
               alt={`Preview ${index + 1}`}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 transform group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-300 transform group-hover:scale-105"
             />
             <button
               type="button"
@@ -73,7 +68,7 @@ const CreateForm = ({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="w-full flex items-center justify-center gap-3 bg-gray-800 text-white rounded-xl py-3 px-4 hover:bg-gray-700 transition-colors duration-300"
+          className="w-full flex items-center justify-center gap-3 bg-gray-900 text-white rounded-xl py-3 px-4 transition-colors duration-300"
         >
           <FiCamera className="h-5 w-5" />
           <span className="text-sm font-semibold">
@@ -88,16 +83,15 @@ const CreateForm = ({
     <div className="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700">
       
       {/* Kullanıcı Profili ve Açıklama Alanı */}
-      <div className="p-6 flex items-start gap-4 border-b border-gray-700">
-        <div className="flex-shrink-0 h-12 w-12 rounded-full bg-[#FA2C37] flex items-center justify-center">
-          <span className="text-xl font-bold text-white">
-            {user?.isim?.charAt(0)?.toUpperCase() || <FiUser className="h-6 w-6" />}
+      <div className="p-4 sm:p-6 flex items-start gap-3 sm:gap-4 border-b border-gray-700">
+        <div className="flex-shrink-0 h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-[#FA2C37] flex items-center justify-center">
+          <span className="text-lg sm:text-xl font-bold text-white">
+            {user?.isim?.charAt(0)?.toUpperCase() || <FiUser className="h-5 w-5 sm:h-6 sm:w-6" />}
           </span>
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-white">{user?.isim} {user?.soyisim}</h2>
-            <span className="text-xs text-gray-500">• Dernek Üyesi</span>
+            <h2 className="text-base sm:text-lg font-bold text-white">{user?.isim} {user?.soyisim}</h2>
           </div>
           <textarea
             id="aciklama"
@@ -105,7 +99,7 @@ const CreateForm = ({
             value={formData.aciklama}
             onChange={handleChange}
             rows={4}
-            className="w-full text-base border-none outline-none resize-none bg-transparent placeholder-gray-500 text-white mt-2"
+            className="w-full text-sm sm:text-base border-none outline-none resize-none bg-transparent placeholder-gray-500 text-white mt-2"
             placeholder="Ne yaptınız, nasıl hissettiniz? Paylaşın..."
             maxLength={1000}
           />
@@ -113,13 +107,13 @@ const CreateForm = ({
       </div>
       
       {/* Görsel Alanı */}
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <ImagePreviewGrid />
         <UploadArea />
       </div>
 
       {/* Footer Butonu */}
-      <div className="p-6 flex justify-end">
+      <div className="p-4 sm:p-6 flex justify-end">
         <button
           type="submit"
           onClick={handleSubmit}

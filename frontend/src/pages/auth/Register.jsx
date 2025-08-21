@@ -225,7 +225,7 @@ const LocationInfoSection = ({ formData, handleChange, options, loadingStates })
           value={formData.gonullu_dernek}
           onChange={handleChange}
           placeholder="Dernek seçiniz"
-          options={options.dernekler.map(dernek => ({ value: dernek.dernek_adi, label: `${dernek.dernek_adi} (${dernek.uye_sayisi} üye)` }))}
+          options={options.dernekler.map(dernek => ({ value: dernek.dernek_adi, label: `${dernek.dernek_adi} (${dernek.uye_sayisi} Kayıt)` }))}
           disabled={!formData.ilce || loadingStates.dernekler}
           hint={loadingStates.dernekler ? "Dernekler yükleniyor..." : ""}
         />
