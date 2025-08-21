@@ -32,9 +32,9 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
 
   // Eğitim kartı bileşeni
   const EducationSection = ({ title, icon: Icon, iconColor, status, schoolName, graduationYear, currentClass, location }) => (
-    <div className="p-4 sm:p-6 bg-gray-800 rounded-2xl border border-gray-700">
+    <div className="bg-gray-800 rounded-xl p-5 border border-gray-700 hover:bg-gray-700 transition-colors duration-200">
       <div className="flex items-center mb-3">
-        <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-lg ${iconColor} flex items-center justify-center mr-3 text-white`}>
+        <div className={`h-10 w-10 rounded-full ${iconColor} flex items-center justify-center mr-3 text-white shadow`}>
           <Icon className="h-5 w-5" />
         </div>
         <h4 className="font-semibold text-white text-base sm:text-lg">{title}</h4>
@@ -81,9 +81,9 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
 
   // Gizlilik kontrolleri için yeniden tasarlanmış InfoField bileşeni
   const InfoField = ({ label, value, icon: Icon, isPrivate = false }) => (
-    <div className={`flex items-center justify-between p-4 rounded-xl transition-colors ${isPrivate ? 'bg-gray-900' : 'bg-gray-700'}`}>
+    <div className={`flex items-center justify-between p-4 rounded-xl transition-colors ${isPrivate ? 'bg-gray-900 border border-gray-800' : 'bg-gray-800 border border-gray-700'}`}>
       <div className="flex items-center">
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center mr-3 shadow-sm transition-colors ${isPrivate ? 'bg-gray-800' : 'bg-gray-600'}`}>
+        <div className={`h-9 w-9 rounded-full flex items-center justify-center mr-3 shadow-sm transition-colors ${isPrivate ? 'bg-gray-800' : 'bg-gray-700'}`}>
           <Icon className={`h-5 w-5 transition-colors ${isPrivate ? 'text-gray-500' : 'text-gray-300'}`} />
         </div>
         <span className="text-sm font-medium text-gray-300">{label}</span>
@@ -115,11 +115,11 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
       {/* Kişisel Bilgiler */}
       <div className="space-y-6 sm:space-y-8">
-        <div className="bg-gray-850 rounded-2xl shadow-lg border border-gray-800 overflow-hidden">
+        <div className="bg-gray-850 rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-800 bg-gray-900">
             <h3 className="text-lg sm:text-xl font-bold text-white flex items-center">
-              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-[#FA2C37] flex items-center justify-center mr-3 text-white">
-                <FiUser className="h-5 w-5" />
+              <div className="h-12 w-12 rounded-full bg-[#FA2C37] flex items-center justify-center mr-3 text-white shadow">
+                <FiUser className="h-6 w-6" />
               </div>
               Kişisel Bilgiler
             </h3>
@@ -160,11 +160,11 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
         </div>
 
         {/* Mesleki Bilgiler Card */}
-        <div className="bg-gray-850 rounded-2xl shadow-lg border border-gray-800 overflow-hidden">
+        <div className="bg-gray-850 rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-800 bg-gray-900">
             <h3 className="text-lg sm:text-xl font-bold text-white flex items-center">
-              <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-blue-600 flex items-center justify-center mr-3 text-white">
-                <FiBriefcase className="h-5 w-5" />
+              <div className="h-12 w-12 rounded-full bg-blue-600 flex items-center justify-center mr-3 text-white shadow">
+                <FiBriefcase className="h-6 w-6" />
               </div>
               Mesleki Bilgiler
             </h3>
@@ -196,11 +196,11 @@ const InfoSection = ({ user, formatDateForDisplay }) => {
       </div>
 
       {/* Eğitim Bilgileri Kartı */}
-      <div className="bg-gray-850 rounded-2xl shadow-lg border border-gray-800 overflow-hidden">
+      <div className="bg-gray-850 rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-800 bg-gray-900">
           <h3 className="text-lg sm:text-xl font-bold text-white flex items-center">
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-purple-600 flex items-center justify-center mr-3 text-white">
-              <FiBook className="h-5 w-5" />
+            <div className="h-12 w-12 rounded-full bg-purple-600 flex items-center justify-center mr-3 text-white shadow">
+              <FiBook className="h-6 w-6" />
             </div>
             Eğitim Bilgileri
           </h3>
