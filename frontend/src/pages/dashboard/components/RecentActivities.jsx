@@ -274,8 +274,6 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
 // Twitter Style Faaliyet Kartı
 const TwitterActivityCard = ({ faaliyet }) => {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const formatTimeAgo = (dateString) => {
     const date = new Date(dateString);
