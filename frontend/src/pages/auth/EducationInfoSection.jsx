@@ -387,139 +387,140 @@ const EducationInfoSection = ({ formData, handleChange, onEducationDataChange })
         </div>
 
         {/* LİSE BİLGİLERİ */}
-        <div className="p-4 sm:p-5 relative">
-          <h4 className="text-base sm:text-lg font-medium text-white mb-4">Lise Bilgileri</h4>
+      <div className="p-4 sm:p-5 relative">
+  <h4 className="text-base sm:text-lg font-medium text-white mb-4">
+    Lise Bilgileri 
+    <span className="text-red-500 text-sm ml-2">* (Zorunlu)</span>
+  </h4>
 
-          {/* Temizle butonu */}
-          {(formData.lise_mezun_yili || formData.lise_id || formData.lise_custom) && (
-            <button
-              type="button"
-              onClick={() => clearOkulSelection('lise')}
-              className="absolute top-3 right-3 p-1.5 rounded-full bg-red-800 text-white hover:bg-red-900 transition-colors z-10"
-              title="Lise bilgilerini temizle"
-            >
-              <FiX className="w-4 h-4" />
-            </button>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InputField
-              label="Mezuniyet Yılı (Lise)"
-              name="lise_mezun_yili"
-              type="select"
-              icon={FiCalendar}
-              value={formData.lise_mezun_yili || ''}
-              onChange={handleChange}
-              placeholder="Yıl seçiniz"
-              options={years}
-              required
-            />
-          </div>
+  {/* Temizle butonu */}
+  {(formData.lise_mezun_yili || formData.lise_id || formData.lise_custom) && (
+    <button
+      type="button"
+      onClick={() => clearOkulSelection('lise')}
+      className="absolute top-3 right-3 p-1.5 rounded-full bg-red-800 text-white hover:bg-red-900 transition-colors z-10"
+      title="Lise bilgilerini temizle"
+    >
+      <FiX className="w-4 h-4" />
+    </button>
+  )}
+  
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <InputField
+      label="Mezuniyet Yılı (Lise)"
+      name="lise_mezun_yili"
+      type="select"
+      icon={FiCalendar}
+      value={formData.lise_mezun_yili || ''}
+      onChange={handleChange}
+      placeholder="Yıl seçiniz"
+      options={years}
+      required // Zorunlu
+    />
+  </div>
 
-          {/* Lise Seçimi - Sadece mezuniyet yılı seçildiyse göster */}
-          {formData.lise_mezun_yili && (
-            <div className="space-y-4 mt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField
-                  label="İl (Lise)"
-                  name="lise_selectedIl"
-                  icon={FiMapPin}
-                  value={liseState.selectedIl}
-                  onChange={(e) => handleIlChange('lise', e.target.value)}
-                  placeholder="İl seçiniz"
-                  options={liseState.iller.map(il => ({ value: il.il_adi, label: `${il.il_adi} (${il.okul_sayisi} okul)` }))}
-                  disabled={liseState.loading}
-                  hint={liseState.loading && liseState.selectedIl === '' ? "İller yükleniyor..." : null}
-                  required
-                />
+  {/* Lise Seçimi - Mezuniyet yılı zorunlu olduğu için her zaman göster */}
+  <div className="space-y-4 mt-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <InputField
+        label="İl (Lise)"
+        name="lise_selectedIl"
+        icon={FiMapPin}
+        value={liseState.selectedIl}
+        onChange={(e) => handleIlChange('lise', e.target.value)}
+        placeholder="İl seçiniz"
+        options={liseState.iller.map(il => ({ value: il.il_adi, label: `${il.il_adi} (${il.okul_sayisi} okul)` }))}
+        disabled={liseState.loading}
+        hint={liseState.loading && liseState.selectedIl === '' ? "İller yükleniyor..." : null}
+        required
+      />
 
-                <InputField
-                  label="İlçe (Lise - Opsiyonel)"
-                  name="lise_selectedIlce"
-                  icon={FiMapPin}
-                  value={liseState.selectedIlce}
-                  onChange={(e) => handleIlceChange('lise', e.target.value)}
-                  placeholder="Tüm ilçeler"
-                  options={liseState.ilceler.map(ilce => ({ value: ilce.ilce_adi, label: `${ilce.ilce_adi} (${ilce.okul_sayisi} okul)` }))}
-                  disabled={!liseState.selectedIl || liseState.loading}
-                  hint={liseState.loading && liseState.selectedIlce === '' && liseState.selectedIl !== '' ? "İlçeler yükleniyor..." : null}
-                />
-              </div>
+      <InputField
+        label="İlçe (Lise - Opsiyonel)"
+        name="lise_selectedIlce"
+        icon={FiMapPin}
+        value={liseState.selectedIlce}
+        onChange={(e) => handleIlceChange('lise', e.target.value)}
+        placeholder="Tüm ilçeler"
+        options={liseState.ilceler.map(ilce => ({ value: ilce.ilce_adi, label: `${ilce.ilce_adi} (${ilce.okul_sayisi} okul)` }))}
+        disabled={!liseState.selectedIl || liseState.loading}
+        hint={liseState.loading && liseState.selectedIlce === '' && liseState.selectedIl !== '' ? "İlçeler yükleniyor..." : null}
+      />
+    </div>
 
-              {/* Arama Input'u */}
-              <InputField
-                label="Okul Adı Ara (Filtreleme)"
-                name="lise_searchText"
-                icon={FiSearch}
-                value={liseState.searchText}
-                onChange={(e) => setSchoolSearchState('lise', { searchText: e.target.value })}
-                placeholder="Okul adı yazın (filtreleme için)..."
-                hint="Yukarıdaki il ve ilçe seçimine göre filtreler."
-              />
+    {/* Arama Input'u */}
+    <InputField
+      label="Okul Adı Ara (Filtreleme)"
+      name="lise_searchText"
+      icon={FiSearch}
+      value={liseState.searchText}
+      onChange={(e) => setSchoolSearchState('lise', { searchText: e.target.value })}
+      placeholder="Okul adı yazın (filtreleme için)..."
+      hint="Yukarıdaki il ve ilçe seçimine göre filtreler."
+    />
 
-              {/* Okul Listesi */}
-              {liseState.selectedIl && liseState.showResults && (
-                <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 relative">
-                  <div className="flex items-center justify-between mb-3">
-                    <h5 className="font-medium text-gray-300 text-sm">
-                      {liseState.selectedIlce 
-                        ? `${liseState.selectedIlce} İlçesi Liseleri` 
-                        : `${liseState.selectedIl} İli Liseleri`
-                      }
-                    </h5>
-                    {liseState.loading && (
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-500 border-t-transparent"></div>
-                    )}
-                  </div>
-                  
-                  <div className="max-h-52 sm:max-h-64 overflow-y-auto space-y-2 custom-scrollbar">
-                    {liseState.okullar
-                      .filter(okul => 
-                        !liseState.searchText || 
-                        okul.kurum_adi.toLowerCase().includes(liseState.searchText.toLowerCase())
-                      )
-                      .map(okul => (
-                        <button
-                          key={okul.id}
-                          type="button"
-                          onClick={() => selectOkul('lise', okul)}
-                          className={`w-full text-left p-3 rounded-md border transition-all duration-200 
-                            ${formData.lise_id === okul.id 
-                              ? 'bg-red-700 border-red-600 text-white shadow-md' 
-                              : 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600 hover:border-red-500'
-                            }`}
-                        >
-                          <div className="font-medium text-base">{okul.kurum_adi}</div>
-                          <div className="text-sm text-gray-400">{okul.il_adi} / {okul.ilce_adi}</div>
-                        </button>
-                      ))}
-                  </div>
-                  
-                  {liseState.okullar.length === 0 && !liseState.loading && (
-                    <p className="text-gray-500 text-center py-4 text-sm">Bu bölgede lise bulunamadı.</p>
-                  )}
-                  {liseState.okullar.length > 0 && 
-                   liseState.searchText && 
-                   liseState.okullar.filter(okul => !liseState.searchText || okul.kurum_adi.toLowerCase().includes(liseState.searchText.toLowerCase())).length === 0 && (
-                    <p className="text-gray-500 text-center py-4 text-sm">Aramanıza uygun okul bulunamadı.</p>
-                  )}
-                </div>
-              )}
-
-              {/* Manuel Lise Girişi */}
-              <InputField
-                label="Veya lise adını manuel girin"
-                name="lise_custom"
-                icon={FiBook} 
-                value={formData.lise_custom || ''}
-                onChange={(e) => handleCustomOkul('lise', e.target.value)}
-                placeholder="Lise adını yazın..."
-                hint="Yukarıdaki listede bulamazsanız manuel girebilirsiniz."
-                required={!formData.lise_id} // Ya listeden seçilmeli ya da manuel girilmeli
-              />
-            </div>
+    {/* Okul Listesi */}
+    {liseState.selectedIl && liseState.showResults && (
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 relative">
+        <div className="flex items-center justify-between mb-3">
+          <h5 className="font-medium text-gray-300 text-sm">
+            {liseState.selectedIlce 
+              ? `${liseState.selectedIlce} İlçesi Liseleri` 
+              : `${liseState.selectedIl} İli Liseleri`
+            }
+          </h5>
+          {liseState.loading && (
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-500 border-t-transparent"></div>
           )}
         </div>
+        
+        <div className="max-h-52 sm:max-h-64 overflow-y-auto space-y-2 custom-scrollbar">
+          {liseState.okullar
+            .filter(okul => 
+              !liseState.searchText || 
+              okul.kurum_adi.toLowerCase().includes(liseState.searchText.toLowerCase())
+            )
+            .map(okul => (
+              <button
+                key={okul.id}
+                type="button"
+                onClick={() => selectOkul('lise', okul)}
+                className={`w-full text-left p-3 rounded-md border transition-all duration-200 
+                  ${formData.lise_id === okul.id 
+                    ? 'bg-red-700 border-red-600 text-white shadow-md' 
+                    : 'bg-gray-700 border-gray-600 text-gray-200 hover:bg-gray-600 hover:border-red-500'
+                  }`}
+              >
+                <div className="font-medium text-base">{okul.kurum_adi}</div>
+                <div className="text-sm text-gray-400">{okul.il_adi} / {okul.ilce_adi}</div>
+              </button>
+            ))}
+        </div>
+        
+        {liseState.okullar.length === 0 && !liseState.loading && (
+          <p className="text-gray-500 text-center py-4 text-sm">Bu bölgede lise bulunamadı.</p>
+        )}
+        {liseState.okullar.length > 0 && 
+         liseState.searchText && 
+         liseState.okullar.filter(okul => !liseState.searchText || okul.kurum_adi.toLowerCase().includes(liseState.searchText.toLowerCase())).length === 0 && (
+          <p className="text-gray-500 text-center py-4 text-sm">Aramanıza uygun okul bulunamadı.</p>
+        )}
+      </div>
+    )}
+
+    {/* Manuel Lise Girişi */}
+    <InputField
+      label="Veya lise adını manuel girin"
+      name="lise_custom"
+      icon={FiBook} 
+      value={formData.lise_custom || ''}
+      onChange={(e) => handleCustomOkul('lise', e.target.value)}
+      placeholder="Lise adını yazın..."
+      hint="Yukarıdaki listede bulamazsanız manuel girebilirsiniz."
+      required={!formData.lise_id} // Ya listeden seçilmeli ya da manuel girilmeli
+    />
+  </div>
+</div>
 
         {/* ÜNİVERSİTE DURUMU */}
         <div className="p-4 sm:p-5">

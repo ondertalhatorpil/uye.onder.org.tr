@@ -379,40 +379,41 @@ const Register = () => {
   const { register, isAuthenticated, loading } = useAuth();
 
   // GÜNCEL FORM STATE
-  const [formData, setFormData] = useState({
-    isim: '',
-    soyisim: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    dogum_tarihi: '',
-    sektor: '',
-    meslek: '',
-    telefon: '',
-    il: '',
-    ilce: '',
-    gonullu_dernek: '',
-    calisma_komisyon: '',
-    mezun_okul: '', // Backward compatibility için tutuldu
-    
-    // EĞİTİM ALANLARI - Sadece gerekli olanlar
-    ortaokul_id: null,
-    ortaokul_custom: null,
-    ortaokul_mezun_yili: null,
-    
-    lise_id: null,
-    lise_custom: null,
-    lise_mezun_yili: null,
-    
-    // Üniversite bilgileri - tam destekli
-    universite_durumu: 'okumadi',
-    universite_adi: '',
-    universite_bolum: '',
-    universite_mezun_yili: null,
-    
-    kvkk_onay: false,
-    aydinlatma_metni_onay: false
-  });
+ const [formData, setFormData] = useState({
+  isim: '',
+  soyisim: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  dogum_tarihi: '',
+  sektor: '',
+  meslek: '',
+  telefon: '',
+  il: '',
+  ilce: '',
+  gonullu_dernek: '',
+  calisma_komisyon: '',
+  mezun_okul: '', // Backward compatibility için tutuldu
+  
+  // EĞİTİM ALANLARI - Ortaokul opsiyonel
+  ortaokul_id: null,
+  ortaokul_custom: null,
+  ortaokul_mezun_yili: null, // Opsiyonel
+  
+  // Lise zorunlu
+  lise_id: null,
+  lise_custom: null,
+  lise_mezun_yili: '', // Zorunlu - boş string olarak başlat ki required çalışsın
+  
+  // Üniversite bilgileri - tam destekli
+  universite_durumu: 'okumadi',
+  universite_adi: '',
+  universite_bolum: '',
+  universite_mezun_yili: null,
+  
+  kvkk_onay: false,
+  aydinlatma_metni_onay: false
+});
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -565,119 +566,140 @@ const Register = () => {
   }));
 };
 
-  // GÜNCEL VALIDATION
   const validateForm = () => {
-    const errors = [];
-    
-    if (!formData.isim.trim()) errors.push('İsim zorunlu.');
-    if (!formData.soyisim.trim()) errors.push('Soyisim zorunlu.');
-    if (!formData.email.trim()) errors.push('Email zorunlu.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.push('Geçerli bir email adresi giriniz.');
-    if (!formData.telefon.trim()) errors.push('Telefon numarası zorunlu.');
-    if (!/^\d{10}$/.test(formData.telefon.replace(/\s/g, ''))) errors.push('Geçerli bir telefon numarası giriniz (örn: 5XX XXX XX XX).');
-    if (!formData.dogum_tarihi) errors.push('Doğum tarihi zorunlu.');
-    
-    if (!formData.password) {
-      errors.push('Şifre zorunlu.');
-    } else if (formData.password.length < 6 || !/[A-Z]/.test(formData.password) || !/[a-z]/.test(formData.password) || !/\d/.test(formData.password)) {
-      errors.push('Şifre en az 6 karakter, büyük/küçük harf ve rakam içermeli.');
-    }
-    
-    if (formData.password !== formData.confirmPassword) errors.push('Şifreler eşleşmiyor.');
-    if (!formData.sektor) errors.push('Sektör seçimi zorunlu.');
-    if (!formData.meslek.trim()) errors.push('Meslek zorunlu.');
-    
-    if (!formData.il) errors.push('İl seçimi zorunlu.');
-    if (!formData.ilce) errors.push('İlçe seçimi zorunlu.');
-    if (!formData.gonullu_dernek) errors.push('Gönüllü dernek seçimi zorunlu.');
-    if (!formData.calisma_komisyon) errors.push('Çalışma komisyonu seçimi zorunlu.');
-    
-    
-    if (formData.ortaokul_mezun_yili && !formData.ortaokul_id && !formData.ortaokul_custom) {
-      errors.push('Ortaokul seçimi veya özel okul adı zorunlu.');
-    }
-    
-    if (formData.lise_mezun_yili && !formData.lise_id && !formData.lise_custom) {
+  const errors = [];
+  
+  // Kişisel bilgiler
+  if (!formData.isim.trim()) errors.push('İsim zorunlu.');
+  if (!formData.soyisim.trim()) errors.push('Soyisim zorunlu.');
+  if (!formData.email.trim()) errors.push('Email zorunlu.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.push('Geçerli bir email adresi giriniz.');
+  if (!formData.telefon.trim()) errors.push('Telefon numarası zorunlu.');
+  if (!/^\d{10}$/.test(formData.telefon.replace(/\s/g, ''))) errors.push('Geçerli bir telefon numarası giriniz (örn: 5XX XXX XX XX).');
+  if (!formData.dogum_tarihi) errors.push('Doğum tarihi zorunlu.');
+  
+  if (!formData.password) {
+    errors.push('Şifre zorunlu.');
+  } else if (formData.password.length < 6 || !/[A-Z]/.test(formData.password) || !/[a-z]/.test(formData.password) || !/\d/.test(formData.password)) {
+    errors.push('Şifre en az 6 karakter, büyük/küçük harf ve rakam içermeli.');
+  }
+  
+  if (formData.password !== formData.confirmPassword) errors.push('Şifreler eşleşmiyor.');
+  if (!formData.sektor) errors.push('Sektör seçimi zorunlu.');
+  if (!formData.meslek.trim()) errors.push('Meslek zorunlu.');
+  
+  if (!formData.il) errors.push('İl seçimi zorunlu.');
+  if (!formData.ilce) errors.push('İlçe seçimi zorunlu.');
+  if (!formData.gonullu_dernek) errors.push('Gönüllü dernek seçimi zorunlu.');
+  if (!formData.calisma_komisyon) errors.push('Çalışma komisyonu seçimi zorunlu.');
+  
+  // Ortaokul - opsiyonel ama eğer yıl seçildiyse okul da seçilmeli
+  if (formData.ortaokul_mezun_yili && !formData.ortaokul_id && !formData.ortaokul_custom) {
+    errors.push('Ortaokul seçimi veya özel okul adı zorunlu.');
+  }
+  
+  // LİSE - ZORUNLU
+  if (!formData.lise_mezun_yili) {
+    errors.push('Lise mezuniyet yılı zorunludur.');
+  } else {
+    // Lise yılı seçildiyse okul da seçilmeli
+    if (!formData.lise_id && !formData.lise_custom) {
       errors.push('Lise seçimi veya özel okul adı zorunlu.');
     }
-    
-    if (formData.universite_durumu === 'mezun' || formData.universite_durumu === 'devam_ediyor') {
-      if (!formData.universite_adi.trim()) errors.push('Üniversite adı zorunlu.');
-      if (!formData.universite_bolum.trim()) errors.push('Üniversite bölümü zorunlu.');
-      if (formData.universite_durumu === 'mezun' && !formData.universite_mezun_yili) {
-        errors.push('Üniversite mezuniyet yılı zorunlu.');
-      }
+  }
+  
+  // Üniversite - duruma göre zorunluluk
+  if (formData.universite_durumu === 'mezun' || formData.universite_durumu === 'devam_ediyor') {
+    if (!formData.universite_adi.trim()) errors.push('Üniversite adı zorunlu.');
+    if (!formData.universite_bolum.trim()) errors.push('Üniversite bölümü zorunlu.');
+    if (formData.universite_durumu === 'mezun' && !formData.universite_mezun_yili) {
+      errors.push('Üniversite mezuniyet yılı zorunlu.');
     }
-    
-    if (!formData.kvkk_onay) errors.push('KVKK onayı zorunludur.');
-    if (!formData.aydinlatma_metni_onay) errors.push('Aydınlatma metni onayı zorunludur.');
+  }
+  
+  if (!formData.kvkk_onay) errors.push('KVKK onayı zorunludur.');
+  if (!formData.aydinlatma_metni_onay) errors.push('Aydınlatma metni onayı zorunludur.');
 
-    return errors;
-  };
+  return errors;
+};
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  const errors = validateForm();
+  if (errors.length > 0) {
+    errors.forEach(error => toast.error(error));
+    return;
+  }
+
+  // Lise bilgilerinin dolu olduğundan emin ol
+  if (!formData.lise_mezun_yili) {
+    toast.error('Lise mezuniyet yılı zorunludur.');
+    return;
+  }
+
+  if (!formData.lise_id && !formData.lise_custom) {
+    toast.error('Lise seçimi veya manuel lise adı girişi zorunludur.');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const { confirmPassword, ...submitData } = formData;
     
-    const errors = validateForm();
-    if (errors.length > 0) {
-      errors.forEach(error => toast.error(error));
-      return;
+    const cleanedData = {
+      isim: submitData.isim || '',
+      soyisim: submitData.soyisim || '',
+      email: submitData.email || '',
+      password: submitData.password || '',
+      dogum_tarihi: submitData.dogum_tarihi || null,
+      sektor: submitData.sektor || '',
+      meslek: submitData.meslek || '',
+      telefon: submitData.telefon || '',
+      il: submitData.il || '',
+      ilce: submitData.ilce || '',
+      gonullu_dernek: submitData.gonullu_dernek || '',
+      calisma_komisyon: submitData.calisma_komisyon || '',
+      mezun_okul: submitData.mezun_okul || '',
+      
+      // Ortaokul - opsiyonel
+      ortaokul_id: submitData.ortaokul_id || null,
+      ortaokul_custom: submitData.ortaokul_custom ? submitData.ortaokul_custom.trim() : null,
+      ortaokul_mezun_yili: submitData.ortaokul_mezun_yili || null,
+      
+      // Lise - zorunlu
+      lise_id: submitData.lise_id || null,
+      lise_custom: submitData.lise_custom ? submitData.lise_custom.trim() : null,
+      lise_mezun_yili: submitData.lise_mezun_yili, // Zorunlu olduğu için null kontrolü yapmıyoruz
+      
+      // Üniversite
+      universite_durumu: submitData.universite_durumu || 'okumadi',
+      universite_adi: submitData.universite_adi ? submitData.universite_adi.trim() : null,
+      universite_bolum: submitData.universite_bolum ? submitData.universite_bolum.trim() : null,
+      universite_mezun_yili: submitData.universite_mezun_yili || null,
+      
+      kvkk_onay: Boolean(submitData.kvkk_onay),
+      aydinlatma_metni_onay: Boolean(submitData.aydinlatma_metni_onay)
+    };
+    
+    console.log('Frontend - Gönderilen veri:', cleanedData); // Debug için
+    
+    const result = await register(cleanedData);
+    
+    if (result.success) {
+      toast.success('Kayıt başarılı!');
+      navigate('/', { replace: true });
+    } else {
+      toast.error(result.error);
     }
-
-    setIsSubmitting(true);
-
-    try {
-      const { confirmPassword, ...submitData } = formData;
-      
-      const cleanedData = {
-        isim: submitData.isim || '',
-        soyisim: submitData.soyisim || '',
-        email: submitData.email || '',
-        password: submitData.password || '',
-        dogum_tarihi: submitData.dogum_tarihi || null,
-        sektor: submitData.sektor || '',
-        meslek: submitData.meslek || '',
-        telefon: submitData.telefon || '',
-        il: submitData.il || '',
-        ilce: submitData.ilce || '',
-        gonullu_dernek: submitData.gonullu_dernek || '',
-        calisma_komisyon: submitData.calisma_komisyon || '',
-        mezun_okul: submitData.mezun_okul || '',
-        
-        ortaokul_id: submitData.ortaokul_id || null,
-        ortaokul_custom: submitData.ortaokul_custom ? submitData.ortaokul_custom.trim() : null,
-        ortaokul_mezun_yili: submitData.ortaokul_mezun_yili || null,
-        
-        lise_id: submitData.lise_id || null,
-        lise_custom: submitData.lise_custom ? submitData.lise_custom.trim() : null,
-        lise_mezun_yili: submitData.lise_mezun_yili || null,
-        
-        universite_durumu: submitData.universite_durumu || 'okumadi',
-        universite_adi: submitData.universite_adi ? submitData.universite_adi.trim() : null,
-        universite_bolum: submitData.universite_bolum ? submitData.universite_bolum.trim() : null,
-        universite_mezun_yili: submitData.universite_mezun_yili || null,
-        
-        kvkk_onay: Boolean(submitData.kvkk_onay),
-        aydinlatma_metni_onay: Boolean(submitData.aydinlatma_metni_onay)
-      };
-      
-      console.log('Frontend - Gönderilen veri:', cleanedData); // Debug için
-      
-      const result = await register(cleanedData);
-      
-      if (result.success) {
-        toast.success('Kayıt başarılı!');
-        navigate('/', { replace: true });
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error('Kayıt sırasında hata oluştu: ' + error.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  } catch (error) {
+    console.error('Submit error:', error);
+    toast.error('Kayıt sırasında hata oluştu: ' + error.message);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (loading) {
     return (
