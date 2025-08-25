@@ -139,7 +139,7 @@ const NotificationsPage = () => {
             {unreadCount > 0 && (
               <button 
                 onClick={handleMarkAllAsRead}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors duration-200"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors duration-200"
               >
                 <FaCheckDouble />
                 Tümünü Okundu İşaretle
@@ -203,7 +203,7 @@ const NotificationsPage = () => {
         {loading ? (
           <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 p-12 text-center">
             <div className="inline-flex items-center gap-3">
-              <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
               <span className="text-gray-400">Bildirimler yükleniyor...</span>
             </div>
           </div>
@@ -273,10 +273,10 @@ const NotificationCard = ({ notification, onMarkAsRead }) => {
     const configs = {
       'genel': {
         icon: FaBell, // JSX elementi yerine komponentin kendisi atanıyor
-        bgColor: 'bg-indigo-700/50',
-        textColor: 'text-indigo-300',
-        iconColor: 'text-indigo-400',
-        borderColor: 'border-indigo-600'
+        bgColor: 'bg-red-700/50',
+        textColor: 'text-red-300',
+        iconColor: 'text-red-400',
+        borderColor: 'border-red-600'
       },
       'duyuru': {
         icon: FaBullhorn,
@@ -311,7 +311,7 @@ const NotificationCard = ({ notification, onMarkAsRead }) => {
     <div 
       className={`bg-gray-800 rounded-xl shadow-lg border transition-all duration-200 hover:shadow-xl cursor-pointer ${
         isUnread 
-          ? 'border-indigo-600 bg-gray-800/50' 
+          ? 'border-red-600 bg-gray-800/50' 
           : 'border-gray-700 hover:border-gray-600'
       }`}
       onClick={() => {
@@ -356,7 +356,7 @@ const NotificationCard = ({ notification, onMarkAsRead }) => {
                 </span>
                 
                 {isUnread && (
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full" title="Okunmamış"></div>
+                  <div className="w-2 h-2 bg-red-500 rounded-full" title="Okunmamış"></div>
                 )}
                 
                 <button 
