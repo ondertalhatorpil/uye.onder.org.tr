@@ -15,6 +15,13 @@ const {
   getFaaliyetOnayStats
 } = require('../controllers/adminController');
 
+const {
+  sendNotification,
+  getMyNotificationsAdmin, 
+  deleteNotification,
+  getNotificationStats
+} = require('../controllers/notificationController');
+
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
 const { handleExcelUpload } = require('../middleware/upload');
@@ -55,5 +62,11 @@ router.delete('/users/:id', deleteUser);
 router.post('/dernekler/upload-excel', handleExcelUpload, uploadExcel);
 router.post('/dernekler/assign-admin', assignDernekAdmin);
 router.delete('/dernekler/:id', deleteDernek);
+
+// ====== BİLDİRİM YÖNETİMİ ======
+router.post('/notifications', sendNotification);
+router.get('/notifications', getMyNotificationsAdmin);
+router.get('/notifications/stats', getNotificationStats);
+router.delete('/notifications/:id', deleteNotification);
 
 module.exports = router;

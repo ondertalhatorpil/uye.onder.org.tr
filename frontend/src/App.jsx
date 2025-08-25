@@ -21,11 +21,16 @@ import MyDernek from './pages/dernekler/MyDernek';
 import UyeSearch from './pages/uyeler/UyeSearch';
 import UyeProfile from './pages/uyeler/UyeProfile';
 import Profile from './pages/profile/Profile';
+import Notification from './pages/Notification/index';
+
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import DernekManagement from './pages/admin/DernekManagement';
+import SendNotification from './pages/admin/SendNotification';
+
+
 
 // Faaliyet Onay Sayfaları (YENİ)
 import BekleyenFaaliyetler from './pages/admin/BekleyenFaaliyetler';
@@ -96,6 +101,7 @@ function App() {
               <Route path="uyeler/:id" element={<UyeProfile />} />
               <Route path="uyeler/list" element={<UyeSearch />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="bildirimler" element={<Notification />} />
               <Route path="settings" element={
                 <Settings />
               } />
@@ -143,6 +149,12 @@ function App() {
                   <FaaliyetOnayStats />
                 </ProtectedRoute>
               } />
+               <Route path="admin/bildirimler" element={
+                <ProtectedRoute roles={['super_admin']}>
+                  <SendNotification />
+                </ProtectedRoute>
+              } />
+              
             </Route>
 
             {/* Catch all - redirect to home */}

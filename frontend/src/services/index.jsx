@@ -9,6 +9,7 @@ export { userService } from './userService';
 export { dernekService } from './dernekService';
 export { faaliyetService } from './faaliyetService';
 export { adminApi } from './adminApi';
+export { notificationService } from './notificationService'; // YENİ
 
 // Default exports for convenience (farklı isimlerle)
 export { default as authApi } from './authService';
@@ -17,3 +18,4 @@ export { default as userApi } from './userService';
 export { default as dernekApi } from './dernekService';
 export { default as faaliyetApi } from './faaliyetService';
 export { default as adminApiDefault } from './adminApi';
+export { default as notificationApi } from './notificationService'; // YENİ

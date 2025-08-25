@@ -40,6 +40,8 @@ try {
   const userRoutes = require('./routes/users');
   const adminRoutes = require('./routes/admin');
   const okullarRoutes = require('./routes/okullar');
+  const notificationRoutes = require('./routes/notifications');
+
 
   app.use('/api/auth', authRoutes);
   app.use('/api/dernekler', dernekRoutes);
@@ -48,6 +50,8 @@ try {
   app.use('/api/users', userRoutes);
   app.use('/api/admin', adminRoutes);
   app.use('/api/okullar', okullarRoutes);
+  app.use('/api/notifications', notificationRoutes);
+
 
   console.log('✅ Tüm route\'lar başarıyla yüklendi!');
 } catch (error) {
