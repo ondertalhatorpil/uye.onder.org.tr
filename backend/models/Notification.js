@@ -31,7 +31,7 @@ class Notification {
     return result.insertId;
   }
 
-  // Kullanıcının bildirimlerini getir - DÜZELTİLMİŞ
+  // Kullanıcının bildirimlerini getir - BASIT YAKLAŞIM
   static async getForUser(userId, options = {}) {
     const {
       page = 1,
@@ -41,67 +41,79 @@ class Notification {
 
     const offset = (page - 1) * limit;
 
-    // DÜZELTME: JSON_CONTAINS yerine daha basit yaklaşım
-    let query = `
-      SELECT 
-        n.id, n.baslik, n.icerik, n.tip, n.created_at, n.bitis_tarihi,
-        admin.isim as gonderici_isim, admin.soyisim as gonderici_soyisim,
-        CASE 
-          WHEN nr.id IS NOT NULL THEN 1 
-          ELSE 0 
-        END as okundu,
-        nr.okunma_tarihi
-      FROM notifications n
-      LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
-      LEFT JOIN users admin ON n.gonderici_admin_id = admin.id
-      WHERE (
-        n.hedef_kullanici_ids IS NULL 
-        OR n.hedef_kullanici_ids = 'null'
-        OR n.hedef_kullanici_ids = ''
-        OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
-      )
-      AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
-    `;
+    try {
+      // Önce tüm bildirimleri al, sonra filtreleme yap
+      let query = `
+        SELECT 
+          n.id, n.baslik, n.icerik, n.tip, n.created_at, n.bitis_tarihi,
+          n.hedef_kullanici_ids,
+          admin.isim as gonderici_isim, admin.soyisim as gonderici_soyisim,
+          CASE 
+            WHEN nr.id IS NOT NULL THEN 1 
+            ELSE 0 
+          END as okundu,
+          nr.okunma_tarihi
+        FROM notifications n
+        LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
+        LEFT JOIN users admin ON n.gonderici_admin_id = admin.id
+        WHERE (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
+      `;
 
-    const params = [userId, userId];
+      const params = [userId];
 
-    if (sadece_okunmamis) {
-      query += ` AND nr.id IS NULL`;
+      if (sadece_okunmamis) {
+        query += ` AND nr.id IS NULL`;
+      }
+
+      query += ` ORDER BY n.created_at DESC`;
+
+      console.log('Executing SQL:', query);
+      console.log('With params:', params);
+
+      const [allRows] = await pool.execute(query, params);
+
+      // JavaScript'te hedef kullanıcı filtresi uygula
+      const filteredRows = allRows.filter(notification => {
+        // Eğer hedef_kullanici_ids null ise tüm kullanıcılara gönderilmiş
+        if (!notification.hedef_kullanici_ids || 
+            notification.hedef_kullanici_ids === 'null' || 
+            notification.hedef_kullanici_ids === '') {
+          return true;
+        }
+
+        try {
+          // JSON parse et ve kullanıcı ID'si var mı kontrol et
+          const targetUsers = JSON.parse(notification.hedef_kullanici_ids);
+          return Array.isArray(targetUsers) && targetUsers.includes(parseInt(userId));
+        } catch (error) {
+          console.error('JSON parse error for notification:', notification.id, error);
+          // Parse hatası varsa tüm kullanıcılara gönderilmiş kabul et
+          return true;
+        }
+      });
+
+      // Sayfalama uygula
+      const startIndex = offset;
+      const endIndex = startIndex + limit;
+      const paginatedRows = filteredRows.slice(startIndex, endIndex);
+
+      // hedef_kullanici_ids'i temizle (frontend'e gönderme)
+      const cleanRows = paginatedRows.map(row => {
+        const { hedef_kullanici_ids, ...cleanRow } = row;
+        return cleanRow;
+      });
+
+      return {
+        notifications: cleanRows,
+        total: filteredRows.length,
+        page: parseInt(page),
+        limit: parseInt(limit)
+      };
+
+    } catch (error) {
+      console.error('getForUser error:', error);
+      throw error;
     }
-
-    query += ` ORDER BY n.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
-
-    const [rows] = await pool.execute(query, params);
-
-    // Toplam sayıyı al - DÜZELTME
-    let countQuery = `
-      SELECT COUNT(*) as total
-      FROM notifications n
-      LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
-      WHERE (
-        n.hedef_kullanici_ids IS NULL 
-        OR n.hedef_kullanici_ids = 'null'
-        OR n.hedef_kullanici_ids = ''
-        OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
-      )
-      AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
-    `;
-
-    const countParams = [userId, userId];
-
-    if (sadece_okunmamis) {
-      countQuery += ` AND nr.id IS NULL`;
-    }
-
-    const [countResult] = await pool.execute(countQuery, countParams);
-
-    return {
-      notifications: rows,
-      total: countResult[0].total,
-      page: parseInt(page),
-      limit: parseInt(limit)
-    };
   }
 
   // Bildirimi okundu olarak işaretle
@@ -130,24 +142,45 @@ class Notification {
     }
   }
 
-  // Kullanıcının okunmamış bildirim sayısı - DÜZELTME
+  // Kullanıcının okunmamış bildirim sayısı - BASIT YAKLAŞIM
   static async getUnreadCount(userId) {
-    const [rows] = await pool.execute(
-      `SELECT COUNT(*) as count
-      FROM notifications n
-      LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
-      WHERE (
-        n.hedef_kullanici_ids IS NULL 
-        OR n.hedef_kullanici_ids = 'null'
-        OR n.hedef_kullanici_ids = ''
-        OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
-      )
-      AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
-      AND nr.id IS NULL`,
-      [userId, userId]
-    );
+    try {
+      // Önce tüm okunmamış bildirimleri al
+      const [rows] = await pool.execute(
+        `SELECT n.id, n.hedef_kullanici_ids
+        FROM notifications n
+        LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
+        WHERE (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
+        AND nr.id IS NULL`,
+        [userId]
+      );
 
-    return rows[0].count;
+      // JavaScript'te hedef kullanıcı filtresi uygula
+      const filteredRows = rows.filter(notification => {
+        // Eğer hedef_kullanici_ids null ise tüm kullanıcılara gönderilmiş
+        if (!notification.hedef_kullanici_ids || 
+            notification.hedef_kullanici_ids === 'null' || 
+            notification.hedef_kullanici_ids === '') {
+          return true;
+        }
+
+        try {
+          // JSON parse et ve kullanıcı ID'si var mı kontrol et
+          const targetUsers = JSON.parse(notification.hedef_kullanici_ids);
+          return Array.isArray(targetUsers) && targetUsers.includes(parseInt(userId));
+        } catch (error) {
+          console.error('JSON parse error for unread count:', notification.id, error);
+          // Parse hatası varsa tüm kullanıcılara gönderilmiş kabul et
+          return true;
+        }
+      });
+
+      return filteredRows.length;
+
+    } catch (error) {
+      console.error('getUnreadCount error:', error);
+      return 0;
+    }
   }
 
   // Bildirimi ID ile getir
@@ -213,34 +246,48 @@ class Notification {
     };
   }
 
-  // Tüm kullanıcıları okundu işaretle
+  // Tüm kullanıcıları okundu işaretle - BASIT YAKLAŞIM
   static async markAllAsReadForUser(userId) {
     try {
-      // Kullanıcının okunmamış bildirimlerini getir - DÜZELTME
+      // Kullanıcının okunmamış bildirimlerini getir
       const [unreadNotifications] = await pool.execute(
-        `SELECT n.id
+        `SELECT n.id, n.hedef_kullanici_ids
         FROM notifications n
         LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
-        WHERE (
-          n.hedef_kullanici_ids IS NULL 
-          OR n.hedef_kullanici_ids = 'null'
-          OR n.hedef_kullanici_ids = ''
-          OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
-        )
-        AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
+        WHERE (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
         AND nr.id IS NULL`,
-        [userId, userId]
+        [userId]
       );
 
+      // JavaScript'te hedef kullanıcı filtresi uygula
+      const filteredNotifications = unreadNotifications.filter(notification => {
+        // Eğer hedef_kullanici_ids null ise tüm kullanıcılara gönderilmiş
+        if (!notification.hedef_kullanici_ids || 
+            notification.hedef_kullanici_ids === 'null' || 
+            notification.hedef_kullanici_ids === '') {
+          return true;
+        }
+
+        try {
+          // JSON parse et ve kullanıcı ID'si var mı kontrol et
+          const targetUsers = JSON.parse(notification.hedef_kullanici_ids);
+          return Array.isArray(targetUsers) && targetUsers.includes(parseInt(userId));
+        } catch (error) {
+          console.error('JSON parse error for mark all:', notification.id, error);
+          // Parse hatası varsa tüm kullanıcılara gönderilmiş kabul et
+          return true;
+        }
+      });
+
       // Her birini okundu olarak işaretle
-      for (const notification of unreadNotifications) {
+      for (const notification of filteredNotifications) {
         await pool.execute(
           'INSERT IGNORE INTO notification_reads (notification_id, user_id, okunma_tarihi) VALUES (?, ?, NOW())',
           [notification.id, userId]
         );
       }
 
-      return unreadNotifications.length;
+      return filteredNotifications.length;
     } catch (error) {
       console.error('Mark all as read error:', error);
       return 0;
