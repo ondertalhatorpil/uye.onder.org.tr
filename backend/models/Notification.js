@@ -1,4 +1,4 @@
-// models/Notification.js
+// models/Notification.js - SQL hatası düzeltilmiş versiyon
 const { pool } = require('../config/database');
 
 class Notification {
@@ -7,10 +7,10 @@ class Notification {
     const {
       baslik,
       icerik,
-      tip = 'genel', // 'genel', 'duyuru', 'uyari', 'bilgi'
+      tip = 'genel',
       gonderici_admin_id,
-      hedef_kullanici_ids = null, // null ise tüm kullanıcılara
-      bitiş_tarihi = null
+      hedef_kullanici_ids = null,
+      bitis_tarihi = null
     } = notificationData;
 
     const [result] = await pool.execute(
@@ -24,14 +24,14 @@ class Notification {
         tip,
         gonderici_admin_id,
         hedef_kullanici_ids ? JSON.stringify(hedef_kullanici_ids) : null,
-        bitiş_tarihi
+        bitis_tarihi
       ]
     );
 
     return result.insertId;
   }
 
-  // Kullanıcının bildirimlerini getir
+  // Kullanıcının bildirimlerini getir - DÜZELTİLMİŞ
   static async getForUser(userId, options = {}) {
     const {
       page = 1,
@@ -41,7 +41,7 @@ class Notification {
 
     const offset = (page - 1) * limit;
 
-    // Base query - kullanıcıya özel ve genel bildirimleri getir
+    // DÜZELTME: JSON_CONTAINS yerine daha basit yaklaşım
     let query = `
       SELECT 
         n.id, n.baslik, n.icerik, n.tip, n.created_at, n.bitis_tarihi,
@@ -56,12 +56,14 @@ class Notification {
       LEFT JOIN users admin ON n.gonderici_admin_id = admin.id
       WHERE (
         n.hedef_kullanici_ids IS NULL 
-        OR JSON_CONTAINS(n.hedef_kullanici_ids, ?)
+        OR n.hedef_kullanici_ids = 'null'
+        OR n.hedef_kullanici_ids = ''
+        OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
       )
       AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
     `;
 
-    const params = [userId, JSON.stringify(userId)];
+    const params = [userId, userId];
 
     if (sadece_okunmamis) {
       query += ` AND nr.id IS NULL`;
@@ -72,19 +74,21 @@ class Notification {
 
     const [rows] = await pool.execute(query, params);
 
-    // Toplam sayıyı al
+    // Toplam sayıyı al - DÜZELTME
     let countQuery = `
       SELECT COUNT(*) as total
       FROM notifications n
       LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
       WHERE (
         n.hedef_kullanici_ids IS NULL 
-        OR JSON_CONTAINS(n.hedef_kullanici_ids, ?)
+        OR n.hedef_kullanici_ids = 'null'
+        OR n.hedef_kullanici_ids = ''
+        OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
       )
       AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
     `;
 
-    const countParams = [userId, JSON.stringify(userId)];
+    const countParams = [userId, userId];
 
     if (sadece_okunmamis) {
       countQuery += ` AND nr.id IS NULL`;
@@ -126,7 +130,7 @@ class Notification {
     }
   }
 
-  // Kullanıcının okunmamış bildirim sayısı
+  // Kullanıcının okunmamış bildirim sayısı - DÜZELTME
   static async getUnreadCount(userId) {
     const [rows] = await pool.execute(
       `SELECT COUNT(*) as count
@@ -134,11 +138,13 @@ class Notification {
       LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
       WHERE (
         n.hedef_kullanici_ids IS NULL 
-        OR JSON_CONTAINS(n.hedef_kullanici_ids, ?)
+        OR n.hedef_kullanici_ids = 'null'
+        OR n.hedef_kullanici_ids = ''
+        OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
       )
       AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
       AND nr.id IS NULL`,
-      [userId, JSON.stringify(userId)]
+      [userId, userId]
     );
 
     return rows[0].count;
@@ -160,7 +166,7 @@ class Notification {
     return rows[0];
   }
 
-  // Admin için bildirim listesi (kendi gönderdiği)
+  // Admin için bildirim listesi
   static async getByAdmin(adminId, options = {}) {
     const {
       page = 1,
@@ -175,9 +181,14 @@ class Notification {
         n.hedef_kullanici_ids,
         COUNT(nr.id) as okunma_sayisi,
         CASE 
-          WHEN n.hedef_kullanici_ids IS NULL 
+          WHEN n.hedef_kullanici_ids IS NULL OR n.hedef_kullanici_ids = 'null' OR n.hedef_kullanici_ids = ''
           THEN (SELECT COUNT(*) FROM users WHERE role IN ('uye', 'dernek_admin'))
-          ELSE JSON_LENGTH(n.hedef_kullanici_ids)
+          ELSE (
+            SELECT COUNT(*) 
+            FROM users 
+            WHERE role IN ('uye', 'dernek_admin') 
+            AND JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(id AS CHAR)) IS NOT NULL
+          )
         END as hedef_kullanici_sayisi
       FROM notifications n
       LEFT JOIN notification_reads nr ON n.id = nr.notification_id
@@ -202,21 +213,23 @@ class Notification {
     };
   }
 
-  // Tüm kullanıcıları okundu işaretle (toplu işlem)
+  // Tüm kullanıcıları okundu işaretle
   static async markAllAsReadForUser(userId) {
     try {
-      // Kullanıcının okunmamış bildirimlerini getir
+      // Kullanıcının okunmamış bildirimlerini getir - DÜZELTME
       const [unreadNotifications] = await pool.execute(
         `SELECT n.id
         FROM notifications n
         LEFT JOIN notification_reads nr ON n.id = nr.notification_id AND nr.user_id = ?
         WHERE (
           n.hedef_kullanici_ids IS NULL 
-          OR JSON_CONTAINS(n.hedef_kullanici_ids, ?)
+          OR n.hedef_kullanici_ids = 'null'
+          OR n.hedef_kullanici_ids = ''
+          OR JSON_SEARCH(n.hedef_kullanici_ids, 'one', CAST(? AS CHAR)) IS NOT NULL
         )
         AND (n.bitis_tarihi IS NULL OR n.bitis_tarihi > NOW())
         AND nr.id IS NULL`,
-        [userId, JSON.stringify(userId)]
+        [userId, userId]
       );
 
       // Her birini okundu olarak işaretle
@@ -263,7 +276,7 @@ class Notification {
     }
   }
 
-  // Bildirim istatistikleri (Admin için)
+  // Bildirim istatistikleri
   static async getStats(adminId = null) {
     try {
       let query = `
