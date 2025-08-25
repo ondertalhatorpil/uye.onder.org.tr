@@ -113,31 +113,6 @@ const Sidebar = () => {
         href: '/admin',
         icon: FiShield,
         roles: ['super_admin']
-      },
-      {
-        name: 'Kullanıcı Yönetimi',
-        href: '/admin/users',
-        icon: FiUsers,
-        roles: ['super_admin']
-      },
-      {
-        name: 'Dernek Yönetimi',
-        href: '/admin/dernekler',
-        icon: FiGrid,
-        roles: ['super_admin']
-      },
-      {
-        name: 'Faaliyetler (Admin)',
-        href: '/admin/faaliyetler/stats',
-        icon: FiClock,
-        roles: ['super_admin'],
-        badge: true
-      },
-      {
-        name: 'Bildirim Gönder',
-        href: '/admin/bildirimler',
-        icon: FiBell,
-        roles: ['super_admin']
       }
     ];
 
