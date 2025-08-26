@@ -195,7 +195,6 @@ const Settings = () => {
               <ul className="text-xs space-y-1">
                 <li>• Verileriniz sistemimizde güvende tutulmaktadır</li>
                 <li>• Kendi profilinizi her zaman tam olarak görürsünüz</li>
-                <li>• Sistem yöneticileri tüm bilgileri görebilir</li>
                 <li>• Değişiklikler anında etkili olur</li>
               </ul>
             </div>
