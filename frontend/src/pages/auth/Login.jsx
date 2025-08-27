@@ -108,7 +108,7 @@ const Login = () => {
           {/* Header */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-white mb-2">
-              Tekrar hoş geldiniz
+              Hoş geldiniz
             </h2>
             <p className="text-gray-400 text-sm">
               Hesabınıza giriş yaparak devam edin
