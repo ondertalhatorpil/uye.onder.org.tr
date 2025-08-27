@@ -44,7 +44,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="App">
+        <div className="App" translate="no">
           {/* Toast Notifications */}
           <Toaster
             position="top-right"
