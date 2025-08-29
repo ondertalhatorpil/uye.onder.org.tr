@@ -5,7 +5,7 @@ import { authService } from '../services'; // authService'i import et
 import {
   FiX, FiHome, FiUsers, FiActivity, FiSettings, FiShield,
   FiUser, FiSearch, FiGrid, FiLogOut, FiClock, FiMoreHorizontal,
-  FiBriefcase, FiCreditCard, FiMail, FiBarChart2
+  FiBriefcase, FiCreditCard, FiMail, FiBarChart2, FiBell
 } from 'react-icons/fi';
 
 const APP_RED = 'red-500';
@@ -60,6 +60,12 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         name: 'Dernekler',
         href: '/dernekler',
         icon: FiGrid,
+        roles: ['super_admin', 'dernek_admin', 'uye']
+      },
+      {
+        name: 'Bildirimler',
+        href: '/bildirimler',
+        icon: FiBell,
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
       {

@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services'; // authService'i import et
 import {
-  FiHome, FiActivity, FiUser, FiSearch, FiPlus, FiGrid, FiMoreHorizontal
+  FiHome, FiActivity, FiUser, FiSearch, FiPlus, FiGrid,FiBell, FiMoreHorizontal
 } from 'react-icons/fi';
 import UserProfileModal from './UserProfileModal';
 
@@ -30,6 +30,7 @@ const MobileBottomNav = () => {
       { name: 'Ana Sayfa', href: '/', icon: FiHome, roles: ['super_admin', 'dernek_admin', 'uye'] },
       { name: 'Dernekler', href: '/dernekler', icon: FiActivity, roles: ['super_admin', 'dernek_admin', 'uye'] },
       { name: 'Üye Arama', href: '/uyeler', icon: FiSearch, roles: ['super_admin', 'dernek_admin', 'uye'] },
+      { name: 'Bildirimler', href: '/bildirimler', icon: FiBell, roles: ['super_admin', 'dernek_admin', 'uye'] },
     ];
 
     const lastItem = {
@@ -56,6 +57,10 @@ const MobileBottomNav = () => {
     // Üye Arama (Eğer rolüne uygunsa)
     if (baseItems[2].roles.includes(currentRole)) {
         itemsToShow.push(baseItems[2]);
+    }
+
+    if (baseItems[3].roles.includes(currentRole)) {
+        itemsToShow.push(baseItems[3]);
     }
 
     // Profil / Daha Fazla (Her zaman son öğe olacak ve modalı açacak)
