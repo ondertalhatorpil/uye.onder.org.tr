@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { faaliyetService, adminApi } from '../../services';
 import { toast } from 'react-hot-toast';
 
-import RecentActivities from './components/RecentActivities';
+import FaaliyetList from '../faaliyetler/FaaliyetList';
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isDernekAdmin } = useAuth();
@@ -45,8 +45,7 @@ const Dashboard = () => {
     <div className="min-h-screen text-white"> 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
         
-        <RecentActivities
-          faaliyetler={recentFaaliyetler}
+        <FaaliyetList
           loading={loading} 
         />
       </div>

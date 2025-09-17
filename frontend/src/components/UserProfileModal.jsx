@@ -45,8 +45,8 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     const generalItems = [
       
       {
-        name: 'Faaliyetlerim',
-        href: '/faaliyetler', 
+        name: 'Anasayfa',
+        href: '/', 
         icon: FiActivity,
         roles: ['super_admin', 'dernek_admin', 'uye']
       },

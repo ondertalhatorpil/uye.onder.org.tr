@@ -73,12 +73,6 @@ const Sidebar = () => {
         badge: unreadCount > 0 ? unreadCount : null // Dinamik badge
       },
       {
-        name: 'Faaliyetler',
-        href: '/faaliyetler',
-        icon: FiActivity,
-        roles: ['super_admin', 'dernek_admin', 'uye']
-      },
-      {
         name: 'Üye Arama',
         href: '/uyeler',
         icon: FiSearch,
