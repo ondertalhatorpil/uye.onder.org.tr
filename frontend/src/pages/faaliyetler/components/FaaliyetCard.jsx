@@ -151,8 +151,12 @@ const InstagramImageCarousel = ({ images, onImageClick }) => {
 
         {/* Görsel sayısı göstergesi - sağ üst köşe */}
         {images.length > 1 && (
-          <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-sm backdrop-blur-sm z-10">
-            {currentIndex + 1}/{images.length}
+          <div className="absolute top-2 right-2 z-10">
+            <div className="bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-md text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg border border-white/10">
+              <span className="text-white/90">{currentIndex + 1}</span>
+              <span className="text-white/60 mx-0.5">•</span>
+              <span className="text-white/90">{images.length}</span>
+            </div>
           </div>
         )}
 
@@ -283,8 +287,8 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
           <div className="flex flex-wrap items-center mb-2 sm:mb-3">
             {faaliyet.gonullu_dernek && (
               <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-[#FA2C37] text-red-200 rounded-full mr-2 mb-1">
-                📸 {faaliyet.gonullu_dernek.length > 30 
-                     ? faaliyet.gonullu_dernek.substring(0, 30) + '...' 
+                📸 {faaliyet.gonullu_dernek.length > 29 
+                     ? faaliyet.gonullu_dernek.substring(0, 29) + '...' 
                      : faaliyet.gonullu_dernek}
               </span>
             )}
