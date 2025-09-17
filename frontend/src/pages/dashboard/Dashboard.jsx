@@ -32,10 +32,10 @@ const Dashboard = () => {
 
   if (loading && recentFaaliyetler.length === 0) { 
     return (
-      <div className="min-h-screen bg-[#FA2C37] flex items-center justify-center">
+      <div className="min-h-screen bg-[#101828] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-red-200 border-t-red-600 mx-auto"></div>
-          <p className="mt-6 text-lg text-gray-400 font-medium">Dashboard yükleniyor...</p>
+          <p className="mt-6 text-lg text-gray-400 font-medium">Uygulama yükleniyor...</p>
         </div>
       </div>
     );

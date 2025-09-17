@@ -6,6 +6,22 @@ import {
 } from 'react-icons/fi';
 import { UPLOADS_BASE_URL } from '../../../services';
 
+// Görsel URL'i oluşturma fonksiyonu
+const getImageUrl = (imageName) => {
+  if (!imageName) return null;
+  
+  // Eğer tam URL ise direkt kullan
+  if (imageName.startsWith('http')) {
+    return imageName;
+  }
+  
+  // UPLOADS_BASE_URL'i kullan (production'da https://uye.onder.org.tr, development'ta localhost)
+  const imageUrl = `${UPLOADS_BASE_URL}/uploads/faaliyet-images/${imageName}`;
+  
+  console.log('Generated image URL:', imageUrl);
+  return imageUrl;
+};
+
 // Profil Avatar Bileşeni
 const ProfileAvatar = ({ user, size = 'md' }) => {
   const sizeClasses = {
@@ -33,17 +49,11 @@ const ProfileAvatar = ({ user, size = 'md' }) => {
       if (user.profil_fotografi.startsWith('http')) {
         imageUrl = user.profil_fotografi;
       } else {
-        // Development vs Production URL belirleme
-        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const baseUrl = isDevelopment 
-          ? 'http://localhost:3001' // Backend port güncellemesi
-          : UPLOADS_BASE_URL || 'https://uye.onder.org.tr';
-        
         // Eğer profil_fotografi zaten "uploads/" ile başlıyorsa, tekrar ekleme
         if (user.profil_fotografi.startsWith('uploads/')) {
-          imageUrl = `${baseUrl}/${user.profil_fotografi}`;
+          imageUrl = `${UPLOADS_BASE_URL}/${user.profil_fotografi}`;
         } else {
-          imageUrl = `${baseUrl}/uploads/profile-images/${user.profil_fotografi}`;
+          imageUrl = `${UPLOADS_BASE_URL}/uploads/profile-images/${user.profil_fotografi}`;
         }
       }
       
@@ -113,16 +123,6 @@ const ImageModal = ({ image, isOpen, onClose }) => {
 const TwitterImageGrid = ({ images, onImageClick }) => {
   if (!images || images.length === 0) return null;
 
-  // URL oluşturma helper'ı
-  const getImageUrl = (imageName) => {
-    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const baseUrl = isDevelopment 
-      ? 'http://localhost:3001' // Backend port güncellemesi
-      : UPLOADS_BASE_URL || 'https://uye.onder.org.tr';
-    
-    return `${baseUrl}/uploads/faaliyet-images/${imageName}`;
-  };
-
   // Tek görsel - Twitter benzeri tam genişlik
   const renderSingleImage = () => (
     <div
@@ -135,6 +135,7 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
         alt="Faaliyet görseli"
         className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
         onError={(e) => {
+          console.error('Single image failed to load:', e.target.src);
           e.target.src = 'https://via.placeholder.com/800x450/374151/9ca3af?text=Görsel+Yüklenemedi';
         }}
       />
@@ -161,6 +162,7 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
             alt={`Görsel ${index + 1}`}
             className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
             onError={(e) => {
+              console.error(`Two images - Image ${index + 1} failed to load:`, e.target.src);
               e.target.src = 'https://via.placeholder.com/400x400/374151/9ca3af?text=Görsel';
             }}
           />
@@ -187,6 +189,7 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
           alt="Ana görsel"
           className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
           onError={(e) => {
+            console.error('Three images - Main image failed to load:', e.target.src);
             e.target.src = 'https://via.placeholder.com/400x400/374151/9ca3af?text=Ana+Görsel';
           }}
         />
@@ -209,6 +212,7 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
               alt={`Görsel ${index + 2}`}
               className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
               onError={(e) => {
+                console.error(`Three images - Image ${index + 2} failed to load:`, e.target.src);
                 e.target.src = 'https://via.placeholder.com/400x400/374151/9ca3af?text=Görsel';
               }}
             />
@@ -240,6 +244,7 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
             alt={`Görsel ${index + 1}`}
             className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
             onError={(e) => {
+              console.error(`Multiple images - Image ${index + 1} failed to load:`, e.target.src);
               e.target.src = 'https://via.placeholder.com/400x400/374151/9ca3af?text=Görsel';
             }}
           />
@@ -261,6 +266,7 @@ const TwitterImageGrid = ({ images, onImageClick }) => {
             alt="Daha fazla"
             className="w-full h-full object-cover group-hover:brightness-90 transition-all duration-200"
             onError={(e) => {
+              console.error('Multiple images - Additional image failed to load:', e.target.src);
               e.target.src = 'https://via.placeholder.com/400x400/374151/9ca3af?text=Daha+Fazla';
             }}
           />
@@ -355,12 +361,12 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
             {/* Alt etiketler - Dernek ve konum */}
             <div className="flex flex-wrap items-center mb-2 sm:mb-3">
               {faaliyet.gonullu_dernek && (
-  <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-[#FA2C37] text-red-200 rounded-full mr-2 mb-1">
-    📸 {faaliyet.gonullu_dernek.length > 35 
-         ? faaliyet.gonullu_dernek.substring(0, 35) + '...' 
-         : faaliyet.gonullu_dernek}
-  </span>
-)}
+                <span className="inline-flex items-center px-1.5 py-0.5 text-xs bg-[#FA2C37] text-red-200 rounded-full mr-2 mb-1">
+                  📸 {faaliyet.gonullu_dernek.length > 35 
+                       ? faaliyet.gonullu_dernek.substring(0, 35) + '...' 
+                       : faaliyet.gonullu_dernek}
+                </span>
+              )}
 
               {faaliyet.il && (
                 <span className="text-[#FA2C37] text-xs sm:text-sm font-medium mb-1">

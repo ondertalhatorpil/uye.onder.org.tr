@@ -97,7 +97,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     // Super Admin Menüsü
     const superAdminItems = [
       {
-        name: 'Admin Paneli',
+        name: 'Yönetim',
         href: '/admin',
         icon: FiShield,
         roles: ['super_admin']

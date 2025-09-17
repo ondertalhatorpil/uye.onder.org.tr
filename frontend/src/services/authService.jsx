@@ -86,7 +86,7 @@ updateProfile: async (profileData, profileImage = null) => {
   
   // FormData için özel API çağrısı (Content-Type header'ı otomatik ayarlanacak)
   const token = localStorage.getItem('dernek_token');
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   
   try {
     console.log('🌐 Making fetch request to:', `${apiUrl}/auth/profile`);
@@ -155,7 +155,7 @@ updateProfile: async (profileData, profileImage = null) => {
     
     try {
       // DİKKAT: apiUrl zaten /api içeriyor, bu yüzden /api eklemeyin
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const response = await fetch(`${apiUrl}/auth/profile/image`, {
         method: 'DELETE',
         headers: {
@@ -196,7 +196,7 @@ updateProfile: async (profileData, profileImage = null) => {
     }
     
     // Relatif path ise API URL ile birleştir
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
     // VITE_API_URL zaten /api içeriyorsa, onu kaldırıp base URL'i al
     const cleanBaseUrl = baseUrl.replace('/api', '');
     return `${cleanBaseUrl}/${imagePath}`;

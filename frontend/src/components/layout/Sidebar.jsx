@@ -109,7 +109,7 @@ const Sidebar = () => {
 
     const superAdminItems = [
       {
-        name: 'Admin Panel',
+        name: 'Yönetim',
         href: '/admin',
         icon: FiShield,
         roles: ['super_admin']
