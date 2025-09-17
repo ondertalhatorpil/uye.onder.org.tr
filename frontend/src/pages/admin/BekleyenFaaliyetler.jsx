@@ -486,7 +486,6 @@ const BekleyenFaaliyetler = () => {
           </div>
         )}
 
-        {/* Detail Modal */}
         {showModal && selectedFaaliyet && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -574,6 +573,69 @@ const BekleyenFaaliyetler = () => {
             </div>
           </div>
         )}
+
+{/* Red Modal - Bu kod parçası eksikti */}
+        {showRedModal && selectedFaaliyet && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl p-6 w-full max-w-md">
+              <div className="flex items-start justify-between mb-6">
+                <h3 className="text-xl font-bold text-red-300">Faaliyet Reddet</h3>
+                <button
+                  onClick={() => {
+                    setShowRedModal(false);
+                    setRedNedeni('');
+                  }}
+                  className="text-gray-400 hover:text-gray-200 transition-colors p-1"
+                >
+                  <FiX className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-gray-300 mb-4">
+                  <strong>{selectedFaaliyet.baslik}</strong> başlıklı faaliyeti reddetmek istediğinizden emin misiniz?
+                </p>
+                
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Red Nedeni <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={redNedeni}
+                  onChange={(e) => setRedNedeni(e.target.value)}
+                  placeholder="Red nedenini açıklayın..."
+                  rows="4"
+                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end items-center gap-3">
+                <button
+                  onClick={() => {
+                    setShowRedModal(false);
+                    setRedNedeni('');
+                  }}
+                  disabled={processing}
+                  className="px-4 py-2 text-gray-400 hover:text-gray-200 font-medium transition-colors disabled:opacity-50"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={() => handleFaaliyetReddet(selectedFaaliyet.id)}
+                  disabled={processing || !redNedeni.trim()}
+                  className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {processing ? (
+                    <FiLoader className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FiX className="h-4 w-4" />
+                  )}
+                  Reddet
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
 
       </div>
     </div>
