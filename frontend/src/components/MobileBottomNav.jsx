@@ -83,7 +83,7 @@ const MobileBottomNav = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-gray-900 border-t border-gray-800 shadow-xl py-2 px-2">
+      <nav className="fixed bottom-0 left-0 right-0 z-30 lg:hidden bg-gray-900 border-t border-gray-800 shadow-xl py-2 px-2" style={{ zIndex: 1000 }}>
         <div className="flex justify-around items-center h-14">
           {menuItems.map((item, index) => {
             const Icon = item.icon;

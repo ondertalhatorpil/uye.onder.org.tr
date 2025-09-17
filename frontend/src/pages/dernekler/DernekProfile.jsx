@@ -181,7 +181,7 @@ const DernekProfile = () => {
 
         <DernekStats stats={statsData} formatDate={formatDate} />
 
-        <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-6"> {/* Dark background for map container, stronger shadow, border */}
+        <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-6"> 
           <DernekLocationMap dernek={dernek} />
         </div>
 

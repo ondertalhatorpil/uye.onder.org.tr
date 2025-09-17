@@ -120,7 +120,7 @@ const DernekLocationMap = ({ dernek, showPopup = true, height = '400px' }) => {
 
       <div 
         className="border border-gray-200 rounded-lg overflow-hidden shadow-sm"
-        style={{ height }}
+        style={{ height, zIndex: 1 }}
       >
         <MapContainer
           center={center}
