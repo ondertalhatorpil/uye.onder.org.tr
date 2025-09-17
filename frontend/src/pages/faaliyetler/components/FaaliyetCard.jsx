@@ -149,16 +149,7 @@ const InstagramImageCarousel = ({ images, onImageClick }) => {
           </button>
         )}
 
-        {/* Görsel sayısı göstergesi - sağ üst köşe */}
-        {images.length > 1 && (
-          <div className="absolute top-2 right-2 z-10">
-            <div className="bg-gradient-to-r from-gray-900/80 to-gray-800/80 backdrop-blur-md text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg border border-white/10">
-              <span className="text-white/90">{currentIndex + 1}</span>
-              <span className="text-white/60 mx-0.5">•</span>
-              <span className="text-white/90">{images.length}</span>
-            </div>
-          </div>
-        )}
+   
 
         {/* Nokta göstergeleri - sadece birden fazla görsel varsa göster */}
         {images.length > 1 && (
