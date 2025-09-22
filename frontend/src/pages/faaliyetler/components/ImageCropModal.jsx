@@ -198,20 +198,25 @@ const ImageCropModal = ({
     const ctx = canvas.getContext('2d');
     const img = imageRef.current;
     
-    // Set output canvas size to crop dimensions
-    canvas.width = cropArea.width;
-    canvas.height = cropArea.height;
+    // Use higher resolution for better quality
+    const outputWidth = cropArea.width * 2; // 2x resolution
+    const outputHeight = cropArea.height * 2;
+    
+    // Set output canvas size
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+    
+    // Enable high quality rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     
     // Calculate image dimensions and position in container
-    const containerWidth = 400;
-    const containerHeight = 300;
-    
     const scaledWidth = naturalDimensions.width * scale;
     const scaledHeight = naturalDimensions.height * scale;
     
     // Image center position in container
-    const imageCenterX = containerWidth / 2 + position.x;
-    const imageCenterY = containerHeight / 2 + position.y;
+    const imageCenterX = cropArea.containerWidth / 2 + position.x;
+    const imageCenterY = cropArea.containerHeight / 2 + position.y;
     
     // Image top-left in container
     const imageLeft = imageCenterX - scaledWidth / 2;
@@ -229,10 +234,7 @@ const ImageCropModal = ({
     const sourceWidth = Math.max(1, Math.min(cropRelWidth, naturalDimensions.width - sourceX));
     const sourceHeight = Math.max(1, Math.min(cropRelHeight, naturalDimensions.height - sourceY));
     
-    // Draw the cropped image
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+    // Draw the cropped image at higher resolution
     try {
       ctx.drawImage(
         img,
@@ -242,8 +244,8 @@ const ImageCropModal = ({
         sourceHeight,
         0,
         0,
-        cropArea.width,
-        cropArea.height
+        outputWidth,
+        outputHeight
       );
     } catch (error) {
       console.error('Error drawing image:', error);
@@ -251,9 +253,9 @@ const ImageCropModal = ({
     }
     
     return new Promise((resolve) => {
-      canvas.toBlob(resolve, 'image/jpeg', 0.9);
+      canvas.toBlob(resolve, 'image/jpeg', 0.95); // Higher quality (95% instead of 90%)
     });
-  }, [scale, position, imageLoaded, naturalDimensions]);
+  }, [scale, position, imageLoaded, naturalDimensions, cropArea]);
 
   // Create a new image element to get dimensions first
   useEffect(() => {
