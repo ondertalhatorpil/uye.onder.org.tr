@@ -191,70 +191,124 @@ const ImageCropModal = ({
     setScale(prev => Math.max(0.1, Math.min(3, prev * factor)));
   };
 
-  const getCroppedImage = useCallback(() => {
+  const getCroppedImage = useCallback(async () => {
     if (!imageRef.current || !canvasRef.current || !imageLoaded) return null;
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const img = imageRef.current;
     
-    // Use higher resolution for better quality
-    const outputWidth = cropArea.width * 2; // 2x resolution
-    const outputHeight = cropArea.height * 2;
+    // Akıllı boyutlandırma - hedefe göre optimal çözünürlük
+    const targetFileSizeKB = 400; // Hedef dosya boyutu
+    const maxWidth = 1200; // Maksimum genişlik
+    const maxHeight = Math.round(maxWidth / (16/9)); // 16:9 oranında yükseklik
     
-    // Set output canvas size
+    // Başlangıç çözünürlüğü - crop area'dan daha büyük ama makul
+    let outputWidth = Math.min(cropArea.width * 2.5, maxWidth);
+    let outputHeight = Math.min(cropArea.height * 2.5, maxHeight);
+    
+    // Canvas boyutunu ayarla
     canvas.width = outputWidth;
     canvas.height = outputHeight;
     
-    // Enable high quality rendering
+    // Maximum kalite render settings
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
+    ctx.globalCompositeOperation = 'source-over';
     
-    // Calculate image dimensions and position in container
+    // Image position calculations
     const scaledWidth = naturalDimensions.width * scale;
     const scaledHeight = naturalDimensions.height * scale;
-    
-    // Image center position in container
     const imageCenterX = cropArea.containerWidth / 2 + position.x;
     const imageCenterY = cropArea.containerHeight / 2 + position.y;
-    
-    // Image top-left in container
     const imageLeft = imageCenterX - scaledWidth / 2;
     const imageTop = imageCenterY - scaledHeight / 2;
     
-    // Calculate crop area relative to the actual image
+    // Crop coordinates
     const cropRelX = (cropArea.x - imageLeft) / scale;
     const cropRelY = (cropArea.y - imageTop) / scale;
     const cropRelWidth = cropArea.width / scale;
     const cropRelHeight = cropArea.height / scale;
     
-    // Ensure crop coordinates are within image bounds
-    const sourceX = Math.max(0, Math.min(naturalDimensions.width - 1, cropRelX));
-    const sourceY = Math.max(0, Math.min(naturalDimensions.height - 1, cropRelY));
-    const sourceWidth = Math.max(1, Math.min(cropRelWidth, naturalDimensions.width - sourceX));
-    const sourceHeight = Math.max(1, Math.min(cropRelHeight, naturalDimensions.height - sourceY));
+    const sourceX = Math.max(0, Math.min(naturalDimensions.width - 0.1, cropRelX));
+    const sourceY = Math.max(0, Math.min(naturalDimensions.height - 0.1, cropRelY));
+    const sourceWidth = Math.max(0.1, Math.min(cropRelWidth, naturalDimensions.width - sourceX));
+    const sourceHeight = Math.max(0.1, Math.min(cropRelHeight, naturalDimensions.height - sourceY));
     
-    // Draw the cropped image at higher resolution
+    // Draw the image
     try {
       ctx.drawImage(
         img,
-        sourceX,
-        sourceY,
-        sourceWidth,
-        sourceHeight,
-        0,
-        0,
-        outputWidth,
-        outputHeight
+        sourceX, sourceY, sourceWidth, sourceHeight,
+        0, 0, outputWidth, outputHeight
       );
     } catch (error) {
       console.error('Error drawing image:', error);
       return null;
     }
     
-    return new Promise((resolve) => {
-      canvas.toBlob(resolve, 'image/jpeg', 0.95); // Higher quality (95% instead of 90%)
-    });
+    // Akıllı kalite optimizasyonu
+    const optimizeQuality = (quality) => {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          resolve({ blob, size: blob.size, quality });
+        }, 'image/jpeg', quality);
+      });
+    };
+    
+    // Iterative quality optimization
+    let bestBlob = null;
+    let currentQuality = 0.95;
+    
+    // İlk denemeler - yüksek kalite
+    const attempts = [0.95, 0.90, 0.85, 0.80, 0.75, 0.70];
+    
+    for (const quality of attempts) {
+      const result = await optimizeQuality(quality);
+      const fileSizeKB = result.size / 1024;
+      
+      console.log(`Quality ${Math.round(quality * 100)}%: ${Math.round(fileSizeKB)}KB`);
+      
+      if (fileSizeKB <= targetFileSizeKB) {
+        bestBlob = result.blob;
+        break;
+      }
+      
+      // Eğer hala çok büyükse, bir sonraki denemeye geç
+      if (fileSizeKB <= targetFileSizeKB * 1.5) {
+        bestBlob = result.blob; // Hedefe yakınsa kabul et
+      }
+    }
+    
+    // Eğer hala çok büyükse, boyutu küçült
+    if (!bestBlob || bestBlob.size / 1024 > targetFileSizeKB * 2) {
+      console.log('Resizing image for better compression...');
+      
+      // Boyutu küçült (örn: %75)
+      const newWidth = Math.round(outputWidth * 0.75);
+      const newHeight = Math.round(outputHeight * 0.75);
+      
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      
+      ctx.drawImage(
+        img,
+        sourceX, sourceY, sourceWidth, sourceHeight,
+        0, 0, newWidth, newHeight
+      );
+      
+      // Daha yüksek kalite ile dene (çünkü boyut küçük)
+      const finalResult = await optimizeQuality(0.88);
+      bestBlob = finalResult.blob;
+    }
+    
+    const finalSizeKB = bestBlob ? Math.round(bestBlob.size / 1024) : 0;
+    console.log(`Final optimized image: ${finalSizeKB}KB`);
+    
+    return bestBlob;
   }, [scale, position, imageLoaded, naturalDimensions, cropArea]);
 
   // Create a new image element to get dimensions first
