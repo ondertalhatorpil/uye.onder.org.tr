@@ -5,7 +5,7 @@ import { authService } from '../services'; // authService'i import et
 import {
   FiX, FiHome, FiUsers, FiActivity, FiSettings, FiShield,
   FiUser, FiSearch, FiGrid, FiLogOut, FiClock, FiMoreHorizontal,
-  FiBriefcase, FiCreditCard, FiMail, FiBarChart2, FiBell
+  FiBriefcase, FiCreditCard, FiMail, FiBarChart2, FiBell, FiBook
 } from 'react-icons/fi';
 
 const APP_RED = 'red-500';
@@ -18,7 +18,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
 
   const handleLogout = () => {
     logout();
-    onClose(); 
+    onClose();
   };
 
   // Profil fotoğrafı URL'ini oluştur
@@ -26,7 +26,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
     if (user?.profil_fotografi) {
       return authService.getProfileImageUrl(user.profil_fotografi);
     }
-    
+
     // Varsayılan avatar
     return `https://ui-avatars.com/api/?name=${user?.isim || 'U'}+${user?.soyisim || ''}&background=dc2626&color=fff&size=96&rounded=true`;
   };
@@ -39,14 +39,14 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   };
 
   const getModalMenuItems = () => {
-    const sections = []; 
+    const sections = [];
 
     // Genel Kullanıcı Menüleri
     const generalItems = [
-      
+
       {
         name: 'Anasayfa',
-        href: '/', 
+        href: '/',
         icon: FiActivity,
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
@@ -60,6 +60,12 @@ const UserProfileModal = ({ isOpen, onClose }) => {
         name: 'Dernekler',
         href: '/dernekler',
         icon: FiGrid,
+        roles: ['super_admin', 'dernek_admin', 'uye']
+      },
+      {
+        name: 'Faaliyet Kılavuzu',
+        href: '/faaliyet-kilavuzu',
+        icon: FiBook,
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
       {
@@ -159,13 +165,13 @@ const UserProfileModal = ({ isOpen, onClose }) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm" // items-end yerine items-center, justify-center
-      onClick={onClose} 
+      onClick={onClose}
     >
       <div
         className="relative w-full h-full lg:max-w-md lg:max-h-[90vh] bg-gray-900 lg:rounded-3xl shadow-2xl p-6 transform transition-all duration-300 ease-out sm:p-8 overflow-y-auto" // h-full ve rounded-t-3xl kaldırıldı, lg:max-h-[90vh] eklendi
         // Mobil için alttan açılma animasyonu yerine, tam ekran açılış animasyonu
         style={{ transform: isOpen ? 'translateY(0%)' : 'translateY(100%)' }} // Bu animasyon hala alttan açılma hissiyatı verir. İsterseniz farklı bir animasyon tipi seçebiliriz (örn: scale(0) -> scale(1))
-        onClick={(e) => e.stopPropagation()} 
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Kapat Butonu */}
         <button
@@ -190,7 +196,7 @@ const UserProfileModal = ({ isOpen, onClose }) => {
               }}
             />
           </div>
-          
+
           <h3 className="text-2xl font-bold text-white mb-1">{user?.isim} {user?.soyisim}</h3>
           <p className="text-gray-400 text-sm">@{user?.isim?.toLowerCase() || 'kullanici'}</p>
           {user?.dernek_isim && (
@@ -214,12 +220,11 @@ const UserProfileModal = ({ isOpen, onClose }) => {
                     <Link
                       key={item.name}
                       to={item.href}
-                      onClick={onClose} 
-                      className={`group flex items-center px-4 py-3 text-base rounded-xl transition-all duration-200 ${
-                        isActive(item.href)
+                      onClick={onClose}
+                      className={`group flex items-center px-4 py-3 text-base rounded-xl transition-all duration-200 ${isActive(item.href)
                           ? `font-bold text-white bg-gray-700`
                           : 'font-normal text-gray-300 hover:bg-gray-800 hover:text-white'
-                      }`}
+                        }`}
                     >
                       <Icon className="mr-4 h-5 w-5 text-gray-400 group-hover:text-white group-[.font-bold]:text-${APP_RED}" />
                       <span className="flex-1">{item.name}</span>

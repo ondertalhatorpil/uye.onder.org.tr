@@ -7,7 +7,7 @@ import {
   FiHome, FiUsers, FiActivity,
   FiSettings, FiShield, FiUser,
   FiSearch, FiPlus, FiGrid, FiLogOut,
-  FiClock, FiAlertCircle, FiMoreHorizontal, FiBell
+  FiClock, FiAlertCircle, FiMoreHorizontal, FiBell,FiBook
 } from 'react-icons/fi';
 
 // Define color palette and font for consistency
@@ -82,6 +82,12 @@ const Sidebar = () => {
         name: 'Dernekler',
         href: '/dernekler',
         icon: FiGrid,
+        roles: ['super_admin', 'dernek_admin', 'uye']
+      },
+       {
+        name: 'Faaliyet Kılavuzu',
+        href: '/faaliyet-kilavuzu',
+        icon: FiBook,
         roles: ['super_admin', 'dernek_admin', 'uye']
       },
       {

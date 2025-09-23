@@ -27,6 +27,7 @@ app.get('/', (req, res) => {
       faaliyetler: '/api/faaliyetler',
       users: '/api/users',
       admin: '/api/admin',
+      faaliyet_kilavuzu: '/api/faaliyet-kilavuzu'
     }
   });
 });
@@ -41,6 +42,8 @@ try {
   const adminRoutes = require('./routes/admin');
   const okullarRoutes = require('./routes/okullar');
   const notificationRoutes = require('./routes/notifications');
+  const faaliyet_kilavuzu = require('./routes/faaliyetKilavuzu');
+
 
 
   app.use('/api/auth', authRoutes);
@@ -51,6 +54,7 @@ try {
   app.use('/api/admin', adminRoutes);
   app.use('/api/okullar', okullarRoutes);
   app.use('/api/notifications', notificationRoutes);
+  app.use('/api/faaliyet-kilavuzu', faaliyet_kilavuzu);
 
 
   console.log('✅ Tüm route\'lar başarıyla yüklendi!');
@@ -89,8 +93,12 @@ app.use('*', (req, res) => {
       '/api/faaliyetler',
       '/api/users',
       '/api/admin',
+      '/api/faaliyet-kilavuzu'
     ]
   });
 });
 
 module.exports = app;
+
+
+

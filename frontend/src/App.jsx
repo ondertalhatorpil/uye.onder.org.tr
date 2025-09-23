@@ -22,6 +22,11 @@ import UyeSearch from './pages/uyeler/UyeSearch';
 import UyeProfile from './pages/uyeler/UyeProfile';
 import Profile from './pages/profile/Profile';
 import Notification from './pages/Notification/index';
+import FaaliyetKılavuzu from './pages/faaliyetKilavuzu/FaaliyetKilavuzuDashboard';
+import FaaliyetKılavuzuTakvim from './pages/faaliyetKilavuzu/FaaliyetTakvimi';
+import FaaliyetDetay from './pages/faaliyetKilavuzu/FaaliyetDetay';
+
+
 
 
 // Admin Pages
@@ -29,6 +34,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import DernekManagement from './pages/admin/DernekManagement';
 import SendNotification from './pages/admin/SendNotification';
+import FaaliyetKilavuzuManagement from './pages/admin/FaaliyetKilavuzuManagement';
 
 
 
@@ -96,6 +102,9 @@ function App() {
               <Route path="faaliyetler" element={<FaaliyetList />} />
               <Route path="faaliyetler/create" element={<FaaliyetCreate />} />
               <Route path="dernekler" element={<DernekList />} />
+              <Route path="faaliyet-kilavuzu" element={<FaaliyetKılavuzu />} />
+              <Route path="faaliyet-kilavuzu/takvim" element={<FaaliyetKılavuzuTakvim />} />
+              <Route path="faaliyet-kilavuzu/detay/:id" element={<FaaliyetDetay />} />
               <Route path="dernekler/:dernekAdi" element={<DernekProfile />} />
               <Route path="uyeler" element={<UyeSearch />} />
               <Route path="uyeler/:id" element={<UyeProfile />} />
@@ -132,7 +141,13 @@ function App() {
                   <DernekManagement />
                 </ProtectedRoute>
               } />
-              
+
+              <Route path="admin/faaliyet-kılavuzu" element={
+                <ProtectedRoute roles={['super_admin']}>
+                  <FaaliyetKilavuzuManagement />
+                </ProtectedRoute>
+              } />
+
               {/* Faaliyet Onay Sistemi Routes (YENİ) */}
               <Route path="admin/faaliyetler/bekleyenler" element={
                 <ProtectedRoute roles={['super_admin']}>
@@ -149,12 +164,12 @@ function App() {
                   <FaaliyetOnayStats />
                 </ProtectedRoute>
               } />
-               <Route path="admin/bildirimler" element={
+              <Route path="admin/bildirimler" element={
                 <ProtectedRoute roles={['super_admin']}>
                   <SendNotification />
                 </ProtectedRoute>
               } />
-              
+
             </Route>
 
             {/* Catch all - redirect to home */}
