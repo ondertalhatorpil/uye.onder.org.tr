@@ -2,6 +2,8 @@
 import { api } from './api';
 
 export const faaliyetService = {
+  // ==================== MEVCUT FONKSİYONLAR ====================
+  
   // Faaliyet listesi
   getFaaliyetler: async (filters = {}) => {
     const params = new URLSearchParams(filters).toString();
@@ -35,6 +37,47 @@ export const faaliyetService = {
         'Content-Type': 'multipart/form-data',
       },
     });
+  },
+
+  // ==================== YENİ: BEĞENİ FONKSİYONLARI ====================
+  
+  // Beğen/Beğeniyi kaldır (toggle)
+  toggleBegeni: async (faaliyetId) => {
+    return await api.post(`/faaliyetler/${faaliyetId}/begeni`);
+  },
+
+  // Beğenenleri listele
+  getBegeniler: async (faaliyetId, page = 1, limit = 20) => {
+    return await api.get(`/faaliyetler/${faaliyetId}/begeniler?page=${page}&limit=${limit}`);
+  },
+
+  // ==================== YENİ: YORUM FONKSİYONLARI ====================
+  
+  // Yorum ekle
+  createYorum: async (faaliyetId, yorum) => {
+    return await api.post(`/faaliyetler/${faaliyetId}/yorum`, { yorum });
+  },
+
+  // Yorumları listele
+  getYorumlar: async (faaliyetId, page = 1, limit = 20) => {
+    return await api.get(`/faaliyetler/${faaliyetId}/yorumlar?page=${page}&limit=${limit}`);
+  },
+
+  // Yorum sil
+  deleteYorum: async (yorumId) => {
+    return await api.delete(`/faaliyetler/yorum/${yorumId}`);
+  },
+
+  // ==================== YENİ: İSTATİSTİK FONKSİYONLARI ====================
+  
+  // Faaliyet etkileşim istatistikleri
+  getFaaliyetInteractions: async (faaliyetId) => {
+    return await api.get(`/faaliyetler/${faaliyetId}/interactions`);
+  },
+
+  // Kullanıcı etkileşim istatistikleri
+  getUserInteractionStats: async (userId) => {
+    return await api.get(`/faaliyetler/user-stats/${userId}`);
   }
 };
 

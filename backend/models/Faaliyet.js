@@ -383,6 +383,167 @@ class Faaliyet {
 
     return stats;
   }
+
+  // Faaliyetleri beğeni ve yorum sayıları ile getir
+static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = null) {
+  try {
+    console.log('getOnaylanmisFaaliyetlerWithInteractions called with filters:', filters);
+    
+    let whereConditions = ['f.durum = ?'];
+    let queryParams = ['onaylandi'];
+
+    // Lokasyon filtreleri
+    if (filters.il) {
+      whereConditions.push('u.il = ?');
+      queryParams.push(filters.il);
+    }
+
+    if (filters.ilce) {
+      whereConditions.push('u.ilce = ?');
+      queryParams.push(filters.ilce);
+    }
+
+    if (filters.dernek) {
+      whereConditions.push('u.gonullu_dernek = ?');
+      queryParams.push(filters.dernek);
+    }
+
+    if (filters.user_id) {
+      whereConditions.push('f.user_id = ?');
+      queryParams.push(filters.user_id);
+    }
+
+    // Tarih filtreleri
+    if (filters.baslangic_tarihi) {
+      whereConditions.push('DATE(f.created_at) >= ?');
+      queryParams.push(filters.baslangic_tarihi);
+    }
+
+    if (filters.bitis_tarihi) {
+      whereConditions.push('DATE(f.created_at) <= ?');
+      queryParams.push(filters.bitis_tarihi);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+    
+    const limit = parseInt(filters.limit) || 20;
+    const offset = parseInt(filters.offset) || 0;
+    
+    // Beğeni ve yorum sayılarını da dahil et
+    let query = `
+      SELECT 
+        f.*,
+        u.isim,
+        u.soyisim,
+        u.gonullu_dernek,
+        u.il,
+        u.ilce,
+        u.role,
+        u.profil_fotografi,
+        
+        -- Beğeni sayısı
+        (SELECT COUNT(*) FROM faaliyet_begeniler WHERE faaliyet_id = f.id) as begeni_sayisi,
+        
+        -- Yorum sayısı
+        (SELECT COUNT(*) FROM faaliyet_yorumlar WHERE faaliyet_id = f.id) as yorum_sayisi
+    `;
+
+    // Eğer userId verilmişse, kullanıcının beğenip beğenmediğini de kontrol et
+    if (userId) {
+      query += `,
+        -- Kullanıcı beğendi mi?
+        EXISTS(SELECT 1 FROM faaliyet_begeniler WHERE faaliyet_id = f.id AND user_id = ?) as user_begendi
+      `;
+      queryParams.push(userId);
+    }
+
+    query += `
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      WHERE ${whereClause}
+      ORDER BY f.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    console.log('Final query:', query);
+    console.log('Query parameters:', queryParams);
+
+    const [rows] = await pool.execute(query, queryParams);
+    
+    console.log('Query executed successfully, rows:', rows.length);
+    
+    return rows.map(row => ({
+      ...row,
+      gorseller: row.gorseller ? JSON.parse(row.gorseller) : [],
+      user_begendi: userId ? (row.user_begendi === 1) : false
+    }));
+
+  } catch (error) {
+    console.error('getOnaylanmisFaaliyetlerWithInteractions detailed error:', error);
+    throw error;
+  }
 }
+
+// Tek bir faaliyeti beğeni/yorum sayıları ile getir
+static async findByIdWithInteractions(id, userId = null) {
+  try {
+    let query = `
+      SELECT 
+        f.*,
+        u.isim,
+        u.soyisim,
+        u.gonullu_dernek,
+        u.il,
+        u.ilce,
+        u.profil_fotografi,
+        admin.isim as onaylayan_admin_isim,
+        admin.soyisim as onaylayan_admin_soyisim,
+        
+        -- Beğeni sayısı
+        (SELECT COUNT(*) FROM faaliyet_begeniler WHERE faaliyet_id = f.id) as begeni_sayisi,
+        
+        -- Yorum sayısı
+        (SELECT COUNT(*) FROM faaliyet_yorumlar WHERE faaliyet_id = f.id) as yorum_sayisi
+    `;
+
+    const params = [id];
+
+    // Eğer userId verilmişse, kullanıcının beğenip beğenmediğini de kontrol et
+    if (userId) {
+      query += `,
+        -- Kullanıcı beğendi mi?
+        EXISTS(SELECT 1 FROM faaliyet_begeniler WHERE faaliyet_id = f.id AND user_id = ?) as user_begendi
+      `;
+      params.push(userId);
+    }
+
+    query += `
+      FROM faaliyet_paylasimlar f
+      JOIN users u ON f.user_id = u.id
+      LEFT JOIN users admin ON f.onaylayan_admin_id = admin.id
+      WHERE f.id = ?
+    `;
+
+    params.push(id);
+
+    const [rows] = await pool.execute(query, params);
+
+    if (rows[0] && rows[0].gorseller) {
+      rows[0].gorseller = JSON.parse(rows[0].gorseller);
+      if (userId) {
+        rows[0].user_begendi = rows[0].user_begendi === 1;
+      }
+    }
+
+    return rows[0];
+  } catch (error) {
+    console.error('findByIdWithInteractions error:', error);
+    throw error;
+  }
+}
+}
+
+
+
 
 module.exports = Faaliyet;
