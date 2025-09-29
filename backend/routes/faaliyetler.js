@@ -1,7 +1,13 @@
-// routes/faaliyetler.js - GÜNCELLENMIŞ VERSİYON
+// routes/faaliyetler.js
 const express = require('express');
 
-// Faaliyet controller'ları
+// Middleware imports
+const auth = require('../middleware/auth');
+const optionalAuth = require('../middleware/optionalAuth');
+const roleCheck = require('../middleware/roleCheck');
+const { handleFaaliyetImageUpload } = require('../middleware/upload');
+
+// Controller imports
 const {
   createFaaliyet,
   getAllFaaliyetler,
@@ -16,14 +22,12 @@ const {
   getAllFaaliyetlerAdmin
 } = require('../controllers/faaliyetController');
 
-// Admin controller'dan faaliyet onay fonksiyonlarını import et
 const {
   getFaaliyetOnayGecmisi,
   getFaaliyetOnayStats,
   topluFaaliyetOnayla
 } = require('../controllers/adminController');
 
-// YENİ: Etkileşim (beğeni/yorum) controller'ları
 const {
   toggleBegeni,
   getBegeniler,
@@ -33,10 +37,6 @@ const {
   getFaaliyetInteractions,
   getUserInteractionStats
 } = require('../controllers/faaliyetInteractionController');
-
-const auth = require('../middleware/auth');
-const roleCheck = require('../middleware/roleCheck');
-const { handleFaaliyetImageUpload } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -57,7 +57,6 @@ router.post('/upload-images', auth, handleFaaliyetImageUpload, (req, res) => {
       message: 'Resimler başarıyla yüklendi',
       imageUrls: imageUrls
     });
-
   } catch (error) {
     console.error('Image upload error:', error);
     res.status(500).json({
@@ -67,16 +66,9 @@ router.post('/upload-images', auth, handleFaaliyetImageUpload, (req, res) => {
   }
 });
 
-// ==================== SPESİFİK ROUTE'LAR (ÖNCE) ====================
-
-// My posts endpoint
+// ==================== KULLANICI ROUTE'LARI ====================
 router.get('/my-posts', auth, getMyFaaliyetler);
-
-// Kullanıcı etkileşim stats - SPESİFİK PATH
 router.get('/user-stats/:userId', auth, getUserInteractionStats);
-
-// Yorum silme - SPESİFİK PATH ÖNCE
-router.delete('/yorum/:yorumId', auth, deleteYorum);
 
 // ==================== ADMIN ROUTE'LARI ====================
 router.get('/admin/stats', auth, roleCheck(['super_admin']), getFaaliyetStats);
@@ -85,35 +77,33 @@ router.get('/admin/onay-gecmisi', auth, roleCheck(['super_admin']), getFaaliyetO
 router.get('/admin/onay-stats', auth, roleCheck(['super_admin']), getFaaliyetOnayStats);
 router.get('/admin/all', auth, roleCheck(['super_admin']), getAllFaaliyetlerAdmin);
 
-// Admin işlemler
 router.put('/admin/:id/onayla', auth, roleCheck(['super_admin']), onaylaFaaliyet);
 router.put('/admin/:id/reddet', auth, roleCheck(['super_admin']), reddetFaaliyet);
 router.post('/admin/toplu-onayla', auth, roleCheck(['super_admin']), topluFaaliyetOnayla);
 
-// ==================== YENİ: ETKİLEŞİM ROUTE'LARI ====================
+// ==================== ETKİLEŞİM ROUTE'LARI ====================
+// Yorum silme - SPESİFİK PATH (/:id'den önce olmalı)
+router.delete('/yorum/:yorumId', auth, deleteYorum);
 
 // Beğeni işlemleri
-router.post('/:id/begeni', auth, toggleBegeni);           // Beğen/beğeniyi kaldır
-router.get('/:id/begeniler', getBegeniler);                // Beğenenleri listele
+router.post('/:id/begeni', auth, toggleBegeni);
+router.get('/:id/begeniler', getBegeniler);
 
 // Yorum işlemleri
-router.post('/:id/yorum', auth, createYorum);              // Yorum ekle
-router.get('/:id/yorumlar', getYorumlar);                  // Yorumları listele
+router.post('/:id/yorum', auth, createYorum);
+router.get('/:id/yorumlar', getYorumlar);
 
 // Etkileşim istatistikleri
-router.get('/:id/interactions', getFaaliyetInteractions);  // Faaliyet etkileşim stats
+router.get('/:id/interactions', optionalAuth, getFaaliyetInteractions);
 
-// ==================== GENEL FAALIYET ROUTE'LARI ====================
-
-// Public routes
-router.get('/', getAllFaaliyetler);
+// ==================== FAALIYET CRUD ROUTE'LARI ====================
+// Public routes - opsiyonel auth ile
+router.get('/', optionalAuth, getAllFaaliyetler);
+router.get('/:id', optionalAuth, getFaaliyetById);
 
 // Protected routes
 router.post('/', auth, createFaaliyet);
 router.put('/:id', auth, handleFaaliyetImageUpload, updateFaaliyet);
 router.delete('/:id', auth, deleteFaaliyet);
-
-// Get by ID - EN SON (çünkü /:id her şeyi yakalar)
-router.get('/:id', getFaaliyetById);
 
 module.exports = router;

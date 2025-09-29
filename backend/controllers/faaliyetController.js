@@ -54,8 +54,10 @@ const getAllFaaliyetler = async (req, res) => {
     console.log('Cleaned filters:', filters);
 
     // Sadece onaylanmış faaliyetleri getir
-    const faaliyetler = await Faaliyet.getOnaylanmisFaaliyetler(filters);
-    const total = await Faaliyet.getCount({ ...filters, durum: 'onaylandi' });
+    const userId = req.user ? req.user.id : null;
+    console.log('🔍 User ID in getAllFaaliyetler:', userId, 'req.user exists:', !!req.user);
+const faaliyetler = await Faaliyet.getOnaylanmisFaaliyetler(filters);
+     const total = await Faaliyet.getCount({ ...filters, durum: 'onaylandi' });
 
     console.log('Results:', { 
       faaliyetlerCount: faaliyetler.length, 

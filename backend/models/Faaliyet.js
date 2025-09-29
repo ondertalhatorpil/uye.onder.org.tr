@@ -387,7 +387,7 @@ class Faaliyet {
   // Faaliyetleri beğeni ve yorum sayıları ile getir
 static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = null) {
   try {
-    console.log('getOnaylanmisFaaliyetlerWithInteractions called with filters:', filters);
+    console.log('getOnaylanmisFaaliyetlerWithInteractions called with userId:', userId);
     
     let whereConditions = ['f.durum = ?'];
     let queryParams = ['onaylandi'];
@@ -425,11 +425,10 @@ static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = nul
     }
 
     const whereClause = whereConditions.join(' AND ');
-    
     const limit = parseInt(filters.limit) || 20;
     const offset = parseInt(filters.offset) || 0;
     
-    // Beğeni ve yorum sayılarını da dahil et
+    // Base query
     let query = `
       SELECT 
         f.*,
@@ -440,23 +439,20 @@ static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = nul
         u.ilce,
         u.role,
         u.profil_fotografi,
-        
-        -- Beğeni sayısı
         (SELECT COUNT(*) FROM faaliyet_begeniler WHERE faaliyet_id = f.id) as begeni_sayisi,
-        
-        -- Yorum sayısı
         (SELECT COUNT(*) FROM faaliyet_yorumlar WHERE faaliyet_id = f.id) as yorum_sayisi
     `;
 
-    // Eğer userId verilmişse, kullanıcının beğenip beğenmediğini de kontrol et
+    // Kullanıcı beğendi mi kontrolü
     if (userId) {
       query += `,
-        -- Kullanıcı beğendi mi?
-        EXISTS(SELECT 1 FROM faaliyet_begeniler WHERE faaliyet_id = f.id AND user_id = ?) as user_begendi
+        (SELECT COUNT(*) > 0 FROM faaliyet_begeniler WHERE faaliyet_id = f.id AND user_id = ?) as user_begendi
       `;
-      queryParams.push(userId);
+    } else {
+      query += `, 0 as user_begendi`;
     }
 
+    // FROM ve WHERE
     query += `
       FROM faaliyet_paylasimlar f
       JOIN users u ON f.user_id = u.id
@@ -464,6 +460,11 @@ static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = nul
       ORDER BY f.created_at DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
+
+    // userId parametresini en sona ekle
+    if (userId) {
+      queryParams.push(userId);
+    }
 
     console.log('Final query:', query);
     console.log('Query parameters:', queryParams);
@@ -475,11 +476,11 @@ static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = nul
     return rows.map(row => ({
       ...row,
       gorseller: row.gorseller ? JSON.parse(row.gorseller) : [],
-      user_begendi: userId ? (row.user_begendi === 1) : false
+      user_begendi: row.user_begendi === 1 || row.user_begendi === true
     }));
 
   } catch (error) {
-    console.error('getOnaylanmisFaaliyetlerWithInteractions detailed error:', error);
+    console.error('getOnaylanmisFaaliyetlerWithInteractions error:', error);
     throw error;
   }
 }
