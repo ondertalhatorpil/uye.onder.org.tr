@@ -265,13 +265,6 @@ const FaaliyetKilavuzuDashboard = () => {
                   <FiClock className="h-4 w-4 sm:h-5 sm:w-5 text-[#FA2C37]" />
                   <span>Haftalık Program</span>
                 </h2>
-                <Link
-                  to="/faaliyet-kilavuzu/takvim"
-                  className="text-[#FA2C37] hover:text-[#FA2C37]/80 text-xs sm:text-sm font-medium flex items-center gap-1 transition-colors self-start"
-                >
-                  <span>Takvim Görünümü</span>
-                  <FiCalendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                </Link>
               </div>
             </div>
 

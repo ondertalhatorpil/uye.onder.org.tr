@@ -23,7 +23,6 @@ import UyeProfile from './pages/uyeler/UyeProfile';
 import Profile from './pages/profile/Profile';
 import Notification from './pages/Notification/index';
 import FaaliyetKılavuzu from './pages/faaliyetKilavuzu/FaaliyetKilavuzuDashboard';
-import FaaliyetKılavuzuTakvim from './pages/faaliyetKilavuzu/FaaliyetTakvimi';
 import FaaliyetDetay from './pages/faaliyetKilavuzu/FaaliyetDetay';
 
 
@@ -103,7 +102,6 @@ function App() {
               <Route path="faaliyetler/create" element={<FaaliyetCreate />} />
               <Route path="dernekler" element={<DernekList />} />
               <Route path="faaliyet-kilavuzu" element={<FaaliyetKılavuzu />} />
-              <Route path="faaliyet-kilavuzu/takvim" element={<FaaliyetKılavuzuTakvim />} />
               <Route path="faaliyet-kilavuzu/detay/:id" element={<FaaliyetDetay />} />
               <Route path="dernekler/:dernekAdi" element={<DernekProfile />} />
               <Route path="uyeler" element={<UyeSearch />} />

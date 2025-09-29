@@ -213,13 +213,6 @@ const FaaliyetDetay = () => {
               <div className="border-t border-gray-700 pt-4 sm:pt-6 mt-4 sm:mt-6">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
                   <Link
-                    to="/faaliyet-kilavuzu/takvim"
-                    className="flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors text-sm sm:text-base"
-                  >
-                    <FiCalendar className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Takvimi Görüntüle</span>
-                  </Link>
-                  <Link
                     to="/faaliyet-kilavuzu"
                     className="flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-[#FA2C37] hover:bg-[#FA2C37]/80 text-white rounded-lg transition-colors text-sm sm:text-base"
                   >
