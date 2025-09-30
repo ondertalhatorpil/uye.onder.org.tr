@@ -36,7 +36,7 @@ const ActivityCard = ({ faaliyet, formatTimeAgo }) => (
               }`}
             >
               <img
-                src={`${UPLOADS_BASE_URL}api/uploads/faaliyet-images/${gorsel}`}
+                src={`${UPLOADS_BASE_URL}/uploads/faaliyet-images/${gorsel}`}
                 alt={`Faaliyet ${index + 1}`}
                 className={`w-full object-cover rounded-lg sm:rounded-xl group-hover:scale-105 transition-transform duration-200 border border-gray-700 ${ // Kenarlık
                     faaliyet.gorseller.length === 1 ? 'h-48 sm:h-64' : 'h-28 sm:h-36' // Yükseklik mobil için ayarlandı
