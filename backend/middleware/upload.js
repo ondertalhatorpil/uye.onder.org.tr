@@ -6,7 +6,8 @@ const fs = require('fs');
 const uploadDirs = [
   './uploads/temp',
   './uploads/dernek-logos', 
-  './uploads/faaliyet-images'
+  './uploads/faaliyet-images',
+  './uploads/kilavuz'
 ];
 
 uploadDirs.forEach(dir => {
@@ -176,8 +177,59 @@ const handleDernekLogoUpload = (req, res, next) => {
 };
 
 
+const kilavuzStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, './uploads/kilavuz');
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `kilavuz-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const uploadKilavuzImage = multer({
+  storage: kilavuzStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const fileExt = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedTypes.includes(fileExt)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Sadece resim dosyaları yüklenebilir (jpg, jpeg, png, gif, webp)'), false);
+    }
+  }
+}).single('gorsel'); // 'gorsel' field name olarak kullanacağız
+
+const handleKilavuzImageUpload = (req, res, next) => {
+  uploadKilavuzImage(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Görsel boyutu çok büyük (Max: 5MB)' 
+        });
+      }
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Görsel yükleme hatası: ' + err.message 
+      });
+    } else if (err) {
+      return res.status(400).json({ 
+        success: false, 
+        error: err.message 
+      });
+    }
+    next();
+  });
+};
+
 module.exports = { 
   handleExcelUpload, 
   handleFaaliyetImageUpload,
-  handleDernekLogoUpload
+  handleDernekLogoUpload,
+  handleKilavuzImageUpload
 };

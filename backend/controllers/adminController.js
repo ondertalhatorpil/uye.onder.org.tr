@@ -446,7 +446,6 @@ const getFaaliyetOnayGecmisi = async (req, res) => {
         const [countResult] = await pool.execute(countQuery, params);
         const total = countResult[0].total;
 
-        console.log('getFaaliyetOnayGecmisi results:', { faaliyetlerCount: faaliyetler.length, total });
 
         res.json({
             success: true,

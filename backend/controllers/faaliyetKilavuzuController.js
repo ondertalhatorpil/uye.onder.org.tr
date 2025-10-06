@@ -1,5 +1,7 @@
 // controllers/faaliyetKilavuzuController.js
 const FaaliyetKilavuzu = require('../models/FaaliyetKilavuzu');
+const fs = require('fs').promises;
+const path = require('path');
 
 // Tüm faaliyetleri getir (PUBLIC - herkes görebilir)
 const getAllFaaliyetler = async (req, res) => {
@@ -130,19 +132,41 @@ const getFaaliyetlerByDateRange = async (req, res) => {
 // Yeni faaliyet oluştur (ADMIN ONLY)
 const createFaaliyet = async (req, res) => {
   try {
-    const { tarih, etkinlik_adi, konu, icerik } = req.body;
+    const { tarih, etkinlik_adi, icerik } = req.body;
+    const gorsel_path = req.file ? `/uploads/kilavuz/${req.file.filename}` : null;
     
-    // Validasyon
-    if (!tarih || !etkinlik_adi || !konu || !icerik) {
+    // Validasyon - en az tarih ve etkinlik adı zorunlu
+    if (!tarih || !etkinlik_adi) {
+      // Eğer görsel yüklendiyse ama hata olursa, görseli sil
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(400).json({
         success: false,
-        error: 'Tüm alanlar zorunludur'
+        error: 'Tarih ve etkinlik adı zorunludur'
+      });
+    }
+    
+    // En az içerik veya görsel olmalı
+    if (!icerik && !gorsel_path) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
+      return res.status(400).json({
+        success: false,
+        error: 'En az içerik veya görsel eklemelisiniz'
       });
     }
     
     // Tarih formatı kontrolü
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(tarih)) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(400).json({
         success: false,
         error: 'Geçersiz tarih formatı. YYYY-MM-DD formatında olmalıdır.'
@@ -152,6 +176,10 @@ const createFaaliyet = async (req, res) => {
     // Aynı tarihte faaliyet var mı kontrol et
     const dateExists = await FaaliyetKilavuzu.checkDateExists(tarih);
     if (dateExists) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(400).json({
         success: false,
         error: 'Bu tarihe ait faaliyet zaten mevcut'
@@ -161,8 +189,8 @@ const createFaaliyet = async (req, res) => {
     const faaliyetId = await FaaliyetKilavuzu.create({
       tarih,
       etkinlik_adi,
-      konu,
       icerik,
+      gorsel_path,
       created_by: req.user.id
     });
     
@@ -175,6 +203,11 @@ const createFaaliyet = async (req, res) => {
       data: faaliyet
     });
   } catch (error) {
+    // Hata durumunda yüklenen dosyayı sil
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+    }
+    
     console.error('Create faaliyet error:', error);
     res.status(500).json({
       success: false,
@@ -187,19 +220,28 @@ const createFaaliyet = async (req, res) => {
 const updateFaaliyet = async (req, res) => {
   try {
     const { id } = req.params;
-    const { tarih, etkinlik_adi, konu, icerik } = req.body;
+    const { tarih, etkinlik_adi, icerik, remove_image } = req.body;
+    const gorsel_path = req.file ? `/uploads/kilavuz/${req.file.filename}` : null;
     
     // Validasyon
-    if (!tarih || !etkinlik_adi || !konu || !icerik) {
+    if (!tarih || !etkinlik_adi) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(400).json({
         success: false,
-        error: 'Tüm alanlar zorunludur'
+        error: 'Tarih ve etkinlik adı zorunludur'
       });
     }
     
     // Tarih formatı kontrolü
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(tarih)) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(400).json({
         success: false,
         error: 'Geçersiz tarih formatı. YYYY-MM-DD formatında olmalıdır.'
@@ -209,6 +251,10 @@ const updateFaaliyet = async (req, res) => {
     // Mevcut faaliyet var mı kontrol et
     const mevcutFaaliyet = await FaaliyetKilavuzu.getById(id);
     if (!mevcutFaaliyet) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(404).json({
         success: false,
         error: 'Faaliyet bulunamadı'
@@ -218,17 +264,50 @@ const updateFaaliyet = async (req, res) => {
     // Aynı tarihte başka faaliyet var mı kontrol et (kendi ID'si hariç)
     const dateExists = await FaaliyetKilavuzu.checkDateExists(tarih, id);
     if (dateExists) {
+      if (req.file) {
+        await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+      }
+      
       return res.status(400).json({
         success: false,
         error: 'Bu tarihe ait başka bir faaliyet zaten mevcut'
       });
     }
     
+    // Görsel yönetimi
+    let finalGorselPath = mevcutFaaliyet.gorsel_path;
+    
+    // Yeni görsel yüklendiyse
+    if (gorsel_path) {
+      // Eski görseli sil
+      if (mevcutFaaliyet.gorsel_path) {
+        const eskiGorselPath = path.join(__dirname, '..', mevcutFaaliyet.gorsel_path);
+        await fs.unlink(eskiGorselPath).catch(err => console.error('Old image delete error:', err));
+      }
+      finalGorselPath = gorsel_path;
+    }
+    // Görsel silinmek isteniyorsa
+    else if (remove_image === 'true') {
+      if (mevcutFaaliyet.gorsel_path) {
+        const eskiGorselPath = path.join(__dirname, '..', mevcutFaaliyet.gorsel_path);
+        await fs.unlink(eskiGorselPath).catch(err => console.error('Image delete error:', err));
+      }
+      finalGorselPath = null;
+    }
+    
+    // En az içerik veya görsel olmalı
+    if (!icerik && !finalGorselPath) {
+      return res.status(400).json({
+        success: false,
+        error: 'En az içerik veya görsel bulunmalıdır'
+      });
+    }
+    
     const updated = await FaaliyetKilavuzu.update(id, {
       tarih,
       etkinlik_adi,
-      konu,
-      icerik
+      icerik,
+      gorsel_path: finalGorselPath
     });
     
     if (!updated) {
@@ -247,6 +326,10 @@ const updateFaaliyet = async (req, res) => {
       data: faaliyet
     });
   } catch (error) {
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(err => console.error('File delete error:', err));
+    }
+    
     console.error('Update faaliyet error:', error);
     res.status(500).json({
       success: false,
@@ -267,6 +350,12 @@ const deleteFaaliyet = async (req, res) => {
         success: false,
         error: 'Faaliyet bulunamadı'
       });
+    }
+    
+    // Görsel varsa sil
+    if (mevcutFaaliyet.gorsel_path) {
+      const gorselPath = path.join(__dirname, '..', mevcutFaaliyet.gorsel_path);
+      await fs.unlink(gorselPath).catch(err => console.error('Image delete error:', err));
     }
     
     const deleted = await FaaliyetKilavuzu.delete(id);

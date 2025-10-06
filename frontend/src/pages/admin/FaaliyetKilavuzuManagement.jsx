@@ -5,8 +5,8 @@ import { useAuth } from '../../context/AuthContext';
 import { faaliyetKilavuzuService } from '../../services/faaliyetKilavuzuService';
 import {
   FiPlus, FiEdit2, FiTrash2, FiCalendar, FiBook, FiActivity,
-  FiSearch, FiRefreshCw, FiEye, FiX, FiSave, FiFilter,
-  FiChevronLeft, FiChevronRight, FiUsers, FiClock
+  FiSearch, FiRefreshCw, FiEye, FiX, FiSave, FiImage,
+  FiChevronLeft, FiChevronRight, FiUsers, FiClock, FiUpload
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
@@ -28,9 +28,11 @@ const FaaliyetKilavuzuManagement = () => {
   const [formData, setFormData] = useState({
     tarih: '',
     etkinlik_adi: '',
-    konu: '',
-    icerik: ''
+    icerik: '',
+    gorsel: null
   });
+  const [imagePreview, setImagePreview] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -61,6 +63,42 @@ const FaaliyetKilavuzuManagement = () => {
     toast.success('Faaliyetler güncellendi');
   };
 
+  // Görsel yükleme
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Dosya boyutu kontrolü (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('Görsel boyutu 5MB\'dan küçük olmalıdır');
+        return;
+      }
+
+      // Dosya tipi kontrolü
+      if (!file.type.startsWith('image/')) {
+        toast.error('Sadece görsel dosyaları yüklenebilir');
+        return;
+      }
+
+      setFormData(prev => ({ ...prev, gorsel: file }));
+      
+      // Önizleme oluştur
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      
+      setRemoveImage(false);
+    }
+  };
+
+  // Görseli kaldır
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, gorsel: null }));
+    setImagePreview(null);
+    setRemoveImage(true);
+  };
+
   // Form validation
   const validateForm = () => {
     const errors = {};
@@ -73,12 +111,9 @@ const FaaliyetKilavuzuManagement = () => {
       errors.etkinlik_adi = 'Etkinlik adı en az 2 karakter olmalı';
     }
     
-    if (!formData.konu || formData.konu.trim().length < 2) {
-      errors.konu = 'Konu en az 2 karakter olmalı';
-    }
-    
-    if (!formData.icerik || formData.icerik.trim().length < 10) {
-      errors.icerik = 'İçerik en az 10 karakter olmalı';
+    // İçerik veya görsel en az birisi olmalı
+    if (!formData.icerik && !formData.gorsel && !imagePreview) {
+      errors.icerik = 'En az içerik veya görsel eklemelisiniz';
     }
 
     return errors;
@@ -122,7 +157,13 @@ const FaaliyetKilavuzuManagement = () => {
       }
 
       setSubmitting(true);
-      const response = await faaliyetKilavuzuService.update(editingFaaliyet.id, formData);
+      
+      const updateData = {
+        ...formData,
+        remove_image: removeImage
+      };
+      
+      const response = await faaliyetKilavuzuService.update(editingFaaliyet.id, updateData);
       
       if (response.success) {
         toast.success('Faaliyet başarıyla güncellendi');
@@ -167,9 +208,11 @@ const FaaliyetKilavuzuManagement = () => {
     setFormData({
       tarih: '',
       etkinlik_adi: '',
-      konu: '',
-      icerik: ''
+      icerik: '',
+      gorsel: null
     });
+    setImagePreview(null);
+    setRemoveImage(false);
     setFormErrors({});
   };
 
@@ -182,9 +225,18 @@ const FaaliyetKilavuzuManagement = () => {
     setFormData({
       tarih: faaliyet.tarih,
       etkinlik_adi: faaliyet.etkinlik_adi,
-      konu: faaliyet.konu,
-      icerik: faaliyet.icerik
+      icerik: faaliyet.icerik || '',
+      gorsel: null
     });
+    
+    // Mevcut görseli önizleme olarak ayarla
+    if (faaliyet.gorsel_path) {
+      setImagePreview(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}${faaliyet.gorsel_path}`);
+    } else {
+      setImagePreview(null);
+    }
+    
+    setRemoveImage(false);
     setFormErrors({});
     setEditingFaaliyet(faaliyet);
     setShowEditModal(true);
@@ -215,8 +267,7 @@ const FaaliyetKilavuzuManagement = () => {
   const filteredFaaliyetler = faaliyetler.filter(faaliyet => {
     const matchesSearch = !searchTerm || 
       faaliyet.etkinlik_adi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faaliyet.konu.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faaliyet.icerik.toLowerCase().includes(searchTerm.toLowerCase());
+      (faaliyet.icerik && faaliyet.icerik.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesMonth = !selectedMonth || 
       faaliyet.tarih.startsWith(selectedMonth);
@@ -296,7 +347,7 @@ const FaaliyetKilavuzuManagement = () => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Etkinlik, konu veya içerik ara..."
+                  placeholder="Etkinlik veya içerik ara..."
                   className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-[#FA2C37] focus:border-transparent"
                 />
               </div>
@@ -339,13 +390,13 @@ const FaaliyetKilavuzuManagement = () => {
                     Tarih
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                    Hafta
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Etkinlik
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Konu
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    İçerik
+                    İçerik/Görsel
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Oluşturan
@@ -382,6 +433,15 @@ const FaaliyetKilavuzuManagement = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        {faaliyet.hafta_no ? (
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[#FA2C37]/20 text-[#FA2C37]">
+                            {faaliyet.hafta_no}. Hafta
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-xs">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <FiActivity className="h-4 w-4 text-[#FA2C37]" />
                           <span className="text-sm font-medium text-gray-100">
@@ -389,12 +449,23 @@ const FaaliyetKilavuzuManagement = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-300">
-                        {faaliyet.konu}
-                      </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-300 line-clamp-2 max-w-xs">
-                          {faaliyet.icerik}
+                        <div className="flex items-center gap-2">
+                          {faaliyet.gorsel_path && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
+                              <FiImage className="h-3 w-3 mr-1" />
+                              Görsel
+                            </span>
+                          )}
+                          {faaliyet.icerik && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400">
+                              <FiBook className="h-3 w-3 mr-1" />
+                              Metin
+                            </span>
+                          )}
+                          {!faaliyet.gorsel_path && !faaliyet.icerik && (
+                            <span className="text-gray-500 text-xs">-</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-300">
@@ -435,8 +506,8 @@ const FaaliyetKilavuzuManagement = () => {
 
         {/* Create/Edit Modal */}
         {(showCreateModal || showEditModal) && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl border border-gray-700 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-gray-800 rounded-xl p-6 w-full max-w-2xl border border-gray-700 my-8">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold text-gray-100">
                   {showCreateModal ? 'Yeni Faaliyet Oluştur' : 'Faaliyet Düzenle'}
@@ -493,35 +564,63 @@ const FaaliyetKilavuzuManagement = () => {
                   )}
                 </div>
 
-                {/* Konu */}
+                {/* Görsel Upload */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Konu *
+                    Görsel (Opsiyonel)
                   </label>
-                  <input
-                    type="text"
-                    value={formData.konu}
-                    onChange={(e) => setFormData(prev => ({ ...prev, konu: e.target.value }))}
-                    placeholder="Örn: Demokrasi, Kitap okuma, Sağlıklı yaşam..."
-                    className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-[#FA2C37] focus:border-transparent ${
-                      formErrors.konu ? 'border-red-500' : 'border-gray-600'
-                    }`}
-                  />
-                  {formErrors.konu && (
-                    <p className="mt-1 text-sm text-red-400">{formErrors.konu}</p>
+                  
+                  {imagePreview ? (
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <img 
+                          src={imagePreview} 
+                          alt="Önizleme" 
+                          className="w-full h-48 object-cover rounded-lg border-2 border-gray-600"
+                        />
+                        <button
+                          onClick={handleRemoveImage}
+                          className="absolute top-2 right-2 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
+                          title="Görseli Kaldır"
+                        >
+                          <FiX className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-700 hover:bg-gray-600 transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <FiUpload className="w-8 h-8 mb-2 text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-400">
+                            <span className="font-semibold">Tıklayın</span> veya sürükleyin
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG, GIF (Max 5MB)</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    </div>
                   )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    Görsel yüklerseniz, bu görsel faaliyet içeriği olarak kullanılır
+                  </p>
                 </div>
 
                 {/* İçerik */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    İçerik *
+                    İçerik (Opsiyonel)
                   </label>
                   <textarea
                     value={formData.icerik}
                     onChange={(e) => setFormData(prev => ({ ...prev, icerik: e.target.value }))}
                     rows={5}
-                    placeholder="Faaliyetin detaylı açıklaması..."
+                    placeholder="Faaliyetin detaylı açıklaması... (Görsel yoksa zorunlu)"
                     className={`w-full px-3 py-2 bg-gray-700 border rounded-lg text-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-[#FA2C37] focus:border-transparent resize-none ${
                       formErrors.icerik ? 'border-red-500' : 'border-gray-600'
                     }`}
@@ -530,7 +629,13 @@ const FaaliyetKilavuzuManagement = () => {
                     <p className="mt-1 text-sm text-red-400">{formErrors.icerik}</p>
                   )}
                   <p className="mt-1 text-xs text-gray-500">
-                    {formData.icerik.length} / 1000 karakter
+                    {formData.icerik.length} karakter
+                  </p>
+                </div>
+
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                  <p className="text-sm text-blue-300">
+                    <strong>Not:</strong> En az içerik veya görsel eklemelisiniz. Her ikisini de ekleyebilirsiniz.
                   </p>
                 </div>
 
@@ -574,7 +679,7 @@ const FaaliyetKilavuzuManagement = () => {
                 Faaliyeti Sil
               </h3>
               <p className="text-gray-300 mb-6">
-                <strong>{deletingFaaliyet.etkinlik_adi}</strong> faaliyetini silmek istediğinize emin misiniz?
+                <strong className="text-[#FA2C37]">{deletingFaaliyet.etkinlik_adi}</strong> faaliyetini silmek istediğinize emin misiniz?
                 Bu işlem geri alınamaz.
               </p>
               <div className="flex gap-3">

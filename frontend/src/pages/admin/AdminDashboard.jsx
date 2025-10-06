@@ -5,7 +5,7 @@ import { adminApi } from '../../services/adminApi';
 
 import {
   FiUsers, FiGrid, FiActivity, FiTrendingUp, FiMapPin, FiClock, FiRefreshCw,
-  FiBell, FiAlertCircle, FiArrowRight, FiEye, FiShield
+  FiBell, FiAlertCircle, FiArrowRight, FiEye, FiShield, FiBookOpen // FiBookOpen eklendi
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 
@@ -111,8 +111,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Quick Action Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Quick Action Cards - Grid güncellendi */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           
           {/* Kullanıcı Yönetimi */}
           <Link to="/admin/users" className="group">
@@ -190,6 +190,26 @@ const AdminDashboard = () => {
               </div>
               <p className="text-xs text-gray-500 mt-1">
                 Yeni bildirim oluştur
+              </p>
+            </div>
+          </Link>
+
+          {/* Faaliyet Kılavuzu Kartı - YENİ EKLENEN KART */}
+          <Link to="/admin/faaliyet-kilavuzu" className="group">
+            <div className="bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-yellow-500 rounded-xl p-6 transition-all duration-200 hover:scale-105">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-yellow-600/20 rounded-lg group-hover:bg-yellow-600/30 transition-colors">
+                  <FiBookOpen className="h-6 w-6 text-yellow-400" />
+                </div>
+                <FiArrowRight className="h-4 w-4 text-gray-400 group-hover:text-yellow-400 transition-colors" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-100 mb-2">Faaliyet Kılavuzu</h3>
+              <p className="text-gray-400 text-sm mb-3">Yönetim ve onay rehberi</p>
+              <div className="text-2xl font-bold text-yellow-400">
+                <FiBookOpen className="h-8 w-8" />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Detaylı rehbere git
               </p>
             </div>
           </Link>

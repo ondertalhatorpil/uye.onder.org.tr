@@ -4,9 +4,17 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { faaliyetKilavuzuService } from '../../services/faaliyetKilavuzuService';
 import {
-  FiArrowLeft, FiCalendar, FiBook, FiActivity, FiUsers, FiEdit2, FiTrash2, FiClock, FiChevronRight
+  FiArrowLeft, FiCalendar, FiBook, FiActivity, FiUsers, FiEdit2, FiTrash2, 
+  FiClock, FiChevronRight, FiImage, FiZap
 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+
+// Tema Renkleri ve Genel Stil Ayarları
+const ACCENT_COLOR = '#FA2C37';
+const ACCENT_COLOR_HOVER = '#E52834';
+const BG_DARK = 'bg-gray-900';
+const CARD_BG = 'bg-gray-800'; // Ana kart arka planı
+const CONTENT_BG = 'bg-gray-850'; // İçerik kutularının arka planı
 
 const FaaliyetDetay = () => {
   const { id } = useParams();
@@ -17,6 +25,8 @@ const FaaliyetDetay = () => {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   useEffect(() => {
     loadFaaliyet();
@@ -31,12 +41,12 @@ const FaaliyetDetay = () => {
         setFaaliyet(response.data);
       } else {
         toast.error('Faaliyet bulunamadı');
-        navigate('/faaliyet-kilavuzu');
+        navigate('/faaliyet-kilavuzu', { replace: true });
       }
     } catch (error) {
       console.error('Faaliyet yükleme hatası:', error);
       toast.error('Faaliyet yüklenirken hata oluştu');
-      navigate('/faaliyet-kilavuzu');
+      navigate('/faaliyet-kilavuzu', { replace: true });
     } finally {
       setLoading(false);
     }
@@ -73,21 +83,11 @@ const FaaliyetDetay = () => {
     });
   };
 
-  const formatTime = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className={`min-h-screen ${BG_DARK} flex items-center justify-center p-4`}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-[#FA2C37] mx-auto"></div>
+          <div className={`animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-b-2 border-[${ACCENT_COLOR}] mx-auto`}></div>
           <p className="mt-4 text-sm sm:text-lg text-gray-400">Faaliyet yükleniyor...</p>
         </div>
       </div>
@@ -96,15 +96,19 @@ const FaaliyetDetay = () => {
 
   if (!faaliyet) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className={`min-h-screen ${BG_DARK} flex items-center justify-center p-4`}>
         <div className="text-center">
-          <p className="text-gray-400 text-sm sm:text-base mb-4">Faaliyet bulunamadı</p>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: `${ACCENT_COLOR}20` }}>
+            <FiZap className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400" style={{ color: ACCENT_COLOR }} />
+          </div>
+          <p className="text-gray-400 text-lg sm:text-xl font-semibold mb-6">Aradığınız faaliyet bulunamadı.</p>
           <Link
             to="/faaliyet-kilavuzu"
-            className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-[#FA2C37] text-white rounded-lg hover:bg-[#FA2C37]/80 transition-colors text-sm sm:text-base"
+            style={{ backgroundColor: ACCENT_COLOR, '--tw-ring-color': ACCENT_COLOR }}
+            className="inline-flex items-center px-6 py-3 ring-2 ring-transparent hover:ring-opacity-50 hover:bg-[${ACCENT_COLOR_HOVER}] text-white rounded-xl font-semibold transition-all duration-300 text-base"
           >
-            <FiArrowLeft className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-            <span>Geri Dön</span>
+            <FiArrowLeft className="mr-2 h-4 w-4" />
+            <span>Faaliyet Kılavuzuna Dön</span>
           </Link>
         </div>
       </div>
@@ -112,130 +116,87 @@ const FaaliyetDetay = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200">
-      <div className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
-        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+    <div className={`min-h-screen ${BG_DARK} text-gray-100`}>
+      <div className="px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+        <div className="max-w-5xl mx-auto space-y-8">
           
-          {/* Header */}
+          {/* Header ve Yönetim Butonları */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
             <Link
               to="/faaliyet-kilavuzu"
-              className="flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg transition-colors text-sm sm:text-base w-fit"
+              className="flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-xl transition-colors text-sm font-medium w-fit shadow-md"
             >
-              <FiArrowLeft className="mr-4 sm:mr-2 h-3 w-4 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Faaliyet Kılavuzuna Dön</span>
-              <span className="sm:hidden">Geri</span>
+              <FiArrowLeft className="mr-2 h-4 w-4" />
+              <span>Geri Dön</span>
             </Link>
-
-            {hasRole(['super_admin', 'dernek_admin']) && (
-              <div className="flex gap-2 sm:gap-3">
-                <Link
-                  to={`/admin/faaliyet-kilavuzu/edit/${id}`}
-                  className="flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm sm:text-base"
-                >
-                  <FiEdit2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Düzenle</span>
-                </Link>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm sm:text-base"
-                >
-                  <FiTrash2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Sil</span>
-                </button>
-              </div>
-            )}
           </div>
 
-          {/* Ana Kart */}
-          <div className="bg-gray-800 border border-gray-700 rounded-lg sm:rounded-xl overflow-hidden">
+          {/* Ana Faaliyet Kartı */}
+          <div className={`${CARD_BG} rounded-2xl shadow-xl border border-gray-700/50 overflow-hidden`}>
             
-            {/* Başlık */}
-            <div className="bg-gradient-to-r from-[#FA2C37] to-[#FA2C37]/80 p-4 sm:p-6 text-white">
-              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-3 lg:space-y-0">
+            {/* Başlık ve Tarih Bloğu */}
+            <div className="p-4 sm:p-6 lg:p-8 border-b border-gray-700">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-2 lg:space-y-0">
                 <div className="flex-1">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 leading-tight">{faaliyet.etkinlik_adi}</h1>
-                  <p className="text-red-100 text-sm sm:text-base lg:text-lg leading-tight">{faaliyet.konu}</p>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-1 leading-tight text-white">
+                    {faaliyet.etkinlik_adi}
+                  </h1>
                 </div>
-                <div className="lg:text-right lg:ml-4">
-                  <div className="text-xs sm:text-sm text-red-100">
+                <div className="lg:text-right lg:ml-4 flex-shrink-0">
+                  <div className="text-base sm:text-lg font-bold text-gray-300 flex items-center gap-2">
+                    <FiCalendar className="h-5 w-5" style={{ color: ACCENT_COLOR }} />
                     {formatDate(faaliyet.tarih)}
                   </div>
+                  {faaliyet.hafta_no && (
+                    <div className="text-sm text-gray-400 mt-1 flex items-center justify-start lg:justify-end gap-1">
+                      <FiClock className="h-4 w-4 mr-2" style={{ color: ACCENT_COLOR }} />
+                      <span style={{ color: ACCENT_COLOR }} className="font-extrabold">{faaliyet.hafta_no}.</span> Hafta Faaliyeti
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* İçerik */}
-            <div className="p-4 sm:p-6">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-8">
               
-              {/* Ana İçerik */}
-              <div className="mb-6 sm:mb-8">
-                <h2 className="text-base sm:text-lg font-semibold text-gray-100 mb-3 sm:mb-4 flex items-center gap-2">
-                  <FiBook className="h-4 w-4 sm:h-5 sm:w-5 text-[#FA2C37]" />
-                  <span>Faaliyet İçeriği</span>
-                </h2>
-                <div className="bg-gray-700/30 rounded-lg p-3 sm:p-4">
-                  <p className="text-gray-200 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
-                    {faaliyet.icerik}
-                  </p>
+              {faaliyet.gorsel_path && (
+                <div className="space-y-4">
+                  <div className={`${CONTENT_BG} rounded-xl p-3 sm:p-4`}>
+                    <img 
+                      src={`${API_URL}${faaliyet.gorsel_path}`}
+                      alt={faaliyet.etkinlik_adi}
+                      className="w-full rounded-lg object-cover max-h-[70vh] h-auto shadow-xl border-2 border-gray-700"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Alt Butonlar */}
-              <div className="border-t border-gray-700 pt-4 sm:pt-6 mt-4 sm:mt-6">
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
-                  <Link
-                    to="/faaliyet-kilavuzu"
-                    className="flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-[#FA2C37] hover:bg-[#FA2C37]/80 text-white rounded-lg transition-colors text-sm sm:text-base"
-                  >
-                    <FiActivity className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Tüm Faaliyetler</span>
-                  </Link>
+              {faaliyet.icerik && (
+                <div className="space-y-4">
+                  <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-3">
+                    <FiBook className="h-5 w-5" style={{ color: ACCENT_COLOR }} />
+                    Faaliyet İçeriği
+                  </h2>
+                  <div className={`${CONTENT_BG}  sm:p-6`}>
+                    <p className="text-gray-300 leading-relaxed whitespace-pre-wrap text-sm sm:text-base">
+                      {faaliyet.icerik}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
+              )}
             </div>
           </div>
+          
+          <HaftaninDigerFaaliyetleri faaliyet={faaliyet} ACCENT_COLOR={ACCENT_COLOR} />
 
-          {/* Bu Hafta Diğer Faaliyetler */}
-          <HaftaninDigerFaaliyetleri faaliyet={faaliyet} />
-
-          {/* Delete Modal */}
           {showDeleteModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-              <div className="bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md border border-gray-700">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-3 sm:mb-4">
-                  Faaliyeti Sil
-                </h3>
-                <p className="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
-                  <strong className="text-[#FA2C37]">{faaliyet.etkinlik_adi}</strong> faaliyetini silmek istediğinize emin misiniz?
-                  Bu işlem geri alınamaz.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <button
-                    onClick={() => setShowDeleteModal(false)}
-                    disabled={deleting}
-                    className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
-                  >
-                    İptal
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="flex-1 px-3 py-2 sm:px-4 sm:py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center justify-center gap-1 sm:gap-2 disabled:opacity-50 text-sm sm:text-base"
-                  >
-                    {deleting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
-                        <span>Siliniyor...</span>
-                      </>
-                    ) : (
-                      'Sil'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
+            <DeleteConfirmationModal
+              faaliyet={faaliyet}
+              deleting={deleting}
+              handleDelete={handleDelete}
+              setShowDeleteModal={setShowDeleteModal}
+              ACCENT_COLOR={ACCENT_COLOR}
+            />
           )}
 
         </div>
@@ -244,8 +205,9 @@ const FaaliyetDetay = () => {
   );
 };
 
-// Haftanın diğer faaliyetlerini gösteren bileşen
-const HaftaninDigerFaaliyetleri = ({ faaliyet }) => {
+
+
+const HaftaninDigerFaaliyetleri = ({ faaliyet, ACCENT_COLOR }) => {
   const [haftaninFaaliyetleri, setHaftaninFaaliyetleri] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -255,20 +217,42 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet }) => {
     }
   }, [faaliyet]);
 
+  const getGunAdi = (tarih) => {
+    const gunler = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    return gunler[new Date(tarih).getDay()];
+  };
+
+  const getGunTextRengi = (tarih) => {
+    const gunNo = new Date(tarih).getDay();
+    const renkler = [
+      'text-red-400', 
+      'text-blue-400',
+      'text-green-400',
+      'text-yellow-400',
+      'text-purple-400',
+      'text-pink-400',
+      'text-orange-400'
+    ];
+    return renkler[gunNo];
+  };
+
+  const formatTarihKisa = (tarih) => {
+    return new Date(tarih).toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit'
+    });
+  };
+
   const loadHaftaninFaaliyetleri = async () => {
     try {
       setLoading(true);
       
-      // Seçilen faaliyetin tarihini al
       const faaliyetTarihi = new Date(faaliyet.tarih);
-      
-      // Haftanın başlangıcını (Pazartesi) bul
       const haftaBaslangici = new Date(faaliyetTarihi);
-      const gunNo = haftaBaslangici.getDay(); // 0: Pazar, 1: Pazartesi, ...
-      const pazartesiyeKadarGun = gunNo === 0 ? 6 : gunNo - 1; // Pazar ise 6, diğer günler için gun-1
+      const gunNo = haftaBaslangici.getDay(); 
+      const pazartesiyeKadarGun = gunNo === 0 ? 6 : gunNo - 1; 
       haftaBaslangici.setDate(haftaBaslangici.getDate() - pazartesiyeKadarGun);
       
-      // Haftanın bitişini (Pazar) bul
       const haftaBitisi = new Date(haftaBaslangici);
       haftaBitisi.setDate(haftaBitisi.getDate() + 6);
       
@@ -278,8 +262,10 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet }) => {
       const response = await faaliyetKilavuzuService.getByDateRange(startDate, endDate);
       
       if (response.success) {
-        // Mevcut faaliyeti hariç tutarak filtrele
-        const digerFaaliyetler = (response.data || []).filter(f => f.id !== parseInt(faaliyet.id));
+        const digerFaaliyetler = (response.data || [])
+          .filter(f => f.id !== parseInt(faaliyet.id))
+          // Tarihe göre sıralayalım
+          .sort((a, b) => new Date(a.tarih) - new Date(b.tarih)); 
         setHaftaninFaaliyetleri(digerFaaliyetler);
       }
     } catch (error) {
@@ -289,104 +275,63 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet }) => {
     }
   };
 
-  const getGunAdi = (tarih) => {
-    const gunler = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-    return gunler[new Date(tarih).getDay()];
-  };
-
-  const getGunRengi = (tarih) => {
-    const gunNo = new Date(tarih).getDay();
-    const renkler = [
-      'bg-red-500',      // Pazar - Kırmızı
-      'bg-blue-500',     // Pazartesi - Mavi  
-      'bg-green-500',    // Salı - Yeşil
-      'bg-yellow-500',   // Çarşamba - Sarı
-      'bg-purple-500',   // Perşembe - Mor
-      'bg-pink-500',     // Cuma - Pembe
-      'bg-orange-500'    // Cumartesi - Turuncu
-    ];
-    return renkler[gunNo];
-  };
-
-  const getGunTextRengi = (tarih) => {
-    const gunNo = new Date(tarih).getDay();
-    const renkler = [
-      'text-red-400',      // Pazar 
-      'text-blue-400',     // Pazartesi
-      'text-green-400',    // Salı
-      'text-yellow-400',   // Çarşamba
-      'text-purple-400',   // Perşembe
-      'text-pink-400',     // Cuma
-      'text-orange-400'    // Cumartesi
-    ];
-    return renkler[gunNo];
-  };
-
-  const formatTarih = (tarih) => {
-    return new Date(tarih).toLocaleDateString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit'
-    });
-  };
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg sm:rounded-xl overflow-hidden">
+    <div className={`${CARD_BG} rounded-2xl shadow-xl border border-gray-700/50 overflow-hidden`}>
       <div className="p-4 sm:p-6">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-100 mb-4 flex items-center gap-2">
-          <FiCalendar className="h-4 w-4 sm:h-5 sm:w-5 text-[#FA2C37]" />
-          <span>Bu Hafta Diğer Faaliyetler</span>
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700/50 pb-3">
+          <FiCalendar className="h-6 w-6" style={{ color: ACCENT_COLOR }} />
+          <span>Haftanın Diğer Faaliyetleri</span>
         </h3>
         
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#FA2C37]"></div>
+            <div className={`animate-spin rounded-full h-8 w-8 border-b-2 border-[${ACCENT_COLOR}]`}></div>
           </div>
         ) : haftaninFaaliyetleri.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {haftaninFaaliyetleri.map((haftalikFaaliyet) => (
               <Link
                 key={haftalikFaaliyet.id}
                 to={`/faaliyet-kilavuzu/detay/${haftalikFaaliyet.id}`}
-                className="block bg-gray-700/30 hover:bg-gray-700/50 border border-gray-600 hover:border-[#FA2C37]/50 rounded-lg p-3 sm:p-4 transition-all duration-200"
+                className="block bg-gray-900/50 hover:bg-gray-900/80 border-l-4 border-gray-700 hover:border-l-4 hover:border-r-2 rounded-xl p-4 transition-all duration-300 group shadow-lg"
+                style={{ borderLeftColor: ACCENT_COLOR, borderRightColor: ACCENT_COLOR }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 sm:w-3 sm:h-3 ${getGunRengi(haftalikFaaliyet.tarih)} rounded-full`}></div>
-                    <span className="text-xs sm:text-sm font-medium text-gray-300">
-                      {getGunAdi(haftalikFaaliyet.tarih)}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">{formatTarih(haftalikFaaliyet.tarih)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h4 className={`font-semibold ${getGunTextRengi(haftalikFaaliyet.tarih)} text-sm sm:text-base mb-1 leading-tight`}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 space-y-2 pr-4">
+                    {/* Gün Adı ve Tarih */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <FiClock className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-semibold text-white">
+                        {getGunAdi(haftalikFaaliyet.tarih)} ({formatTarihKisa(haftalikFaaliyet.tarih)})
+                      </span>
+                    </div>
+
+                    {/* Etkinlik Adı */}
+                    <h4 className={`font-extrabold ${getGunTextRengi(haftalikFaaliyet.tarih)} text-base sm:text-lg leading-tight group-hover:underline`}>
                       {haftalikFaaliyet.etkinlik_adi}
                     </h4>
-                    <p className="text-xs sm:text-sm text-gray-400 leading-tight">
-                      {haftalikFaaliyet.konu}
-                    </p>
                   </div>
-                  <FiChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 ml-2" />
+                  <FiChevronRight className="h-6 w-6 text-gray-400 flex-shrink-0 mt-3 group-hover:text-white transition-colors" />
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <FiCalendar className="h-8 w-8 sm:h-12 sm:w-12 text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-500 text-sm sm:text-base">Bu hafta başka faaliyet bulunmuyor</p>
+          <div className="text-center py-10">
+            <FiZap className="h-10 w-10 text-gray-700 mx-auto mb-3" />
+            <p className="text-gray-500 text-base font-medium">Bu hafta bu faaliyet dışında başka bir plan yok.</p>
           </div>
         )}
 
         {/* Tüm Faaliyetleri Gör Butonu */}
-        <div className="mt-4 pt-4 border-t border-gray-700">
+        <div className="mt-8 pt-6 border-t border-gray-700">
           <Link
             to="/faaliyet-kilavuzu"
-            className="w-full flex items-center justify-center px-4 py-2 sm:py-3 bg-gray-700/50 hover:bg-gray-700 text-gray-200 rounded-lg transition-colors text-sm sm:text-base"
+            className={`w-full flex items-center justify-center px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors text-base font-semibold shadow-md`}
           >
-            <FiActivity className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-            <span>Tüm Faaliyetleri Gör</span>
+            <FiActivity className="mr-2 h-5 w-5" />
+            <span>Tüm Faaliyet Kılavuzuna Git</span>
           </Link>
         </div>
       </div>

@@ -140,11 +140,11 @@ function App() {
                 </ProtectedRoute>
               } />
 
-              <Route path="admin/faaliyet-kılavuzu" element={
-                <ProtectedRoute roles={['super_admin']}>
-                  <FaaliyetKilavuzuManagement />
-                </ProtectedRoute>
-              } />
+            <Route path="admin/faaliyet-kilavuzu" element={
+  <ProtectedRoute roles={['super_admin']}>
+    <FaaliyetKilavuzuManagement />
+  </ProtectedRoute>
+} />
 
               {/* Faaliyet Onay Sistemi Routes (YENİ) */}
               <Route path="admin/faaliyetler/bekleyenler" element={

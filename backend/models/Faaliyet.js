@@ -103,8 +103,6 @@ class Faaliyet {
       LIMIT ${limit} OFFSET ${offset}
     `;
 
-    console.log('Final query:', query);
-    console.log('Query parameters:', queryParams);
 
     const [rows] = await pool.execute(query, queryParams);
     
@@ -465,9 +463,6 @@ static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = nul
     if (userId) {
       queryParams.push(userId);
     }
-
-    console.log('Final query:', query);
-    console.log('Query parameters:', queryParams);
 
     const [rows] = await pool.execute(query, queryParams);
     

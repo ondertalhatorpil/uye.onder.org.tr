@@ -15,6 +15,7 @@ const {
 
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
+const { handleKilavuzImageUpload } = require('../middleware/upload');
 
 const router = express.Router();
 
@@ -27,9 +28,34 @@ router.get('/tarih-aralik', getFaaliyetlerByDateRange);
 router.get('/:id', getFaaliyetById);
 
 // ADMIN ROUTES - Sadece admin erişebilir
-router.post('/', auth, roleCheck(['super_admin', 'dernek_admin']), createFaaliyet);
-router.put('/:id', auth, roleCheck(['super_admin', 'dernek_admin']), updateFaaliyet);
-router.delete('/:id', auth, roleCheck(['super_admin', 'dernek_admin']), deleteFaaliyet);
-router.get('/admin/stats', auth, roleCheck(['super_admin']), getFaaliyetStats);
+router.post(
+  '/', 
+  auth, 
+  roleCheck(['super_admin', 'dernek_admin']), 
+  handleKilavuzImageUpload,  // Görsel upload middleware
+  createFaaliyet
+);
+
+router.put(
+  '/:id', 
+  auth, 
+  roleCheck(['super_admin', 'dernek_admin']), 
+  handleKilavuzImageUpload,  // Görsel upload middleware
+  updateFaaliyet
+);
+
+router.delete(
+  '/:id', 
+  auth, 
+  roleCheck(['super_admin', 'dernek_admin']), 
+  deleteFaaliyet
+);
+
+router.get(
+  '/admin/stats', 
+  auth, 
+  roleCheck(['super_admin']), 
+  getFaaliyetStats
+);
 
 module.exports = router;

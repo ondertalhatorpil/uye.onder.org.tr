@@ -5,7 +5,6 @@ const path = require('path');
 
 const getAllFaaliyetler = async (req, res) => {
   try {
-    console.log('Query params received:', req.query);
 
     const {
       page = 1,
@@ -51,20 +50,12 @@ const getAllFaaliyetler = async (req, res) => {
       filters.bitis_tarihi = bitis_tarihi.trim();
     }
 
-    console.log('Cleaned filters:', filters);
 
     // Sadece onaylanmış faaliyetleri getir
     const userId = req.user ? req.user.id : null;
     console.log('🔍 User ID in getAllFaaliyetler:', userId, 'req.user exists:', !!req.user);
 const faaliyetler = await Faaliyet.getOnaylanmisFaaliyetler(filters);
      const total = await Faaliyet.getCount({ ...filters, durum: 'onaylandi' });
-
-    console.log('Results:', { 
-      faaliyetlerCount: faaliyetler.length, 
-      total,
-      page: parseInt(page),
-      limit: parseInt(limit)
-    });
 
     res.json({
       success: true,
