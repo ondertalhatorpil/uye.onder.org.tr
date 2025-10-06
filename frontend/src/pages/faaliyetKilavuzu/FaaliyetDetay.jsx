@@ -158,14 +158,7 @@ const FaaliyetDetay = () => {
                   <p className="text-red-100 text-sm sm:text-base lg:text-lg leading-tight">{faaliyet.konu}</p>
                 </div>
                 <div className="lg:text-right lg:ml-4">
-                  <div className="flex items-center gap-1 sm:gap-2 text-red-100 text-xs sm:text-sm mb-1">
-                    <FiCalendar className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Tarih</span>
-                  </div>
-                  <div className="text-lg sm:text-xl font-semibold">
-                    {formatTime(faaliyet.tarih)}
-                  </div>
-                  <div className="text-xs sm:text-sm text-red-100 mt-1">
+                  <div className="text-xs sm:text-sm text-red-100">
                     {formatDate(faaliyet.tarih)}
                   </div>
                 </div>
@@ -187,27 +180,6 @@ const FaaliyetDetay = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Meta Bilgiler */}
-              {faaliyet.created_at && (
-                <div className="border-t border-gray-700 pt-4 sm:pt-6">
-                  <div>
-                    <div className="flex items-center gap-1 sm:gap-2 text-gray-400 text-xs sm:text-sm mb-2">
-                      <FiClock className="h-3 w-3 sm:h-4 sm:w-4" />
-                      <span>Oluşturulma Tarihi</span>
-                    </div>
-                    <p className="text-gray-200 text-sm sm:text-base">
-                      {new Date(faaliyet.created_at).toLocaleDateString('tr-TR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                </div>
-              )}
 
               {/* Alt Butonlar */}
               <div className="border-t border-gray-700 pt-4 sm:pt-6 mt-4 sm:mt-6">
