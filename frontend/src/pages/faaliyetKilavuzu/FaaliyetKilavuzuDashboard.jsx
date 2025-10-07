@@ -372,51 +372,49 @@ const HaftalikProgramSection = ({
               </button>
 
               {/* Hafta Faaliyetleri - Accordion İçeriği */}
-              <div
-                className={`transition-all duration-500 ease-in-out overflow-hidden ${expandedWeeks.has(index) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`} >
-                <div className="p-4 sm:p-6 pt-0 border-t border-gray-700/50">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {hafta.faaliyetler?.map((faaliyet) => (
-                      <Link
-                        key={faaliyet.id}
-                        to={`/faaliyet-kilavuzu/detay/${faaliyet.id}`}
-                        // Kart stili: Daha koyu bir arka plan, belirgin gölge, accent border hover efekti
-                        className="group bg-gray-900 shadow-xl border-t-2 border-transparent hover:border-t-4 hover:border-b-2 hover:border-opacity-100 p-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02]"
-                        style={{
-                          '--tw-border-t-color': ACCENT_COLOR,
-                          '--tw-border-b-color': ACCENT_COLOR,
-                          borderBottomColor: 'transparent',
-                          borderColor: 'var(--tw-border-t-color)'
-                        }}
-                      >
-                        <div className="space-y-3">
-                          {/* Gün Adı ve Tarih */}
-                          <div className="flex items-center justify-between pb-1"> {/* Eklenen padding kaldırılarak başlığa yaklaştı */}
-                            <span className="text-base font-extrabold text-white flex items-center gap-2">
-                              <FiCalendar className="h-5 w-5" style={{ color: ACCENT_COLOR }} />
-                              {getDayName(faaliyet.gun_no)}
+             <div
+    // Dark mode için genel konteynere daha koyu bir arka plan verilebilir (örneğin ana sayfanın tamamına)
+    className={`transition-all duration-500 ease-in-out overflow-hidden ${expandedWeeks.has(index) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}
+>
+    {/* İçerik alanının üst sınırını koyu bir tonda tutalım */}
+    <div className="p-4 sm:p-6 pt-0 border-t border-gray-700">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {hafta.faaliyetler?.map((faaliyet) => (
+                <Link
+                    key={faaliyet.id}
+                    to={`/faaliyet-kilavuzu/detay/${faaliyet.id}`}
+                    // Kart stili: Koyu gri arka plan, hafif sınır, kırmızı vurgulu hover
+                    className="group bg-gray-800 border border-gray-700 p-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl hover:border-red-600" // Hover'da kırmızı sınır
+                >
+                    <div className="space-y-3">
+                        {/* Gün Adı ve Tarih */}
+                        <div className="flex items-center justify-between pb-1">
+                            {/* Metinleri açık renk (beyaz/açık gri) yapmalıyız */}
+                            <span className="text-sm font-semibold text-gray-400 flex items-center gap-2">
+                                <FiCalendar className="h-4 w-4 text-red-500" /> {/* Kırmızı ikon */}
+                                {getDayName(faaliyet.gun_no)}
                             </span>
+                        </div>
 
-                          </div>
-
-                          {/* Etkinlik Adı ve Detay Butonu (YENİ KONUM) */}
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-bold text-base sm:text-lg leading-tight w-4/5 pr-2 group-hover:text-white transition-colors" style={{ color: ACCENT_COLOR }}>
-                              {faaliyet.etkinlik_adi}
+                        {/* Etkinlik Adı ve Detay Butonu */}
+                        <div className="flex items-center justify-between">
+                            {/* Ana başlık metni beyaz/açık sarımsı beyaz olmalı */}
+                            <h4 className="font-bold text-base leading-tight w-4/5 pr-2 text-white group-hover:text-red-500 transition-colors"> {/* Hover'da kırmızı başlık */}
+                                {faaliyet.etkinlik_adi}
                             </h4>
 
                             {/* Detay Ok İkonu ve Metin */}
-                            <span className="text-sm font-semibold flex items-center gap-1 text-gray-500 group-hover:text-white transition-colors flex-shrink-0">
-                              Detay
-                              <FiChevronRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                            <span className="text-xs font-medium flex items-center gap-1 text-red-500 transition-colors flex-shrink-0"> {/* Kırmızı detay metni */}
+                                Detay
+                                <FiChevronRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                             </span>
-                          </div>
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                    </div>
+                </Link>
+            ))}
+        </div>
+    </div>
+</div>
             </div>
           ))}
 

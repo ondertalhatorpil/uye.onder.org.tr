@@ -43,7 +43,6 @@ class Faaliyet {
 
   static async getOnaylanmisFaaliyetler(filters = {}) {
   try {
-    console.log('getOnaylanmisFaaliyetler called with filters:', filters);
     
     let whereConditions = ['f.durum = ?'];
     let queryParams = ['onaylandi'];
@@ -106,7 +105,6 @@ class Faaliyet {
 
     const [rows] = await pool.execute(query, queryParams);
     
-    console.log('Query executed successfully, rows:', rows.length);
     
     return rows.map(row => ({
       ...row,
@@ -465,9 +463,7 @@ static async getOnaylanmisFaaliyetlerWithInteractions(filters = {}, userId = nul
     }
 
     const [rows] = await pool.execute(query, queryParams);
-    
-    console.log('Query executed successfully, rows:', rows.length);
-    
+        
     return rows.map(row => ({
       ...row,
       gorseller: row.gorseller ? JSON.parse(row.gorseller) : [],

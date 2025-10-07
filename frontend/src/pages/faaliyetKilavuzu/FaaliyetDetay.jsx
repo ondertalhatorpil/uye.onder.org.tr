@@ -277,16 +277,17 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet, ACCENT_COLOR }) => {
 
 
   return (
-    <div className={`${CARD_BG} rounded-2xl shadow-xl border border-gray-700/50 overflow-hidden`}>
+   <div className="bg-gray-900 rounded-2xl shadow-xl border border-gray-700 overflow-hidden"> {/* Kartın ana rengini biraz daha koyu yaptık */}
       <div className="p-4 sm:p-6">
-        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700/50 pb-3">
-          <FiCalendar className="h-6 w-6" style={{ color: ACCENT_COLOR }} />
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3 border-b border-gray-700 pb-3">
+          <FiCalendar className="h-6 w-6 text-red-500" /> {/* Kırmızı Vurgu */}
           <span>Haftanın Diğer Faaliyetleri</span>
         </h3>
         
         {loading ? (
           <div className="flex justify-center py-8">
-            <div className={`animate-spin rounded-full h-8 w-8 border-b-2 border-[${ACCENT_COLOR}]`}></div>
+            {/* Yükleme animasyonunu kırmızı yaptık */}
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
           </div>
         ) : haftaninFaaliyetleri.length > 0 ? (
           <div className="space-y-4">
@@ -294,25 +295,28 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet, ACCENT_COLOR }) => {
               <Link
                 key={haftalikFaaliyet.id}
                 to={`/faaliyet-kilavuzu/detay/${haftalikFaaliyet.id}`}
-                className="block bg-gray-900/50 hover:bg-gray-900/80 border-l-4 border-gray-700 hover:border-l-4 hover:border-r-2 rounded-xl p-4 transition-all duration-300 group shadow-lg"
-                style={{ borderLeftColor: ACCENT_COLOR, borderRightColor: ACCENT_COLOR }}
+                // Kart stili: Koyu gri/siyah arka plan, kırmızı sol sınır, temiz hover
+                className="block bg-gray-800 hover:bg-gray-700/70 border-l-4 border-red-600 rounded-lg p-4 transition-all duration-300 group shadow-md" 
+                // Önceki koddaki style={{ borderLeftColor: ACCENT_COLOR, borderRightColor: ACCENT_COLOR }} yerine doğrudan Tailwind class'ı kullandık
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 space-y-2 pr-4">
                     {/* Gün Adı ve Tarih */}
                     <div className="flex items-center gap-2 mb-2">
-                      <FiClock className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm font-semibold text-white">
+                      <FiClock className="h-4 w-4 text-gray-400" /> {/* İkonu sakin bir tonda bıraktık */}
+                      <span className="text-sm font-medium text-gray-300"> {/* Metni beyaz/açık gri tonunda bıraktık */}
                         {getGunAdi(haftalikFaaliyet.tarih)} ({formatTarihKisa(haftalikFaaliyet.tarih)})
                       </span>
                     </div>
 
                     {/* Etkinlik Adı */}
-                    <h4 className={`font-extrabold ${getGunTextRengi(haftalikFaaliyet.tarih)} text-base sm:text-lg leading-tight group-hover:underline`}>
+                    {/* Başlığı okunurluk için beyaz yaptık ve hover'da kırmızı vurgu ekledik */}
+                    <h4 className="font-bold text-white text-base sm:text-lg leading-tight group-hover:text-red-500 transition-colors"> 
                       {haftalikFaaliyet.etkinlik_adi}
                     </h4>
                   </div>
-                  <FiChevronRight className="h-6 w-6 text-gray-400 flex-shrink-0 mt-3 group-hover:text-white transition-colors" />
+                  {/* Sağ oku kırmızı yapıp hover'da daha belirgin hale getirdik */}
+                  <FiChevronRight className="h-6 w-6 text-red-500 flex-shrink-0 mt-3 group-hover:translate-x-1 transition-transform" />
                 </div>
               </Link>
             ))}
@@ -320,7 +324,7 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet, ACCENT_COLOR }) => {
         ) : (
           <div className="text-center py-10">
             <FiZap className="h-10 w-10 text-gray-700 mx-auto mb-3" />
-            <p className="text-gray-500 text-base font-medium">Bu hafta bu faaliyet dışında başka bir plan yok.</p>
+            <p className="text-gray-400 text-base font-medium">Bu hafta bu faaliyet dışında başka bir plan yok.</p>
           </div>
         )}
 
@@ -328,9 +332,10 @@ const HaftaninDigerFaaliyetleri = ({ faaliyet, ACCENT_COLOR }) => {
         <div className="mt-8 pt-6 border-t border-gray-700">
           <Link
             to="/faaliyet-kilavuzu"
-            className={`w-full flex items-center justify-center px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-colors text-base font-semibold shadow-md`}
+            // Kurumsal koyu tema butonu: Koyu arka plan, kırmızı metin vurgusu ve hover
+            className={`w-full flex items-center justify-center px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-base font-semibold shadow-md border-b-2 border-red-500`}
           >
-            <FiActivity className="mr-2 h-5 w-5" />
+            <FiActivity className="mr-2 h-5 w-5 text-red-500" /> {/* Kırmızı ikon */}
             <span>Tüm Faaliyet Kılavuzuna Git</span>
           </Link>
         </div>
