@@ -32,7 +32,7 @@ const FaaliyetKilavuzuDashboard = () => {
   // Local state'te sabit değişken tanımlamaktan kaçınalım. 
   // API URL'yi bu şekilde kullanmak genelde sorun yaratmaz, 
   // ancak projenin yapısına göre farklı bir yerde tanımlı olması daha iyi olabilir.
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://uye.onder.org.tr/api';
 
   // --- Veri Yükleme İşlemleri ---
   useEffect(() => {
