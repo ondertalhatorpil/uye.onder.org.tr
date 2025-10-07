@@ -26,7 +26,7 @@ const FaaliyetDetay = () => {
   const [deleting, setDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = 'https://uye.onder.org.tr';
 
   useEffect(() => {
     loadFaaliyet();
