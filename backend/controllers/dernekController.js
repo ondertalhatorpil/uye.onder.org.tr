@@ -552,10 +552,11 @@ const uploadDernekLogo = async (req, res) => {
 const getDernekProfile = async (req, res) => {
   try {
     const { dernekAdi } = req.params;
-    const decodedDernekAdi = decodeURIComponent(dernekAdi);
-
-    // Derneği bul
-    const dernek = await Dernek.getByName(decodedDernekAdi);
+    
+    // Decode ve geri dönüştür
+    const decodedName = decodeURIComponent(dernekAdi).replace(/___/g, '/');
+    
+    const dernek = await Dernek.getByName(decodedName);
     
     if (!dernek) {
       return res.status(404).json({
@@ -564,7 +565,7 @@ const getDernekProfile = async (req, res) => {
       });
     }
 
-    // Sosyal medya JSON parse et
+    // Sosyal medya parse
     if (dernek.dernek_sosyal_medya_hesaplari) {
       try {
         dernek.dernek_sosyal_medya_hesaplari = JSON.parse(dernek.dernek_sosyal_medya_hesaplari);

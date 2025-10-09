@@ -101,46 +101,44 @@ const DernekGrid = ({ dernekler, viewMode, filters, onClearFilters }) => {
             </div>
           </div>
           
-          {/* Liste Görünümü İçin Butonlar */}
-          {viewMode === 'list' && (
-            <div className="flex flex-col space-y-3 mt-4 sm:mt-0"> {/* Mobil için üst boşluk, sm'den sonra sıfır */}
-              <Link
-                to={`/dernekler/${encodeURIComponent(dernek.dernek_adi)}`}
-                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#FA2C37] hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
-              >
-                <FiExternalLink className="mr-2 h-4 w-4" />
-                Görüntüle
-              </Link>
-              <Link
-                to={`/uyeler?dernek=${encodeURIComponent(dernek.dernek_adi)}`}
-                className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-200 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all hover:scale-105 shadow-md" 
-              >
-                <FiUsers className="mr-2 h-4 w-4" />
-                Üyeler
-              </Link>
-            </div>
-          )}
+         {viewMode === 'list' && (
+  <div className="flex flex-col space-y-3 mt-4 sm:mt-0">
+    <Link
+      to={`/dernekler/${dernek.dernek_adi.replace(/\//g, '___')}`}  // DEĞİŞTİ
+      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#FA2C37] hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
+    >
+      <FiExternalLink className="mr-2 h-4 w-4" />
+      Görüntüle
+    </Link>
+    <Link
+      to={`/uyeler?dernek=${encodeURIComponent(dernek.dernek_adi)}`}
+      className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-200 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all hover:scale-105 shadow-md" 
+    >
+      <FiUsers className="mr-2 h-4 w-4" />
+      Üyeler
+    </Link>
+  </div>
+)}
         </div>
         
-        {/* Grid Görünümü İçin Butonlar */}
-        {viewMode === 'grid' && (
-          <div className="flex space-x-3 mt-4">
-            <Link
-              to={`/dernekler/${encodeURIComponent(dernek.dernek_adi)}`}
-              className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#FA2C37] hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
-            >
-              <FiExternalLink className="mr-2 h-4 w-4" />
-              Görüntüle
-            </Link>
-            <Link
-              to={`/uyeler?dernek=${encodeURIComponent(dernek.dernek_adi)}`}
-              className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-200 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all hover:scale-105 shadow-md" 
-            >
-              <FiUsers className="mr-2 h-4 w-4" />
-              Üyeler
-            </Link>
-          </div>
-        )}
+       {viewMode === 'grid' && (
+  <div className="flex space-x-3 mt-4">
+    <Link
+      to={`/dernekler/${dernek.dernek_adi.replace(/\//g, '___')}`}  // DEĞİŞTİ
+      className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-[#FA2C37] hover:bg-red-700 rounded-lg transition-all hover:scale-105 shadow-md"
+    >
+      <FiExternalLink className="mr-2 h-4 w-4" />
+      Görüntüle
+    </Link>
+    <Link
+      to={`/uyeler?dernek=${encodeURIComponent(dernek.dernek_adi)}`}
+      className="flex-1 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-200 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all hover:scale-105 shadow-md" 
+    >
+      <FiUsers className="mr-2 h-4 w-4" />
+      Üyeler
+    </Link>
+  </div>
+)}
       </div>
     </div>
   );

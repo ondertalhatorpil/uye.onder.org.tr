@@ -12,9 +12,9 @@ export const dernekService = {
     return await api.get(`/dernekler/${dernekId}`);
   },
 
-  // Dernek profil sayfası
   getDernekProfile: async (dernekAdi) => {
-    return await api.get(`/dernekler/profile/${encodeURIComponent(dernekAdi)}`);
+    const safeName = dernekAdi.replace(/\//g, '___');
+    return await api.get(`/dernekler/profile/${encodeURIComponent(safeName)}`);
   },
 
   getMyDernek: async () => {
