@@ -169,9 +169,6 @@ const FaaliyetList = () => {
             ) : (
               <>
                 Daha Fazla Göster
-                <span className="ml-2 text-xs sm:text-sm text-gray-500">
-                  ({pagination.total - faaliyetler.length} kaldı)
-                </span>
               </>
             )}
           </button>

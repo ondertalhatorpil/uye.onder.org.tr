@@ -260,28 +260,27 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
                 </span>
               </div>
               
-              {/* Daha Fazla Butonu */}
               <div className="ml-auto flex-shrink-0">
                 <button className="p-2 -mr-1 rounded-full hover:bg-gray-700/50 text-gray-500 hover:text-white transition-colors">
                   <FiMoreHorizontal className="h-4 w-4 sm:h-5 sm:w-5" /> 
                 </button>
               </div>
             </div>
-
-            {/* BAŞLIK */}
-            {faaliyet.baslik && (
-              <div className="mb-2">
-                <h2 className="text-white text-base sm:text-lg font-bold leading-5 sm:leading-6">
-                  {faaliyet.baslik}
-                </h2>
-              </div>
-            )}
             
             {/* ETİKET 1: Şehir Hashtag (Açıklamanın Üzerinde) */}
             {faaliyet.il && (
               <div className="mb-2">
                 <span className="text-red-500 text-sm font-medium transition-colors hover:text-red-400">
-                  # {faaliyet.il?.replace(/\s+/g, '')}{faaliyet.ilce && faaliyet.ilce.replace(/\s+/g, '')}
+                  #{faaliyet.il?.replace(/\s+/g, '')}{faaliyet.ilce && faaliyet.ilce.replace(/\s+/g, '')}
+                </span>
+              </div>
+            )}
+
+            {faaliyet.gonullu_dernek && (
+              <div className="mb-3">
+                <span className="inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-red-600/20 text-red-400 rounded-full transition-colors hover:bg-red-600/30">
+                  <span className="mr-1">🇹🇷</span>
+                  <span className="truncate max-w-[150px] sm:max-w-[250px]">{faaliyet.gonullu_dernek}</span>
                 </span>
               </div>
             )}
@@ -295,15 +294,7 @@ const TwitterFaaliyetCard = ({ faaliyet }) => {
               </div>
             )}
             
-            {/* ETİKET 2: Dernek (Açıklamanın Altında) */}
-            {faaliyet.gonullu_dernek && (
-              <div className="mb-3">
-                <span className="inline-flex items-center px-2 py-0.5 text-xs font-semibold bg-red-600/20 text-red-400 rounded-full transition-colors hover:bg-red-600/30">
-                  <span className="mr-1">🤝</span>
-                  <span className="truncate max-w-[150px] sm:max-w-[250px]">{faaliyet.gonullu_dernek}</span>
-                </span>
-              </div>
-            )}
+            
 
             {/* GÖRSELLER */}
             {faaliyet.gorseller && faaliyet.gorseller.length > 0 && (
